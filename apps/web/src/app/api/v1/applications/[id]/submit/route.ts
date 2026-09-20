@@ -1,11 +1,12 @@
 import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler.js";
-import { ApplicationRepository, AllocationCycleRepository, ApplicationModel, EntityNotFoundError } from "@hostelhub/db";
-import { ForbiddenError } from "@/lib/auth/policy";
+import { ApplicationRepository, AllocationCycleRepository, EntityNotFoundError, AuditService } from "@hostelhub/db";
+import { ForbiddenError, canAccessApplication } from "@/lib/auth/policy";
 import { ApiProblemError } from "@/lib/api/errors.js";
+import { objectIdSchema } from "@/lib/api/validation.js";
 
 const paramsSchema = z.object({
-  id: z.string(),
+  id: objectIdSchema,
 });
 
 export const POST = apiHandler(
@@ -14,26 +15,24 @@ export const POST = apiHandler(
     operationId: "submitApplication",
     summary: "Submit hostel application for cycle",
   },
-  async ({ user, institution_id, params }) => {
+  async ({ user, institution_id, params, requestId }) => {
     const repo = new ApplicationRepository(institution_id);
     const app = await repo.findById(params.id);
     if (!app) {
       throw new EntityNotFoundError(params.id, "Application");
     }
 
-    // Object-level isolation check
-    const isStaff = user?.roles.some((r) => ["hostel_admin", "warden", "sys_admin"].includes(r));
-    if (!isStaff && String(app.student_id) !== String(user?.id)) {
+    if (user && !canAccessApplication(user, app as any)) {
       throw new ForbiddenError("You are not authorized to submit another student's application.");
     }
 
-    if (app.status === "submitted") {
-      return {
-        message: "Application already submitted",
-        reference_number: app.reference_number,
-        submitted_at: app.submitted_at,
-        status: app.status,
-      };
+    if (app.status !== "draft") {
+      throw new ApiProblemError({
+        title: "Invalid Status Transition",
+        status: 409,
+        detail: `Application status is currently "${app.status}". Only draft applications can be submitted.`,
+        code: "VERSION_CONFLICT",
+      });
     }
 
     // Load cycle to enforce window open/close times
@@ -53,23 +52,44 @@ export const POST = apiHandler(
       });
     }
 
-    // Mark as submitted
-    const updated = await ApplicationModel.findOneAndUpdate(
-      { _id: params.id, institution_id },
+    const currentVersion = (app as any).version ?? 1;
+
+    // Mark as submitted using updateWithVersion
+    const updated = await repo.updateWithVersion(
+      params.id,
+      currentVersion,
       {
         $set: {
           status: "submitted",
           submitted_at: now,
         },
       },
-      { new: true },
     );
+
+    // Record audit log entry
+    if (user) {
+      const auditService = AuditService.withTenant(institution_id);
+      await auditService.append({
+        action: "application.submit",
+        actor: {
+          user_id: user.id,
+          email: user.email,
+          roles: user.roles,
+        },
+        target: {
+          type: "application",
+          id: params.id,
+        },
+        before: { status: "draft" },
+        after: { status: "submitted", submitted_at: now },
+      }).catch((err: unknown) => console.error("Audit log error:", err));
+    }
 
     return {
       message: "Application submitted successfully",
-      reference_number: updated?.reference_number,
-      submitted_at: updated?.submitted_at,
-      status: updated?.status,
+      reference_number: updated.reference_number,
+      submitted_at: updated.submitted_at,
+      status: updated.status,
     };
   },
 );

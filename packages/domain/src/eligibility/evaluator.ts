@@ -7,6 +7,10 @@ import type {
   EvaluationOutput,
 } from "./dsl.js";
 
+function isFiniteNumber(val: unknown): val is number {
+  return typeof val === "number" && Number.isFinite(val);
+}
+
 /**
  * Evaluates a single DSL expression recursively against applicant facts.
  * Pure function with no side effects or I/O.
@@ -14,39 +18,49 @@ import type {
 export function evaluateExpression(
   facts: ApplicantFacts,
   expr: RuleExpression,
+  depth = 0,
 ): boolean {
-  if (!expr) return false;
+  if (!expr || depth > 10) return false;
 
   switch (expr.op) {
     case "equals": {
       const factVal = facts[expr.fact];
-      return String(factVal ?? "").toLowerCase() === String(expr.value ?? "").toLowerCase();
+      if (factVal === undefined || factVal === null) return false;
+      return String(factVal).toLowerCase() === String(expr.value ?? "").toLowerCase();
     }
     case "in": {
       const factVal = facts[expr.fact];
-      if (!Array.isArray(expr.value)) return false;
+      if (factVal === undefined || factVal === null || !Array.isArray(expr.value)) return false;
       return expr.value.some(
-        (val) => String(val).toLowerCase() === String(factVal ?? "").toLowerCase(),
+        (val) => String(val).toLowerCase() === String(factVal).toLowerCase(),
       );
     }
     case "gte": {
-      const factVal = Number(facts[expr.fact]);
-      return !isNaN(factVal) && factVal >= expr.value;
+      const raw = facts[expr.fact];
+      if (!isFiniteNumber(raw) || !isFiniteNumber(expr.value)) return false;
+      return raw >= expr.value;
     }
     case "lte": {
-      const factVal = Number(facts[expr.fact]);
-      return !isNaN(factVal) && factVal <= expr.value;
+      const raw = facts[expr.fact];
+      if (!isFiniteNumber(raw) || !isFiniteNumber(expr.value)) return false;
+      return raw <= expr.value;
     }
     case "and": {
       if (!Array.isArray(expr.rules) || expr.rules.length === 0) return true;
-      return expr.rules.every((child) => evaluateExpression(facts, child));
+      return expr.rules.every((child) => evaluateExpression(facts, child, depth + 1));
     }
     case "or": {
       if (!Array.isArray(expr.rules) || expr.rules.length === 0) return false;
-      return expr.rules.some((child) => evaluateExpression(facts, child));
+      return expr.rules.some((child) => evaluateExpression(facts, child, depth + 1));
     }
     case "not": {
-      return !evaluateExpression(facts, expr.rule);
+      if (expr.rule && "fact" in (expr.rule as any)) {
+        const rawVal = facts[(expr.rule as any).fact];
+        if (rawVal === undefined || rawVal === null || rawVal === "") {
+          return false;
+        }
+      }
+      return !evaluateExpression(facts, expr.rule, depth + 1);
     }
     default:
       return false;
@@ -96,7 +110,15 @@ export function evaluate(
   ruleSet: PolicyRuleSet,
 ): EvaluationOutput {
   if (!ruleSet || !Array.isArray(ruleSet.rules) || ruleSet.rules.length === 0) {
-    return { eligible: true, results: [] };
+    return { eligible: false, results: [] };
+  }
+
+  const now = new Date();
+  if (ruleSet.effectiveFrom && new Date(ruleSet.effectiveFrom) > now) {
+    return { eligible: false, results: [] };
+  }
+  if (ruleSet.effectiveTo && new Date(ruleSet.effectiveTo) < now) {
+    return { eligible: false, results: [] };
   }
 
   const results = ruleSet.rules.map((rule) => evaluateRule(facts, rule));
@@ -107,6 +129,8 @@ export function evaluate(
     results,
   };
 }
+
+export const evaluateRuleSet = evaluate;
 
 /**
  * Generates a human-readable plain language summary of a DSL rule expression.

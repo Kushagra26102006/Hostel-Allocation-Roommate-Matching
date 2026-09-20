@@ -15,10 +15,8 @@ export class AllocationCycleRepository extends BaseRepository<AllocationCycleDoc
   ): Promise<AllocationCycleDocument | null> {
     const filter: FilterQuery<AllocationCycleDocument> = {
       status: "open",
+      institution_id: this.getInstitutionId(),
     };
-    if (this.institutionId) {
-      filter["institution_id"] = this.institutionId;
-    }
 
     let query = this.model.findOne(filter).sort({ window_close: -1 });
     if (session) query = query.session(session);
@@ -32,10 +30,8 @@ export class AllocationCycleRepository extends BaseRepository<AllocationCycleDoc
   ): Promise<AllocationCycleDocument[]> {
     const filter: FilterQuery<AllocationCycleDocument> = {
       academic_year: academicYear,
+      institution_id: this.getInstitutionId(),
     };
-    if (this.institutionId) {
-      filter["institution_id"] = this.institutionId;
-    }
 
     let query = this.model.find(filter);
     if (session) query = query.session(session);

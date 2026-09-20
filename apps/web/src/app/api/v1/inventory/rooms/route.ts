@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Types } from "mongoose";
 import { apiHandler } from "@/lib/api/handler.js";
-import { RoomRepository, BlockModel } from "@hostelhub/db";
+import { RoomRepository, BlockRepository, HostelRepository } from "@hostelhub/db";
 import { paginationQuerySchema } from "@/lib/api/pagination.js";
 import { ApiProblemError } from "@/lib/api/errors.js";
 
@@ -52,13 +52,13 @@ export const GET = apiHandler(
     if (query.accessible !== undefined) filter.accessible = query.accessible;
 
     const result = await repo.paginate(
+      filter,
       {
-        limit: query.limit,
-        cursor: query.cursor,
+        ...(query.limit ? { limit: query.limit } : {}),
+        ...(query.cursor ? { cursor: query.cursor } : {}),
         sortField: (query.sortField as "_id") ?? "_id",
         sortOrder: query.sortOrder ?? "asc",
       },
-      filter,
     );
 
     return result;
@@ -73,29 +73,48 @@ export const POST = apiHandler(
     summary: "Create Room",
   },
   async ({ institution_id, body }) => {
-    const blockObjectId = new Types.ObjectId(body.block_id);
+    const blockRepo = new BlockRepository(institution_id);
+    const block = await blockRepo.findById(body.block_id);
+    if (!block) {
+      throw new ApiProblemError({
+        type: "https://hostelhub.campus.edu/probs/not-found",
+        title: "Block Not Found",
+        status: 404,
+        detail: `Block with ID ${body.block_id} does not exist in tenant.`,
+        code: "NOT_FOUND",
+      });
+    }
 
-    // Resolve hostel_id from block if not explicitly passed
+    const hostelRepo = new HostelRepository(institution_id);
     let hostelObjectId: Types.ObjectId;
     if (body.hostel_id) {
       hostelObjectId = new Types.ObjectId(body.hostel_id);
-    } else {
-      const block = await BlockModel.findById(blockObjectId);
-      if (!block) {
+      const hostel = await hostelRepo.findById(hostelObjectId);
+      if (!hostel) {
         throw new ApiProblemError({
           type: "https://hostelhub.campus.edu/probs/not-found",
-          title: "Block Not Found",
+          title: "Hostel Not Found",
           status: 404,
-          detail: `Block with ID ${body.block_id} does not exist.`,
+          detail: `Hostel with ID ${body.hostel_id} does not exist in tenant.`,
           code: "NOT_FOUND",
         });
       }
+      if (String(block.hostel_id) !== String(hostelObjectId)) {
+        throw new ApiProblemError({
+          type: "https://hostelhub.campus.edu/probs/validation-failed",
+          title: "Block/Hostel Mismatch",
+          status: 422,
+          detail: `Block ${body.block_id} does not belong to Hostel ${body.hostel_id}.`,
+          code: "VALIDATION_FAILED",
+        });
+      }
+    } else {
       hostelObjectId = block.hostel_id;
     }
 
     const repo = new RoomRepository(institution_id);
     const room = await repo.create({
-      block_id: blockObjectId,
+      block_id: block._id,
       hostel_id: hostelObjectId,
       room_number: body.room_number,
       room_type: body.room_type,

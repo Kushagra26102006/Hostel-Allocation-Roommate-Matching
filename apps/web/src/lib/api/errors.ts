@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { ForbiddenError, UnauthorizedError } from "@/lib/auth/policy";
-import { VersionConflictError, EntityNotFoundError } from "@hostelhub/db";
+import {
+  VersionConflictError,
+  EntityNotFoundError,
+  TenantRequiredError,
+  InvalidCursorError,
+} from "@hostelhub/db";
 
 export type ProblemCode =
   | "VALIDATION_FAILED"
@@ -197,6 +202,30 @@ export function toProblemResponse(
       requestId,
       expectedVersion: error.expectedVersion,
       actualVersion: error.actualVersion,
+    });
+  }
+
+  if (error instanceof TenantRequiredError) {
+    return createProblemResponse({
+      type: "https://hostelhub.campus.edu/probs/tenant-required",
+      title: "Tenant Required",
+      status: 401,
+      detail: error.message,
+      instance,
+      code: "UNAUTHORIZED",
+      requestId,
+    });
+  }
+
+  if (error instanceof InvalidCursorError) {
+    return createProblemResponse({
+      type: "https://hostelhub.campus.edu/probs/invalid-cursor",
+      title: "Invalid Cursor",
+      status: 400,
+      detail: error.message,
+      instance,
+      code: "BAD_REQUEST",
+      requestId,
     });
   }
 

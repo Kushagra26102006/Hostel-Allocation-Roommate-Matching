@@ -64,19 +64,22 @@ export function requirePermission(
 export function canAccessApplication(
   user: SessionUser,
   application: {
-    studentId: string;
-    institution_id: string;
+    studentId?: string;
+    student_id?: string | { toString(): string };
+    institution_id?: string;
     hostelId?: string;
   },
 ): boolean {
-  // Enforce tenant boundary
-  if (application.institution_id !== user.institution_id) {
+  // Enforce tenant boundary if institution_id is present
+  if (application.institution_id && application.institution_id !== user.institution_id) {
     return false;
   }
 
+  const appStudentId = String(application.studentId ?? application.student_id ?? "");
+
   // Student can only access their own application
-  if (user.roles.includes("student") && user.roles.length === 1) {
-    return application.studentId === user.id;
+  if (user.roles.includes("student") && !user.roles.some((r) => ["chief_warden", "hostel_admin", "dean", "sys_admin", "warden"].includes(r))) {
+    return appStudentId === user.id;
   }
 
   // Institutional leadership & operations can access all applications in institution

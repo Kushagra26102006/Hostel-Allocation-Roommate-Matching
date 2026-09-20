@@ -12,7 +12,11 @@
     "build": "tsc --project tsconfig.json --outDir dist"
   },
   "devDependencies": {
+    "@types/papaparse": "^5.5.2",
     "typescript": "*",
     "vitest": "*"
+  },
+  "dependencies": {
+    "papaparse": "^5.7.0"
   }
 }

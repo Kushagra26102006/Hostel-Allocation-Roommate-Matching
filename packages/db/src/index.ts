@@ -47,6 +47,7 @@ export {
   VersionConflictError,
   EntityNotFoundError,
   TenantRequiredError,
+  InvalidCursorError,
 } from "./repository/errors.js";
 
 // Models & Types

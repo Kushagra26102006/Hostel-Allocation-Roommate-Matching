@@ -16,10 +16,12 @@ const baseSchema = z.object({
   // MongoDB
   MONGODB_URI: z
     .string()
-    .default("mongodb://localhost:27017/hostelhub?replicaSet=rs0&directConnection=true"),
+    .min(1, "MONGODB_URI is required"),
 
   // Redis
-  REDIS_URL: z.string().default("redis://localhost:6379"),
+  REDIS_URL: z
+    .string()
+    .url("REDIS_URL must be a valid URL"),
 
   // MinIO / S3
   S3_ENDPOINT: z.string().default("http://localhost:9000"),
@@ -30,8 +32,7 @@ const baseSchema = z.object({
   // Encryption
   MASTER_ENCRYPTION_KEY: z
     .string()
-    .min(32, "MASTER_ENCRYPTION_KEY must be at least 32 chars")
-    .default("hostelhub_master_secret_encryption_key_32_bytes_long!"),
+    .min(32, "MASTER_ENCRYPTION_KEY must be at least 32 chars"),
   ENCRYPTION_KEY_ID: z.string().default("v1"),
 });
 
@@ -48,11 +49,10 @@ const featureFlagSchema = z.object({
 // ── Web-specific schema ───────────────────────────────────────────────────────
 
 export const webEnvSchema = baseSchema.merge(featureFlagSchema).extend({
-  APP_URL: z.string().default("http://localhost:3000"),
+  APP_URL: z.string().url("APP_URL must be a valid URL").default("http://localhost:3000"),
   AUTH_SECRET: z
     .string()
-    .min(32, "AUTH_SECRET must be at least 32 chars")
-    .default("hostelhub-dev-insecure-secret-key-32chars!!"),
+    .min(32, "AUTH_SECRET must be at least 32 chars"),
   AUTH_ALLOWED_DOMAIN: z.string().optional(),
   AUTH_TRUST_HOST: z
     .string()

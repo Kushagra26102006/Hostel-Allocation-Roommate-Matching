@@ -19,9 +19,7 @@ export class ApplicationRepository extends BaseRepository<ApplicationDocument> {
       student_id: typeof studentId === "string" ? new Types.ObjectId(studentId) : studentId,
       cycle_id: typeof cycleId === "string" ? new Types.ObjectId(cycleId) : cycleId,
     };
-    if (this.institutionId) {
-      filter["institution_id"] = this.institutionId;
-    }
+    filter["institution_id"] = this.getInstitutionId();
 
     let query = this.model.findOne(filter);
     if (session) query = query.session(session);
@@ -35,10 +33,8 @@ export class ApplicationRepository extends BaseRepository<ApplicationDocument> {
   ): Promise<ApplicationDocument[]> {
     const filter: FilterQuery<ApplicationDocument> = {
       student_id: typeof studentId === "string" ? new Types.ObjectId(studentId) : studentId,
+      institution_id: this.getInstitutionId(),
     };
-    if (this.institutionId) {
-      filter["institution_id"] = this.institutionId;
-    }
 
     let query = this.model.find(filter).sort({ createdAt: -1 });
     if (session) query = query.session(session);

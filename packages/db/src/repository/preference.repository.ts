@@ -20,9 +20,7 @@ export class PreferenceRepository extends BaseRepository<PreferenceDocument> {
           ? new Types.ObjectId(applicationId)
           : applicationId,
     };
-    if (this.institutionId) {
-      filter["institution_id"] = this.institutionId;
-    }
+    filter["institution_id"] = this.getInstitutionId();
 
     let query = this.model.find(filter).sort({ rank: 1 });
     if (session) query = query.session(session);

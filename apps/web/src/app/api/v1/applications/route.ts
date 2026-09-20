@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler.js";
 import { ApplicationRepository, AllocationCycleRepository, EntityNotFoundError } from "@hostelhub/db";
@@ -89,20 +90,28 @@ export const POST = apiHandler(
       return existing;
     }
 
-    // Generate reference number: APP-{YEAR}-{RANDOM}
-    const randSuffix = Math.floor(10000 + Math.random() * 90000);
-    const refNum = `APP-${cycle.academic_year.replace(/\//g, "-")}-${randSuffix}`;
+    // Generate collision-safe reference number: APP-{YEAR}-{TIMESTAMP}-{HEX}
+    const hexSuffix = randomBytes(4).toString("hex").toUpperCase();
+    const refNum = `APP-${cycle.academic_year.replace(/\//g, "-")}-${Date.now().toString(36).toUpperCase()}-${hexSuffix}`;
 
-    const newApp = await appRepo.create({
-      cycle_id: cycle._id,
-      student_id: user.id as any,
-      reference_number: refNum,
-      status: "draft",
-      eligibility_result: { eligible: true, reasons: [] },
-      priority_tier: body.priority_tier ?? "general",
-      form_data: body.form_data ?? {},
-    });
+    try {
+      const newApp = await appRepo.create({
+        cycle_id: cycle._id,
+        student_id: user.id as any,
+        reference_number: refNum,
+        status: "draft",
+        eligibility_result: { eligible: true, reasons: [] },
+        priority_tier: body.priority_tier ?? "general",
+        form_data: body.form_data ?? {},
+      });
 
-    return newApp;
+      return newApp;
+    } catch (err: any) {
+      if (err?.code === 11000 || err?.name === "MongoServerError") {
+        const raceExisting = await appRepo.findByStudentAndCycle(user.id, body.cycle_id);
+        if (raceExisting) return raceExisting;
+      }
+      throw err;
+    }
   },
 );

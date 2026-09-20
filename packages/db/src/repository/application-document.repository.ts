@@ -17,10 +17,8 @@ export class ApplicationDocumentRepository extends BaseRepository<ApplicationDoc
   ): Promise<ApplicationDocumentDocument[]> {
     const filter: FilterQuery<ApplicationDocumentDocument> = {
       application_id: typeof applicationId === "string" ? new Types.ObjectId(applicationId) : applicationId,
+      institution_id: this.getInstitutionId(),
     };
-    if (this.institutionId) {
-      filter["institution_id"] = this.institutionId;
-    }
 
     let query = this.model.find(filter).sort({ createdAt: -1 });
     if (session) query = query.session(session);
@@ -36,10 +34,10 @@ export class ApplicationDocumentRepository extends BaseRepository<ApplicationDoc
     session?: ClientSession,
   ): Promise<ApplicationDocumentDocument | null> {
     const targetId = typeof id === "string" ? new Types.ObjectId(id) : id;
-    const filter: FilterQuery<ApplicationDocumentDocument> = { _id: targetId };
-    if (this.institutionId) {
-      filter["institution_id"] = this.institutionId;
-    }
+    const filter: FilterQuery<ApplicationDocumentDocument> = {
+      _id: targetId,
+      institution_id: this.getInstitutionId(),
+    };
 
     const updatePayload: Record<string, unknown> = {
       $set: {

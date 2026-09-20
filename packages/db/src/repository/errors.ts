@@ -35,3 +35,11 @@ export class TenantRequiredError extends Error {
     Object.setPrototypeOf(this, TenantRequiredError.prototype);
   }
 }
+
+export class InvalidCursorError extends Error {
+  constructor(message = "Invalid or malformed pagination cursor.") {
+    super(message);
+    this.name = "InvalidCursorError";
+    Object.setPrototypeOf(this, InvalidCursorError.prototype);
+  }
+}

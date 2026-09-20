@@ -37,8 +37,10 @@ export interface PolicyRule {
 export interface PolicyRuleSet {
   id: string;
   name: string;
-  version: number;
+  version: number | string;
   isLocked?: boolean;
+  effectiveFrom?: string | Date;
+  effectiveTo?: string | Date;
   rules: PolicyRule[];
 }
 

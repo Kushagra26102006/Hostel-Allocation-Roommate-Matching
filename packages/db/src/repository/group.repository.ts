@@ -17,9 +17,7 @@ export class GroupRepository extends BaseRepository<GroupDocument> {
     const filter: FilterQuery<GroupDocument> = {
       invite_code: inviteCode.toUpperCase().trim(),
     };
-    if (this.institutionId) {
-      filter["institution_id"] = this.institutionId;
-    }
+    filter["institution_id"] = this.getInstitutionId();
 
     let query = this.model.findOne(filter);
     if (session) query = query.session(session);
@@ -39,10 +37,8 @@ export class GroupRepository extends BaseRepository<GroupDocument> {
       cycle_id: cycleObjId,
       "members.student_id": studentObjId,
       status: { $ne: "disbanded" },
+      institution_id: this.getInstitutionId(),
     };
-    if (this.institutionId) {
-      filter["institution_id"] = this.institutionId;
-    }
 
     let query = this.model.findOne(filter);
     if (session) query = query.session(session);

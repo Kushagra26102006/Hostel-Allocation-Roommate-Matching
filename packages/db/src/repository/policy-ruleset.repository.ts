@@ -13,10 +13,9 @@ export class PolicyRuleSetRepository extends BaseRepository<PolicyRuleSetDocumen
   public async findLatestActive(
     session?: ClientSession,
   ): Promise<PolicyRuleSetDocument | null> {
-    const filter: FilterQuery<PolicyRuleSetDocument> = {};
-    if (this.institutionId) {
-      filter["institution_id"] = this.institutionId;
-    }
+    const filter: FilterQuery<PolicyRuleSetDocument> = {
+      institution_id: this.getInstitutionId(),
+    };
 
     let query = this.model.findOne(filter).sort({ version: -1 });
     if (session) query = query.session(session);
@@ -31,10 +30,8 @@ export class PolicyRuleSetRepository extends BaseRepository<PolicyRuleSetDocumen
     const objectId = typeof id === "string" ? new Types.ObjectId(id) : id;
     const filter: FilterQuery<PolicyRuleSetDocument> = {
       _id: objectId,
+      institution_id: this.getInstitutionId(),
     };
-    if (this.institutionId) {
-      filter["institution_id"] = this.institutionId;
-    }
 
     let query = this.model.findOneAndUpdate(
       filter,
