@@ -188,10 +188,22 @@ export function apiHandler<TParams = unknown, TQuery = unknown, TBody = unknown,
           rawBodyText = "";
         }
 
+        if (rawBodyText.length > 1 * 1024 * 1024) {
+          throw new ApiProblemError({
+            title: "Payload Too Large",
+            status: 413,
+            detail: "Request body size exceeds maximum allowed limit (1MB).",
+            code: "BAD_REQUEST",
+          });
+        }
+
         const idempResult = await checkIdempotency(
           idempotencyKey,
           institutionId,
           rawBodyText,
+          userId ?? "anon",
+          method,
+          pathname,
         );
 
         if (idempResult.isReplay && idempResult.response) {
@@ -224,8 +236,18 @@ export function apiHandler<TParams = unknown, TQuery = unknown, TBody = unknown,
       if (config.body) {
         let json: unknown;
         try {
-          json = await req.json();
-        } catch {
+          const bodyText = rawBodyText || (await req.text());
+          if (bodyText.length > 1 * 1024 * 1024) {
+            throw new ApiProblemError({
+              title: "Payload Too Large",
+              status: 413,
+              detail: "Request body size exceeds maximum allowed limit (1MB).",
+              code: "BAD_REQUEST",
+            });
+          }
+          json = JSON.parse(bodyText);
+        } catch (jsonErr) {
+          if (jsonErr instanceof ApiProblemError) throw jsonErr;
           throw new ApiProblemError({
             title: "Malformed JSON",
             status: 400,
@@ -280,6 +302,9 @@ export function apiHandler<TParams = unknown, TQuery = unknown, TBody = unknown,
             statusCode,
             headerMap,
             bodyClone,
+            userId ?? "anon",
+            method,
+            pathname,
           );
         } catch (err) {
           logger.warn(`Failed to cache idempotent response: ${(err as Error).message}`);

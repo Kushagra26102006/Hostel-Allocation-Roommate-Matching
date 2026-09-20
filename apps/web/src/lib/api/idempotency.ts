@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
-import Redis from "ioredis";
 import { IdempotencyConflictError } from "./errors.js";
+import { getRedis } from "@/lib/redis.js";
 
 interface IdempotentRecord {
   bodyHash: string;
@@ -9,73 +9,99 @@ interface IdempotentRecord {
   headers: Record<string, string>;
   body: string;
   createdAt: number;
+  expiresAt: number;
 }
 
 const memoryIdempotencyStore = new Map<string, IdempotentRecord>();
+const inFlightMemoryLocks = new Map<string, number>();
 
-let redisClient: Redis | null = null;
-let redisAvailable = false;
-
-function getRedisClient(): Redis | null {
-  if (redisClient) {
-    return redisAvailable ? redisClient : null;
-  }
-
-  const redisUrl = process.env["REDIS_URL"] ?? "redis://localhost:6379";
-  try {
-    redisClient = new Redis(redisUrl, {
-      maxRetriesPerRequest: 1,
-      connectTimeout: 2000,
-      lazyConnect: true,
-      enableOfflineQueue: false,
-    });
-
-    redisClient.on("connect", () => {
-      redisAvailable = true;
-    });
-
-    redisClient.on("error", () => {
-      redisAvailable = false;
-    });
-
-    redisClient.connect().catch(() => {
-      redisAvailable = false;
-    });
-  } catch {
-    redisAvailable = false;
-  }
-
-  return redisAvailable ? redisClient : null;
+// Periodic memory store cleanup to prevent memory leaks
+if (typeof setInterval !== "undefined") {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [k, v] of memoryIdempotencyStore.entries()) {
+      if (v.expiresAt < now) {
+        memoryIdempotencyStore.delete(k);
+      }
+    }
+    for (const [k, lockTime] of inFlightMemoryLocks.entries()) {
+      if (now - lockTime > 30000) {
+        inFlightMemoryLocks.delete(k);
+      }
+    }
+  }, 60000).unref?.();
 }
 
 export function computeBodyHash(bodyText: string): string {
   return createHash("sha256").update(bodyText).digest("hex");
 }
 
+export function buildIdempotencyStoreKey(
+  key: string,
+  institutionId: string,
+  userId = "anon",
+  method = "POST",
+  route = "/",
+): string {
+  return `idemp:${institutionId}:${userId}:${method}:${route}:${key}`;
+}
+
 export async function checkIdempotency(
   key: string,
   institutionId: string,
   bodyText: string,
+  userId = "anon",
+  method = "POST",
+  route = "/",
 ): Promise<{ isReplay: boolean; response?: NextResponse }> {
-  const storeKey = `idemp:${institutionId}:${key}`;
+  const storeKey = buildIdempotencyStoreKey(key, institutionId, userId, method, route);
   const currentBodyHash = computeBodyHash(bodyText);
 
-  const redis = getRedisClient();
+  const redis = getRedis();
   let record: IdempotentRecord | null = null;
 
-  if (redis && redisAvailable) {
+  if (redis) {
     try {
-      const raw = await redis.get(storeKey);
-      if (raw) {
+      const lockKey = `lock:${storeKey}`;
+      const reserved = await redis.set(lockKey, "IN_PROGRESS", "PX", 30000, "NX");
+
+      if (!reserved) {
+        const raw = await redis.get(storeKey);
+        if (!raw) {
+          throw new IdempotencyConflictError(
+            `Concurrent request with Idempotency-Key "${key}" is currently processing.`,
+          );
+        }
         record = JSON.parse(raw) as IdempotentRecord;
+      } else {
+        const raw = await redis.get(storeKey);
+        if (raw) {
+          record = JSON.parse(raw) as IdempotentRecord;
+        }
       }
-    } catch {
-      // Fallback to memory
+    } catch (err) {
+      if (err instanceof IdempotencyConflictError) throw err;
     }
   }
 
   if (!record) {
-    record = memoryIdempotencyStore.get(storeKey) ?? null;
+    const now = Date.now();
+    const inFlightTime = inFlightMemoryLocks.get(storeKey);
+    if (inFlightTime && now - inFlightTime < 30000) {
+      const existing = memoryIdempotencyStore.get(storeKey);
+      if (!existing) {
+        throw new IdempotencyConflictError(
+          `Concurrent request with Idempotency-Key "${key}" is currently processing.`,
+        );
+      }
+      record = existing;
+    } else {
+      inFlightMemoryLocks.set(storeKey, now);
+      const existing = memoryIdempotencyStore.get(storeKey);
+      if (existing && existing.expiresAt > now) {
+        record = existing;
+      }
+    }
   }
 
   if (record) {
@@ -110,22 +136,29 @@ export async function saveIdempotentResponse(
   status: number,
   headers: Record<string, string>,
   body: string,
+  userId = "anon",
+  method = "POST",
+  route = "/",
 ): Promise<void> {
-  const storeKey = `idemp:${institutionId}:${key}`;
+  const storeKey = buildIdempotencyStoreKey(key, institutionId, userId, method, route);
+  const ttlSeconds = 86400; // 24 hours
+  const now = Date.now();
+
   const record: IdempotentRecord = {
     bodyHash: computeBodyHash(bodyText),
     status,
     headers,
     body,
-    createdAt: Date.now(),
+    createdAt: now,
+    expiresAt: now + ttlSeconds * 1000,
   };
 
-  const redis = getRedisClient();
-  const ttlSeconds = 86400; // 24 hours
+  const redis = getRedis();
 
-  if (redis && redisAvailable) {
+  if (redis) {
     try {
       await redis.set(storeKey, JSON.stringify(record), "EX", ttlSeconds);
+      await redis.del(`lock:${storeKey}`);
       return;
     } catch {
       // Fallback
@@ -133,8 +166,10 @@ export async function saveIdempotentResponse(
   }
 
   memoryIdempotencyStore.set(storeKey, record);
+  inFlightMemoryLocks.delete(storeKey);
 }
 
 export function clearMemoryIdempotencyStore(): void {
   memoryIdempotencyStore.clear();
+  inFlightMemoryLocks.clear();
 }
