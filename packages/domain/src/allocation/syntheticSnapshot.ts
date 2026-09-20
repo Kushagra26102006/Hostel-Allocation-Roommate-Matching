@@ -138,13 +138,16 @@ export function buildSyntheticDataset(options: SyntheticDatasetOptions = {}): Sy
             const bedId = `bed-${bedIdCounter++}`;
             const isOos = nextFloat() < 0.03; // ~3% out of service
 
-            beds.set(bedId, {
+            const bedObj: Bed = {
               id: bedId,
               roomId,
               status: isOos ? "out_of_service" : "available",
               accessible: isAccessible,
-              ...(isAccessible ? { accessibilityReservedUntil: "2030-01-01T00:00:00.000Z" } : {}),
-            });
+            };
+            if (isAccessible) {
+              bedObj.accessibilityReservedUntil = "2030-01-01T00:00:00.000Z";
+            }
+            beds.set(bedId, bedObj);
 
             generatedBedCount++;
           }

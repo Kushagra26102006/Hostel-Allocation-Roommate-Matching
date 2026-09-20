@@ -12,7 +12,8 @@
     "storybook": "storybook dev -p 6006 --disable-telemetry",
     "build-storybook": "storybook build --disable-telemetry",
     "i18n:check": "node scripts/check-i18n.mjs",
-    "openapi:generate": "openapi-typescript http://localhost:3000/api/v1/openapi.json -o ./src/lib/client/schema.d.ts"
+    "openapi:generate": "openapi-typescript http://localhost:3000/api/v1/openapi.json -o ./src/lib/client/schema.d.ts",
+    "bench:allocation": "tsx ../../scripts/bench-allocation.ts"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.4",

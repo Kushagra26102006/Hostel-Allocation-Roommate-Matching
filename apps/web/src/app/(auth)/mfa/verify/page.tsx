@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
@@ -10,21 +10,12 @@ export default function MfaVerifyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
-  const { data: session, update } = useSession();
+  const { update } = useSession();
 
   const [useBackupCode, setUseBackupCode] = useState(false);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // If user has unconfigured MFA (or MFA disabled), clear state and leave verify page
-  useEffect(() => {
-    if (session?.user && !session.user.mfaEnabled) {
-      update({ clearMfaPending: true }).then(() => {
-        router.replace(callbackUrl);
-      });
-    }
-  }, [session, callbackUrl, router, update]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,17 +33,11 @@ export default function MfaVerifyPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        if (data.clearMfaPending) {
-          await update({ clearMfaPending: true });
-          router.replace(callbackUrl);
-          router.refresh();
-          return;
-        }
         throw new Error(data.error ?? "MFA verification failed.");
       }
 
-      // Refresh NextAuth JWT session with server verification proof
-      await update({ verifiedViaServer: true, mfaPending: false });
+      // Refresh NextAuth JWT session to clear mfaPending
+      await update({ mfaPending: false });
 
       router.push(callbackUrl);
       router.refresh();

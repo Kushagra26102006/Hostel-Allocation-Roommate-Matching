@@ -103,15 +103,7 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   // 2. Regular Login Verification (TOTP or Backup Code)
   if (!user.mfa?.enabled || !user.mfa?.secret) {
-    return NextResponse.json(
-      {
-        error: "MFA is not configured for this account.",
-        mfaConfigured: false,
-        mfaPending: false,
-        clearMfaPending: true,
-      },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "MFA is not configured for this account." }, { status: 400 });
   }
 
   let storedSecret: string;
@@ -152,7 +144,6 @@ export async function POST(req: Request): Promise<NextResponse> {
 
     return NextResponse.json({
       success: true,
-      verifiedViaServer: true,
       method: "backup_code",
       message: "Verified with single-use backup code.",
     });
@@ -192,7 +183,6 @@ export async function POST(req: Request): Promise<NextResponse> {
 
     return NextResponse.json({
       success: true,
-      verifiedViaServer: true,
       method: "totp",
       message: "MFA verified successfully.",
     });

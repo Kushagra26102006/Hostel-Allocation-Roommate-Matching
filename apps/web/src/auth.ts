@@ -168,12 +168,8 @@ const providers = [
       // Password verified: reset failed attempts
       await resetFailedAttempts(email, clientIp);
 
-      const MANDATORY_MFA_ROLES: UserRole[] = ["hostel_admin", "chief_warden", "sys_admin"];
-      const hasMandatoryRole = user.roles.some((r) => MANDATORY_MFA_ROLES.includes(r as UserRole));
-      const mfaConfigured = !!(user.mfa?.enabled && user.mfa?.secret);
-      const mfaEnabled = mfaConfigured;
-      // Only users with genuinely configured MFA who require it (mandatory role or opted in) are marked mfaPending
-      const mfaPending = mfaConfigured && (hasMandatoryRole || user.mfa?.enabled === true);
+      const mfaEnabled = user.mfa?.enabled ?? false;
+      const mfaPending = mfaEnabled;
 
       // Log successful login audit entry
       try {
@@ -272,13 +268,9 @@ export const authConfig = {
           user.institution_id = dbUser.institution_id.toString();
           user.roles = Array.from(dbUser.roles);
           user.hostelAssignments = Array.from(dbUser.hostelAssignments ?? []);
-          const MANDATORY_MFA_ROLES: UserRole[] = ["hostel_admin", "chief_warden", "sys_admin"];
-          const hasMandatoryRole = dbUser.roles.some((r) =>
-            MANDATORY_MFA_ROLES.includes(r as UserRole),
-          );
-          const mfaConfigured = !!(dbUser.mfa?.enabled && dbUser.mfa?.secret);
-          user.mfaEnabled = mfaConfigured;
-          user.mfaPending = mfaConfigured && (hasMandatoryRole || dbUser.mfa?.enabled === true);
+          user.mfaEnabled = dbUser.mfa?.enabled ?? false;
+          // Enforce MFA for Google OAuth users if MFA is enabled
+          user.mfaPending = dbUser.mfa?.enabled ?? false;
           if (dbUser.roles[0]) {
             user.activeRole = dbUser.roles[0];
           }
@@ -308,15 +300,10 @@ export const authConfig = {
         token["hostelAssignments"] = Array.isArray(user.hostelAssignments)
           ? Array.from(user.hostelAssignments)
           : [];
-        token["mfaEnabled"] = user.mfaEnabled ?? false;
-        token["mfaPending"] = (user.mfaEnabled && user.mfaPending) ?? false;
+        token["mfaEnabled"] = user.mfaEnabled;
+        token["mfaPending"] = user.mfaPending;
         token["activeRole"] = user.activeRole;
         token["lastCheckedAt"] = now;
-      }
-
-      // If MFA is explicitly disabled on the token, mfaPending cannot be true
-      if (token["mfaEnabled"] === false) {
-        token["mfaPending"] = false;
       }
 
       // Periodic session revocation check (every 5 minutes)
@@ -331,10 +318,6 @@ export const authConfig = {
             token["invalid"] = true;
           } else {
             token["roles"] = Array.from(dbUser.roles);
-            token["mfaEnabled"] = !!(dbUser.mfa?.enabled && dbUser.mfa?.secret);
-            if (token["mfaEnabled"] === false) {
-              token["mfaPending"] = false;
-            }
             token["lastCheckedAt"] = now;
           }
         } catch {
@@ -344,9 +327,12 @@ export const authConfig = {
 
       // Process trigger === "update" safely
       if (trigger === "update" && session) {
+        if (session["clearMfaPending"] === true) {
+          token["mfaPending"] = false;
+        }
         // SERVER-AUTHORITATIVE MFA: Never copy session.mfaPending directly!
-        // mfaPending can only be cleared if server-verified (verifiedViaServer) or explicitly cleared by server (clearMfaPending)
-        if (session["verifiedViaServer"] === true || session["clearMfaPending"] === true) {
+        // mfaPending can only be cleared if server-verified (e.g. verifiedViaServer flag set internally)
+        if (session["verifiedViaServer"] === true) {
           token["mfaPending"] = false;
         }
 
@@ -357,6 +343,11 @@ export const authConfig = {
             token["activeRole"] = session["activeRole"];
           }
         }
+      }
+
+      // INVARIANT: If mfaEnabled is false, mfaPending must always be false
+      if (token["mfaEnabled"] === false) {
+        token["mfaPending"] = false;
       }
 
       return token;

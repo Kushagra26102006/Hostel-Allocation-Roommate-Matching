@@ -45,15 +45,8 @@ export default function LoginPage() {
       const sessionRes = await fetch("/api/auth/session", { cache: "no-store" });
       const session = await sessionRes.json();
 
-      if (session?.user?.mfaPending && session?.user?.mfaEnabled) {
+      if (session?.user?.mfaPending) {
         router.push("/mfa/verify?callbackUrl=" + encodeURIComponent(callbackUrl));
-      } else if (
-        !session?.user?.mfaEnabled &&
-        session?.user?.roles?.some((r: string) =>
-          ["hostel_admin", "chief_warden", "sys_admin"].includes(r),
-        )
-      ) {
-        router.push("/mfa/enrol");
       } else {
         router.push(callbackUrl);
       }

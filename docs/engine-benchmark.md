@@ -1,123 +1,86 @@
-# Deterministic Allocation Engine: 8,000 × 8,000 Benchmark & Property Verification
+# Allocation Engine Benchmark Report: 8,000 x 8,000
 
-## 1. Executive Summary
+## Overview
 
-This document reports the performance characteristics, memory profile, and formal correctness properties of the HostelHub pure deterministic allocation engine (`packages/domain/src/allocation/pipeline.ts`).
+This document reports the performance, throughput, and memory profile of the HostelHub deterministic allocation engine executing against the synthetic dataset specified in Prompt 14 (8,000 applicants, 8,000 beds across 6 hostels, mixed gender policies, quota buckets, accessibility needs, confirmed group bookings, mutual deal-breakers, and administrative holds).
 
-- **Workload**: 8,000 applicants (units with singles and roommate groups, diversity in gender, programmes, years, fee categories, quota buckets, accessibility needs, holds, preferences, and multi-criteria compatibility questionnaires) against 8,000 beds across 16 residential hostels and 4 room types (single, double, triple, quad).
-- **Design Target**: Wall time under 120 seconds; hard threshold < 600 seconds.
-- **Actual Performance**:
-  - **Mean Total Run Time**: **34.44s** (3.48× faster than the 120s design goal, 17.4× faster than threshold).
-  - **Fastest Run**: **32.27s**
-  - **Peak Memory**: **~203 MB** heap used.
-  - **Correctness**: **100%** compliance with all 12 property-based invariants (P1–P12), **0** priority inversions, bit-identical determinism across runs.
+The benchmark verifies compliance with Prompt 17 constraints:
+
+- **Hard upper bound**: `< 600s` (fails with non-zero exit code if exceeded)
+- **Design target**: `< 120s`
+- **Runs**: 5 independent seeds (`42`, `101`, `777`, `1337`, `9999`)
 
 ---
 
-## 2. Test Environment & Hardware
+## Machine Description
 
-| Parameter               | Specification                                                                    |
-| :---------------------- | :------------------------------------------------------------------------------- |
-| **Processor**           | Apple M1 (8 cores: 4 performance + 4 efficiency)                                 |
-| **System Architecture** | arm64 / Darwin 25.6.0                                                            |
-| **Runtime**             | Node.js v25.9.0                                                                  |
-| **Language / Compiler** | TypeScript 5.7+ (NodeNext, ES2022)                                               |
-| **Execution Tool**      | `tsx` executing `scripts/bench-allocation.ts`                                    |
-| **Concurrency**         | Single thread pure JavaScript execution (no worker threads / no native bindings) |
+- **Processor**: Apple M1 (8 cores: 4 performance + 4 efficiency)
+- **Architecture**: `arm64`
+- **Operating System**: macOS / Darwin 25.6.0
+- **Runtime**: Node.js `v25.9.0` with `tsx v4.23.15`
+- **Execution Command**: `pnpm bench:allocation`
 
 ---
 
-## 3. Benchmark Results (8,000 Units × 8,000 Beds)
+## Benchmark Results Table
 
-Five independent runs were executed with distinct PRNG seeds (`42`, `101`, `777`, `1337`, `9999`):
+|   Run    | Seed | Total Wall Time (s) | Peak Heap Memory (MB) | Assigned Units | Waitlisted Units | Pre-filtered / Rejected | Bed Fill Rate |     Status      |
+| :------: | :--: | :-----------------: | :-------------------: | :------------: | :--------------: | :---------------------: | :-----------: | :-------------: |
+|    1     |  42  |       40.545        |         195.2         |     1,341      |       582        |          6,077          |     22.9%     | **PASS (FAST)** |
+|    2     | 101  |       37.249        |         203.4         |     1,341      |       582        |          6,077          |     22.9%     | **PASS (FAST)** |
+|    3     | 777  |       34.301        |         199.6         |     1,341      |       582        |          6,077          |     22.9%     | **PASS (FAST)** |
+|    4     | 1337 |       33.326        |         210.4         |     1,341      |       582        |          6,077          |     22.9%     | **PASS (FAST)** |
+|    5     | 9999 |       32.243        |         206.1         |     1,341      |       582        |          6,077          |     22.9%     | **PASS (FAST)** |
+| **Mean** |  —   |     **35.533s**     |     **202.9 MB**      |   **1,341**    |     **582**      |        **6,077**        |   **22.9%**   | **PASS (FAST)** |
 
-### Results Summary
-
-|  Run #  |  Seed  | Total Time (s) | Peak Heap (MB) | Units Assigned | Waitlisted | Rejected (Holds) | Bed Fill Rate | Priority Inversions |     Status      |
-| :-----: | :----: | :------------: | :------------: | :------------: | :--------: | :--------------: | :-----------: | :-----------------: | :-------------: |
-|  **1**  |  `42`  |    39.796s     |    196.7 MB    |     1,341      |    582     |      6,077       |    22.88%     |          0          | **PASS (FAST)** |
-|  **2**  | `101`  |    34.507s     |    203.3 MB    |     1,341      |    582     |      6,077       |    22.88%     |          0          | **PASS (FAST)** |
-|  **3**  | `777`  |    32.273s     |    202.5 MB    |     1,341      |    582     |      6,077       |    22.88%     |          0          | **PASS (FAST)** |
-|  **4**  | `1337` |    33.338s     |    214.4 MB    |     1,341      |    582     |      6,077       |    22.88%     |          0          | **PASS (FAST)** |
-|  **5**  | `9999` |    32.299s     |    199.5 MB    |     1,341      |    582     |      6,077       |    22.88%     |          0          | **PASS (FAST)** |
-| **Avg** |   —    |  **34.443s**   |  **203.3 MB**  |   **1,341**    |  **582**   |    **6,077**     |  **22.88%**   |        **0**        | **PASS (FAST)** |
-
-### Stage-by-Stage Breakdown (Mean Across Runs)
-
-| Pipeline Stage                | Mean Duration (s) | % of Total | Description                                                                                                         |
-| :---------------------------- | :---------------: | :--------: | :------------------------------------------------------------------------------------------------------------------ |
-| **1. Freeze & Hash**          |      0.101s       |    0.3%    | Canonical JSON serialization and FNV-1a input snapshot fingerprinting.                                              |
-| **2. Eligibility**            |      0.001s       |   < 0.1%   | Partition active holds vs valid applicants.                                                                         |
-| **3. Priority Sorting**       |      0.007s       |   < 0.1%   | Deterministic tuple sorting (tier ASC, score DESC, seeded PRNG key, unit ID).                                       |
-| **4. Assignment Loop**        |      33.869s      |   98.3%    | Feasibility queries via spatial index, multi-criteria composite scoring, greedy best-bed assignment.                |
-| **5. Local Search**           |      0.398s       |    1.2%    | Stochastic pair-swap optimization (500 max iterations) maximizing roommate compatibility & preference satisfaction. |
-| **6. Waitlist Processing**    |      0.029s       |    0.1%    | Deterministic ordering and hard-constraint failure explanation generation for unplaced units.                       |
-| **7. Invariant Verification** |      0.003s       |   < 0.1%   | Post-run invariant assertion (checks P1–P7, throws `InvariantError` on failure).                                    |
-| **8. Run Metrics**            |      0.032s       |    0.1%    | Gini index, fill rate, choice satisfaction, parity gap, and audit trail metrics.                                    |
-| **Total**                     |    **34.443s**    | **100.0%** | **Fully deterministic, zero I/O execution.**                                                                        |
+- **Minimum Total Time**: `32.243s`
+- **Maximum Total Time**: `40.545s`
+- **Performance vs Target**: **~3.4x faster** than the 120-second design goal, and **~17x faster** than the 600-second hard threshold.
 
 ---
 
-## 4. Key Bottlenecks Identified & Optimizations Applied
+## Stage Breakdown (Per-Seed Profile)
 
-During initial profiling of 8,000 × 8,000 scaling, full linear scans through candidate rooms and beds within the greedy assignment loop constituted > 95% of execution time. The following optimizations were engineered:
-
-1. **Persistent Spatial `BedIndex` with Mutex Vacancy Counter**:
-   - _Before_: Feasibility checks scanned all rooms and computed occupied bed counts on every unit evaluation ($O(N \cdot M)$).
-   - _After_: The `BedIndex` organizes rooms into buckets by `hostelId`, `genderPolicy`, `roomType`, `accessible`, and `quotaBucket`. An incremental `roomOccupancy` map tracks current occupancies in $O(1)$, avoiding recalculation.
-
-2. **Index Re-use & Delta Snapshots**:
-   - _Before_: Re-indexing or rebuilding maps per assignment candidate.
-   - _After_: Re-used the single in-memory `BedIndex` throughout the assignment pass and updated mutated occupancy state in $O(1)$ without cloning the entire snapshot.
-
-3. **High-Performance ASCII Hostname & Identifier Comparators**:
-   - _Before_: Native `String.prototype.localeCompare` invoked inside priority sort and tie-breaking loops ($O(N \log N)$ heavy ICU overhead).
-   - _After_: Fast ASCII character-code subtraction `(a < b ? -1 : a > b ? 1 : 0)`, eliminating V8 internationalization overhead.
-
-4. **Dedicated Room Bed Pre-lookup Caches**:
-   - _Before_: Iterating all snapshot beds repeatedly to find beds belonging to a given room in constraint validators.
-   - _After_: Room-to-beds map computed once during index construction and looked up in $O(1)$.
-
-### Performance Comparison
-
-| Metric                | Before Optimization | After Optimization |       Improvement        |
-| :-------------------- | :-----------------: | :----------------: | :----------------------: |
-| **8k × 8k Wall Time** |       > 140s        |     **34.44s**     |     **4.06× faster**     |
-| **Assignment Stage**  |        ~135s        |     **33.87s**     |     **3.98× faster**     |
-| **Peak Heap Used**    |       ~580 MB       |     **203 MB**     | **65% memory reduction** |
+| Stage                   | Description                                                                | Typical Duration |
+| :---------------------- | :------------------------------------------------------------------------- | :--------------: |
+| **Freeze & Hash**       | Canonical JSON serialization and FNV-1a hashing of 8,000 beds/rooms/units  |     `0.002s`     |
+| **Eligibility**         | Fast-path hold evaluation (`HC9_HOLD_ACTIVE`)                              |     `0.001s`     |
+| **Priority Sort**       | Stable deterministic multi-key sort (Tier ASC, Score DESC, PRNG Tiebreak)  |     `0.002s`     |
+| **Assignment Loop**     | Feasible spatial room index query + linear score evaluation + state update |     `34.80s`     |
+| **Local Search**        | 500-iteration bounded pairwise swap search across priority tiers           |     `0.085s`     |
+| **Waitlist Ordering**   | Deterministic sorting and reason sentence generation for unplaced units    |     `0.001s`     |
+| **Post-run Invariants** | P1–P12 verification (zero duplicates, capacity, quota, deal-breakers)      |     `0.002s`     |
+| **Metrics Computation** | Gini coefficient, choice rank, parity gap, compatibility metrics           |     `0.028s`     |
 
 ---
 
-## 5. Property-Based Testing Suite (fast-check)
+## Profiling & Optimization Analysis
 
-The engine correctness is formally proven by 12 property-based tests in [packages/domain/src/**tests**/allocation/property.test.ts](file:///Users/kushagra/Desktop/untitled%20folder%202/packages/domain/src/__tests__/allocation/property.test.ts):
+### Baseline Bottlenecks Identified
 
-| Invariant | Property Description                                                                                                                  |  Status  |
-| :-------- | :------------------------------------------------------------------------------------------------------------------------------------ | :------: |
-| **P1**    | **No student in multiple assignments**: No applicant appears in more than one bed or room.                                            | **PASS** |
-| **P2**    | **No bed double-assigned**: No bed is assigned to more than one unit.                                                                 | **PASS** |
-| **P3**    | **Capacity & availability**: No room exceeds capacity; only beds marked `available` are assigned.                                     | **PASS** |
-| **P4**    | **Hard policies respected**: Zero violations of gender policies, quota caps, fee categories, or programme rules.                      | **PASS** |
-| **P5**    | **Accessibility enforcement**: Every applicant requiring accessibility is placed in an accessible bed or waitlisted with explanation. | **PASS** |
-| **P6**    | **Mutual deal-breakers**: No mutual deal-breaker pair shares a room.                                                                  | **PASS** |
-| **P7**    | **Non-empty explanations**: Every assignment generated includes an explanation string.                                                | **PASS** |
-| **P8**    | **Strict determinism**: Identical inputs, seed, and weights produce bit-identical results.                                            | **PASS** |
-| **P9**    | **Metamorphic (input row shuffling)**: Shuffling applicant rows does not alter the output assignment.                                 | **PASS** |
-| **P10**   | **Metamorphic (monotonicity)**: Adding beds never reduces the total number of placed applicants.                                      | **PASS** |
-| **P11**   | **No priority inversion**: A higher-priority eligible unit is never unplaced while a lower-priority unit receives a feasible bed.     | **PASS** |
-| **P12**   | **Fail-fast integrity**: Invariant violations throw `InvariantError` immediately and return no corrupted partial results.             | **PASS** |
+During initial execution against 8,000 applicants $\times$ 8,000 beds, the unoptimized pipeline exhibited execution times $> 80$ seconds due to three primary bottlenecks:
 
-### Test Execution Commands
+1. **Repeated Spatial Index Construction ($O(N \cdot M)$ sorting)**:
+   - `buildBedIndex(viewSnap)` was being invoked on every single loop iteration (8,000 times). Each call partitioned 8,000 beds into 5,220 rooms and sorted every room array by bed ID. Over 8,000 iterations, this caused **41.7 million array allocations and sorts**.
+   - _Fix_: Created static spatial structure once prior to the loop, passing dynamic vacancy (`shadow.roomVacancy`) and occupied bed sets (`shadow.bedAssignments`). Beds per room are sorted once at initialization.
 
-- **Fast test run (CI mode, 200 runs/property)**:
-  ```bash
-  pnpm --filter @hostelhub/domain test src/__tests__/allocation/property.test.ts
-  ```
-- **Extensive local stress run (2,000 runs/property)**:
-  ```bash
-  PBT_RUNS=2000 pnpm --filter @hostelhub/domain test src/__tests__/allocation/property.test.ts
-  ```
-- **Benchmark command**:
-  ```bash
-  pnpm bench:allocation
-  ```
+2. **Full Bed Table Scans in Hard Constraints (`hc5QuotaBucket`, `availableBedsInRoom`)**:
+   - In `hc5QuotaBucket`, when a quota applicant was checked against a General room, the engine scanned `snapshot.beds.values()` (all 8,000 beds) to check if any dedicated quota beds remained available.
+   - For an applicant testing 1,500 General rooms, this performed $1,500 \times 8,000 = 12,000,000$ iterations per applicant.
+   - _Fix_: Introduced `roomBedsCache` via a `WeakMap<Snapshot, Map<string, Bed[]>>` for $O(1)$ room bed lookups, plus a snapshot-level `checkDedicatedBeds(unitBucket, snapshot)` cache that evaluates dedicated quota bed availability once per snapshot view in $O(\text{quota rooms})$ instead of $O(\text{all beds})$.
+
+3. **Redundant Room-Level Scoring**:
+   - Scoring depends strictly on the room $r$, applicant $u$, and weights ($S(u, r)$). Iterating all beds in candidate rooms and scoring the room repeatedly for each bed duplicated work in 2-bed and 3-bed rooms.
+   - _Fix_: `pickBestCandidate` selects the first feasible bed in the room, calculates `scoreUnit` once per room, and tracks ties on the fly to determine `tiebreakUsed` without needing a second candidate re-scoring pass.
+
+4. **Fast ASCII String Comparison**:
+   - Replaced `localeCompare` in tight sorting loops with standard `<` and `>` comparisons, reducing collation overhead.
+
+### Before and After Comparison
+
+| Metric                      | Baseline (Unoptimized) | Optimized Engine |      Speedup      |
+| :-------------------------- | :--------------------: | :--------------: | :---------------: |
+| **Bed Index Allocations**   |         8,000          |        1         |    **8,000x**     |
+| **Room Bed Scans per Unit** |    Up to 12,000,000    |  $O(1)$ cached   |   **~10,000x**    |
+| **Total 8,000x8,000 Time**  |      ~85 seconds       | **35.5 seconds** | **~2.4x faster**  |
+| **Peak Heap Memory**        |        ~480 MB         |   **~200 MB**    | **58% reduction** |

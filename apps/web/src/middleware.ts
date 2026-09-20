@@ -64,9 +64,7 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
 
   // 2. If authenticated and attempting to visit /login
   if (token && isAuthPage) {
-    const mfaEnabled = Boolean(token["mfaEnabled"]);
-    const mfaPending = Boolean(token["mfaPending"]) && mfaEnabled;
-    if (mfaPending) {
+    if (token["mfaPending"]) {
       return NextResponse.redirect(new URL("/mfa/verify", req.url));
     }
     return NextResponse.redirect(new URL("/dashboard", req.url));
@@ -75,11 +73,10 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
   // 3. MFA & Route Enforcements for logged in users
   if (token) {
     const roles = (token["roles"] as string[]) ?? [];
-    const mfaEnabled = Boolean(token["mfaEnabled"]);
-    const mfaPending = Boolean(token["mfaPending"]) && mfaEnabled;
-    const hasMandatoryRole = roles.some((r) => MANDATORY_MFA_ROLES.includes(r));
+    const mfaPending = token["mfaPending"] as boolean;
+    const mfaEnabled = token["mfaEnabled"] as boolean;
 
-    // A. If MFA verification is pending (and enabled), redirect away from protected pages to /mfa/verify
+    // A. If MFA verification is pending, redirect away from protected pages to /mfa/verify
     if (mfaPending && !isMfaVerifyPage && !pathname.startsWith("/api/mfa")) {
       const verifyUrl = new URL("/mfa/verify", req.url);
       verifyUrl.searchParams.set("callbackUrl", pathname);
@@ -87,20 +84,12 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
     }
 
     // B. If user has mandatory MFA role and is NOT enrolled, force /mfa/enrol
+    const hasMandatoryRole = roles.some((r) => MANDATORY_MFA_ROLES.includes(r));
     if (hasMandatoryRole && !mfaEnabled && !isMfaEnrolPage && !pathname.startsWith("/api/mfa")) {
       return NextResponse.redirect(new URL("/mfa/enrol", req.url));
     }
 
-    // C. If user is on /mfa/verify but MFA is NOT enabled (unconfigured account):
-    // Prevent misleading verification page and route directly to appropriate destination
-    if (isMfaVerifyPage && !mfaEnabled) {
-      if (hasMandatoryRole) {
-        return NextResponse.redirect(new URL("/mfa/enrol", req.url));
-      }
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-
-    // D. Route access control: Only staff roles on STAFF_ROLES allowlist can access /staff/*
+    // C. Route access control: Only staff roles on STAFF_ROLES allowlist can access /staff/*
     if (pathname.startsWith("/staff")) {
       const isStaff = roles.some((r) => STAFF_ROLES.includes(r));
       if (!isStaff) {

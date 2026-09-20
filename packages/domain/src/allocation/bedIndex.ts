@@ -13,7 +13,7 @@
  * No I/O, no Date, no Math.random(). All operations are pure given a Snapshot.
  */
 
-import type { Unit, Room, Snapshot, Bed } from "./types.js";
+import type { Unit, Room, Bed, Snapshot } from "./types.js";
 import {
   hc1AlreadyAssigned,
   hc3BedAvailable,

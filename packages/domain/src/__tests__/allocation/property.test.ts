@@ -116,9 +116,9 @@ function genCohortAndInventory(): fc.Arbitrary<{
           year: fc.integer({ min: 1, max: 4 }),
           feeCategory: fc.constantFrom(...FEE_CATEGORIES),
           quotaBucket: fc.constantFrom(...QUOTA_BUCKETS),
-          hasHold: fc.integer({ min: 1, max: 10 }).map((n) => n === 1), // ~10% hold
-          accessibilityNeed: fc.integer({ min: 1, max: 10 }).map((n) => n <= 2), // ~20% accessibility
-          isGroup: fc.integer({ min: 1, max: 10 }).map((n) => n === 1), // ~10% group
+          hasHold: fc.boolean(),
+          accessibilityNeed: fc.boolean(),
+          isGroup: fc.boolean(),
           prefCount: fc.integer({ min: 1, max: Math.min(3, hostelIds.length) }),
           priorityTier: fc.constantFrom("01", "02", "03"),
           priorityScore: fc.integer({ min: 10, max: 100 }),
@@ -158,8 +158,8 @@ function genCohortAndInventory(): fc.Arbitrary<{
           block: rawR.block,
           floor: rawR.floor,
           accessible: rawR.accessible,
+          quotaBucket: rawR.quotaBucket,
           walkingMinutes: rawR.walkingMinutes,
-          ...(rawR.quotaBucket ? { quotaBucket: rawR.quotaBucket } : {}),
           ...(rawR.feeReq ? { feeCategoryRequirement: rawR.feeReq } : {}),
           ...(rawR.progFilter ? { programmeFilter: [rawR.progFilter] } : {}),
         };
@@ -167,13 +167,16 @@ function genCohortAndInventory(): fc.Arbitrary<{
 
         for (let bIdx = 0; bIdx < capacity; bIdx++) {
           const bedId = `bed-${bedIdCounter++}`;
-          beds.push({
+          const bedObj: Bed = {
             id: bedId,
             roomId,
             status: "available",
             accessible: rawR.accessible,
-            ...(rawR.accessible ? { accessibilityReservedUntil: "2030-01-01T00:00:00.000Z" } : {}),
-          });
+          };
+          if (rawR.accessible) {
+            bedObj.accessibilityReservedUntil = "2030-01-01T00:00:00.000Z";
+          }
+          beds.push(bedObj);
         }
       }
 
@@ -182,10 +185,9 @@ function genCohortAndInventory(): fc.Arbitrary<{
 
       for (let uIdx = 0; uIdx < rawUnits.length; uIdx++) {
         const ru = rawUnits[uIdx]!;
-        const unitId = `unit-${uIdx + 1}`;
-        const memberIds = ru.isGroup
-          ? [`student-${uIdx + 1}-a`, `student-${uIdx + 1}-b`]
-          : [`student-${uIdx + 1}`];
+        const unitId = `u-${uIdx + 1}`;
+        const isGrp = ru.isGroup && uIdx < rawUnits.length - 1;
+        const memberIds = isGrp ? [unitId, `u-${uIdx + 1}-buddy`] : [unitId];
 
         const prefHostels = [...hostelIds]
           .sort((a, b) => (a + unitId).localeCompare(b + unitId))
