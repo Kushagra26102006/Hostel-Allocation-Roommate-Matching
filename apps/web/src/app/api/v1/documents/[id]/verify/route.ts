@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler.js";
-import { ApplicationDocumentRepository, ApplicationDocumentModel, AuditService, EntityNotFoundError } from "@hostelhub/db";
+import { ApplicationDocumentRepository, AuditService, EntityNotFoundError } from "@hostelhub/db";
 
 const paramsSchema = z.object({
   id: z.string(),
@@ -28,7 +28,8 @@ export const PATCH = apiHandler(
 
     const verificationPayload = {
       status: body.status,
-      rejection_reason: body.status === "rejected" ? body.rejection_reason ?? "Rejected by admin" : undefined,
+      rejection_reason:
+        body.status === "rejected" ? (body.rejection_reason ?? "Rejected by admin") : undefined,
       verified_by: {
         user_id: user?.id ?? "staff",
         email: user?.email ?? "staff@campus.edu",
@@ -36,11 +37,7 @@ export const PATCH = apiHandler(
       },
     };
 
-    const updated = await ApplicationDocumentModel.findOneAndUpdate(
-      { _id: params.id, institution_id },
-      { $set: verificationPayload },
-      { new: true, runValidators: true },
-    );
+    const updated = await repo.update(params.id, { $set: verificationPayload });
 
     // Write tamper-evident hash chain audit entry
     await AuditService.append({
@@ -58,7 +55,8 @@ export const PATCH = apiHandler(
       before: { status: doc.status },
       after: {
         status: body.status,
-        rejection_reason: body.status === "rejected" ? body.rejection_reason ?? "Rejected by admin" : null,
+        rejection_reason:
+          body.status === "rejected" ? (body.rejection_reason ?? "Rejected by admin") : null,
       },
     });
 

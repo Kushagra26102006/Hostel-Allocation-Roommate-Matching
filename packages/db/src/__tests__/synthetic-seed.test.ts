@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { generateSyntheticData } from "../seed/synthetic.js";
 import { connectDb, disconnectDb } from "../connection.js";
 import { UserModel } from "../models/user.model.js";
@@ -61,7 +61,12 @@ describe("Module M14: Deterministic Synthetic Data Generator & Test Fixtures", (
     // Create non-synthetic user under NIT-DEMO
     const demoInst = await InstitutionModel.findOneAndUpdate(
       { code: "NIT-DEMO-TEST" },
-      { name: "Demo Test Institute", code: "NIT-DEMO-TEST", status: "active", domain: "nitdemo.edu" },
+      {
+        name: "Demo Test Institute",
+        code: "NIT-DEMO-TEST",
+        status: "active",
+        domain: "nitdemo.edu",
+      },
       { upsert: true, new: true },
     );
 

@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "pino-pretty": "^11.2.2",
-    "typescript": "*",
-    "vitest": "*"
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.1"
   }
 }

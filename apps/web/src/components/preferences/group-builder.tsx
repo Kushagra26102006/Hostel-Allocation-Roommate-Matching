@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Users, Copy, Check, LogOut, UserPlus, ShieldCheck, Clock, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -134,7 +134,8 @@ export function GroupBuilder({
           Roommate Group Builder
         </CardTitle>
         <CardDescription>
-          Form mutual roommate groups up to 4 members. Groups confirm automatically when all members accept.
+          Form mutual roommate groups up to 4 members. Groups confirm automatically when all members
+          accept.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -144,10 +145,21 @@ export function GroupBuilder({
             <div className="p-5 rounded-2xl border border-border/60 bg-surface/40 flex flex-col justify-between space-y-4">
               <div>
                 <h3 className="font-bold text-base text-text">Create Roommate Group</h3>
-                <p className="text-xs text-muted mt-1">Start a group as leader and invite friends using a unique 6-character code.</p>
+                <p className="text-xs text-muted mt-1">
+                  Start a group as leader and invite friends using a unique 6-character code.
+                </p>
               </div>
-              <Button onClick={createGroup} disabled={loading} className="bg-brand-600 hover:bg-brand-700 text-white font-bold w-full">
-                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />} Create Group
+              <Button
+                onClick={createGroup}
+                disabled={loading}
+                className="bg-brand-600 hover:bg-brand-700 text-white font-bold w-full"
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <UserPlus className="w-4 h-4 mr-2" />
+                )}{" "}
+                Create Group
               </Button>
             </div>
 
@@ -155,7 +167,9 @@ export function GroupBuilder({
             <div className="p-5 rounded-2xl border border-border/60 bg-surface/40 flex flex-col justify-between space-y-4">
               <div>
                 <h3 className="font-bold text-base text-text">Join Existing Group</h3>
-                <p className="text-xs text-muted mt-1">Enter the 6-character invite code provided by your group leader.</p>
+                <p className="text-xs text-muted mt-1">
+                  Enter the 6-character invite code provided by your group leader.
+                </p>
               </div>
               <div className="flex gap-2">
                 <Input
@@ -165,7 +179,11 @@ export function GroupBuilder({
                   maxLength={6}
                   className="font-mono text-center tracking-widest uppercase font-bold"
                 />
-                <Button onClick={joinGroup} disabled={loading || inviteCodeInput.length < 6} variant="outline">
+                <Button
+                  onClick={joinGroup}
+                  disabled={loading || inviteCodeInput.length < 6}
+                  variant="outline"
+                >
                   Join
                 </Button>
               </div>
@@ -181,8 +199,17 @@ export function GroupBuilder({
                   <span className="font-mono font-bold text-lg text-brand-400 tracking-wider">
                     {group.invite_code}
                   </span>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={copyCodeToClipboard}>
-                    {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-muted" />}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={copyCodeToClipboard}
+                  >
+                    {copiedCode ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5 text-muted" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -220,7 +247,9 @@ export function GroupBuilder({
                     transition={{ delay: idx * 0.1 }}
                     className={cn(
                       "w-10 h-10 rounded-full border-2 border-surface flex items-center justify-center font-bold text-xs uppercase shadow-md",
-                      member.status === "accepted" ? "bg-emerald-600 text-white" : "bg-amber-600 text-white",
+                      member.status === "accepted"
+                        ? "bg-emerald-600 text-white"
+                        : "bg-amber-600 text-white",
                     )}
                     title={`${member.email} (${member.status})`}
                   >
@@ -256,14 +285,24 @@ export function GroupBuilder({
             {/* Action Bar */}
             <div className="flex justify-between items-center pt-4 border-t border-border/40">
               {userMember?.status === "pending" ? (
-                <Button onClick={acceptInvite} disabled={loading} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+                <Button
+                  onClick={acceptInvite}
+                  disabled={loading}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                >
                   Accept Invitation
                 </Button>
               ) : (
                 <div />
               )}
 
-              <Button variant="outline" size="sm" onClick={leaveGroup} disabled={loading} className="border-rose-500/40 text-rose-400 hover:bg-rose-950/40">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={leaveGroup}
+                disabled={loading}
+                className="border-rose-500/40 text-rose-400 hover:bg-rose-950/40"
+              >
                 <LogOut className="w-4 h-4 mr-2" /> Leave Group
               </Button>
             </div>

@@ -14,7 +14,10 @@ export class CompatibilityReader {
     studentId: string | Types.ObjectId,
   ): Promise<QuestionnaireAnswers | null> {
     const studentObjId = typeof studentId === "string" ? new Types.ObjectId(studentId) : studentId;
-    const instObjId = typeof this.institutionId === "string" ? new Types.ObjectId(this.institutionId) : this.institutionId;
+    const instObjId =
+      typeof this.institutionId === "string"
+        ? new Types.ObjectId(this.institutionId)
+        : this.institutionId;
 
     const record = await CompatibilityResponseModel.findOne({
       institution_id: instObjId,
@@ -35,7 +38,7 @@ export class CompatibilityReader {
         studentObjId.toString(),
       );
       return answers;
-    } catch (err) {
+    } catch {
       return null;
     }
   }
@@ -48,4 +51,3 @@ export class CompatibilityReader {
     return reader.getDecryptedAnswers(studentId);
   }
 }
-

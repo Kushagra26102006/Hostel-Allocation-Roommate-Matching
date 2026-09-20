@@ -1,23 +1,36 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Trash2, Download, Play, CheckCircle2, XCircle, Sparkles, HelpCircle, Code } from "lucide-react";
+import { Plus, Trash2, Download, Play, CheckCircle2, XCircle, Sparkles, Code } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { evaluate, describeExpression, type PolicyRule, type ApplicantFacts, type PolicyRuleSet } from "@hostelhub/domain";
+import {
+  evaluate,
+  describeExpression,
+  type PolicyRule,
+  type ApplicantFacts,
+  type PolicyRuleSet,
+} from "@hostelhub/domain";
 
 export function RuleBuilder() {
-  const [ruleSetName, setRuleSetName] = useState("2026 UG Hostel Eligibility Policy");
+  const [ruleSetName] = useState("2026 UG Hostel Eligibility Policy");
   const [rules, setRules] = useState<PolicyRule[]>([
     {
       id: "r_distance",
       name: "Permanent Residence Distance Threshold",
       expression: { op: "gte", fact: "distanceKm", value: 50 },
-      reasonTemplate: "Your permanent residence distance ({distanceKm} km) is below the minimum 50 km cutoff.",
+      reasonTemplate:
+        "Your permanent residence distance ({distanceKm} km) is below the minimum 50 km cutoff.",
       policyRef: "POL-2026-01",
       owner: "hostel_admin",
       effectiveFrom: new Date().toISOString(),
@@ -69,9 +82,7 @@ export function RuleBuilder() {
   };
 
   const updateRule = (id: string, updates: Partial<PolicyRule>) => {
-    setRules((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, ...updates } : r)),
-    );
+    setRules((prev) => prev.map((r) => (r.id === id ? { ...r, ...updates } : r)));
   };
 
   const runTestEvaluation = () => {
@@ -89,7 +100,14 @@ export function RuleBuilder() {
 
   const exportPolicyToCsv = () => {
     const csvRows = [
-      ["Rule ID", "Rule Name", "Policy Reference", "Owner", "Plain Language Expression", "Reason Template"].join(","),
+      [
+        "Rule ID",
+        "Rule Name",
+        "Policy Reference",
+        "Owner",
+        "Plain Language Expression",
+        "Reason Template",
+      ].join(","),
       ...rules.map((r) =>
         [
           `"${r.id}"`,
@@ -118,13 +136,19 @@ export function RuleBuilder() {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-text">Eligibility Rule Builder</h1>
-          <p className="text-xs text-muted">Configure policy rules using JSON AST DSL with plain-language preview & test panel.</p>
+          <p className="text-xs text-muted">
+            Configure policy rules using JSON AST DSL with plain-language preview & test panel.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={exportPolicyToCsv}>
             <Download className="w-4 h-4 mr-2" /> Export CSV Mapping
           </Button>
-          <Button size="sm" className="bg-brand-600 hover:bg-brand-700 text-white font-bold" onClick={addRule}>
+          <Button
+            size="sm"
+            className="bg-brand-600 hover:bg-brand-700 text-white font-bold"
+            onClick={addRule}
+          >
             <Plus className="w-4 h-4 mr-2" /> Add Policy Rule
           </Button>
         </div>
@@ -133,9 +157,12 @@ export function RuleBuilder() {
       {/* Rules Config List */}
       <div className="space-y-4">
         {rules.map((rule) => {
-          const expr = rule.expression as any;
+          const expr = rule.expression as Record<string, unknown>;
           return (
-            <Card key={rule.id} className="border-border/60 bg-surface/80 backdrop-blur-md shadow-md">
+            <Card
+              key={rule.id}
+              className="border-border/60 bg-surface/80 backdrop-blur-md shadow-md"
+            >
               <CardContent className="pt-6 space-y-4">
                 <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-3">
                   <div className="flex items-center gap-3 flex-1">
@@ -164,12 +191,16 @@ export function RuleBuilder() {
                   <div>
                     <Label className="text-xs">Fact Key</Label>
                     <Select
-                      value={expr.fact || "level"}
+                      value={(expr.fact as string) || "level"}
                       onValueChange={(val) =>
-                        updateRule(rule.id, { expression: { ...expr, fact: val } })
+                        updateRule(rule.id, {
+                          expression: { ...expr, fact: val } as unknown as PolicyRule["expression"],
+                        })
                       }
                     >
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="level">level (UG/PG/PhD)</SelectItem>
                         <SelectItem value="programme">programme</SelectItem>
@@ -186,12 +217,16 @@ export function RuleBuilder() {
                   <div>
                     <Label className="text-xs">Operator</Label>
                     <Select
-                      value={expr.op || "equals"}
+                      value={(expr.op as string) || "equals"}
                       onValueChange={(val) =>
-                        updateRule(rule.id, { expression: { ...expr, op: val as any } })
+                        updateRule(rule.id, {
+                          expression: { ...expr, op: val } as unknown as PolicyRule["expression"],
+                        })
                       }
                     >
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="equals">equals (==)</SelectItem>
                         <SelectItem value="in">in (list)</SelectItem>
@@ -206,11 +241,16 @@ export function RuleBuilder() {
                     <Input
                       value={String(expr.value ?? "")}
                       onChange={(e) => {
-                        let val: any = e.target.value;
+                        let val: string | number | boolean = e.target.value;
                         if (val === "true") val = true;
                         else if (val === "false") val = false;
                         else if (!isNaN(Number(val)) && val !== "") val = Number(val);
-                        updateRule(rule.id, { expression: { ...expr, value: val } });
+                        updateRule(rule.id, {
+                          expression: {
+                            ...expr,
+                            value: val,
+                          } as unknown as PolicyRule["expression"],
+                        });
                       }}
                     />
                   </div>
@@ -226,7 +266,9 @@ export function RuleBuilder() {
 
                 {/* Reason Template */}
                 <div>
-                  <Label className="text-xs">Failure Reason Template (Placeholder format: &#123;factKey&#125;)</Label>
+                  <Label className="text-xs">
+                    Failure Reason Template (Placeholder format: &#123;factKey&#125;)
+                  </Label>
                   <Input
                     value={rule.reasonTemplate}
                     onChange={(e) => updateRule(rule.id, { reasonTemplate: e.target.value })}
@@ -244,7 +286,9 @@ export function RuleBuilder() {
           <CardTitle className="text-lg font-bold flex items-center gap-2 text-brand-400">
             <Play className="w-5 h-5" /> Interactive Applicant Test Panel
           </CardTitle>
-          <CardDescription>Enter sample student facts to test the evaluator in real time.</CardDescription>
+          <CardDescription>
+            Enter sample student facts to test the evaluator in real time.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -277,7 +321,9 @@ export function RuleBuilder() {
                 value={String(testFacts.hasHold ?? false)}
                 onValueChange={(val) => setTestFacts({ ...testFacts, hasHold: val === "true" })}
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="false">false (Clean)</SelectItem>
                   <SelectItem value="true">true (Active Hold)</SelectItem>
@@ -287,7 +333,10 @@ export function RuleBuilder() {
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={runTestEvaluation} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+            <Button
+              onClick={runTestEvaluation}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+            >
               <Sparkles className="w-4 h-4 mr-2" /> Evaluate Applicant
             </Button>
           </div>
@@ -311,14 +360,20 @@ export function RuleBuilder() {
 
               <div className="space-y-2">
                 {testResult.results.map((res) => (
-                  <div key={res.ruleId} className="flex items-start gap-3 p-2 rounded bg-surface/30 text-xs">
+                  <div
+                    key={res.ruleId}
+                    className="flex items-start gap-3 p-2 rounded bg-surface/30 text-xs"
+                  >
                     {res.passed ? (
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                     ) : (
                       <XCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                     )}
                     <div className="flex-1">
-                      <p className="font-semibold">{res.ruleName} <span className="font-mono text-muted">({res.policyRef})</span></p>
+                      <p className="font-semibold">
+                        {res.ruleName}{" "}
+                        <span className="font-mono text-muted">({res.policyRef})</span>
+                      </p>
                       <p className="text-muted mt-0.5">{res.reason}</p>
                     </div>
                   </div>

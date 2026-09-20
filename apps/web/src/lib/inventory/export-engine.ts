@@ -2,14 +2,13 @@ import Papa from "papaparse";
 import ExcelJS from "exceljs";
 import { Types } from "mongoose";
 import {
-  HostelModel,
-  BlockModel,
-  RoomModel,
-  BedModel,
+  HostelRepository,
+  BlockRepository,
+  RoomRepository,
+  BedRepository,
   type HostelDocument,
   type BlockDocument,
   type RoomDocument,
-  type BedDocument,
 } from "@hostelhub/db";
 
 export interface FlatInventoryItem {
@@ -40,16 +39,19 @@ export async function getFlatInventory(
   institutionId: string | Types.ObjectId,
 ): Promise<FlatInventoryItem[]> {
   const instObjectId =
-    typeof institutionId === "string"
-      ? new Types.ObjectId(institutionId)
-      : institutionId;
+    typeof institutionId === "string" ? new Types.ObjectId(institutionId) : institutionId;
+
+  const hostelRepo = new HostelRepository(instObjectId);
+  const blockRepo = new BlockRepository(instObjectId);
+  const roomRepo = new RoomRepository(instObjectId);
+  const bedRepo = new BedRepository(instObjectId);
 
   // Load all data scoped to institution
   const [hostels, blocks, rooms, beds] = await Promise.all([
-    HostelModel.find({ institution_id: instObjectId }).lean<HostelDocument[]>(),
-    BlockModel.find({ institution_id: instObjectId }).lean<BlockDocument[]>(),
-    RoomModel.find({ institution_id: instObjectId }).lean<RoomDocument[]>(),
-    BedModel.find({ institution_id: instObjectId }).lean<BedDocument[]>(),
+    hostelRepo.find({}),
+    blockRepo.find({}),
+    roomRepo.find({}),
+    bedRepo.find({}),
   ]);
 
   const hostelMap = new Map<string, HostelDocument>();
@@ -96,8 +98,7 @@ export async function getFlatInventory(
       bedNo: bed.bed_no,
       bedStatus: bed.status,
       window: attrs.window !== undefined ? attrs.window : "",
-      distanceToBlocks:
-        attrs.distance_to_blocks !== undefined ? attrs.distance_to_blocks : "",
+      distanceToBlocks: attrs.distance_to_blocks !== undefined ? attrs.distance_to_blocks : "",
     });
   }
 
@@ -116,9 +117,7 @@ export async function getFlatInventory(
 /**
  * Generates a CSV string of the institution's inventory.
  */
-export async function exportInventoryCsv(
-  institutionId: string | Types.ObjectId,
-): Promise<string> {
+export async function exportInventoryCsv(institutionId: string | Types.ObjectId): Promise<string> {
   const items = await getFlatInventory(institutionId);
   return Papa.unparse(items);
 }
@@ -126,9 +125,7 @@ export async function exportInventoryCsv(
 /**
  * Generates an XLSX Buffer of the institution's inventory with styled headers.
  */
-export async function exportInventoryXlsx(
-  institutionId: string | Types.ObjectId,
-): Promise<Buffer> {
+export async function exportInventoryXlsx(institutionId: string | Types.ObjectId): Promise<Buffer> {
   const items = await getFlatInventory(institutionId);
 
   const workbook = new ExcelJS.Workbook();

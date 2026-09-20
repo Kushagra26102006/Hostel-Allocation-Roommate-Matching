@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Types } from "mongoose";
 import { apiHandler } from "@/lib/api/handler.js";
 import { GroupRepository, AllocationCycleRepository, EntityNotFoundError } from "@hostelhub/db";
 import { ApiProblemError } from "@/lib/api/errors.js";
@@ -36,7 +37,7 @@ export const POST = apiHandler(
         title: "Window Closed",
         status: 422,
         detail: "Group creation is locked because the application window is closed.",
-        code: "BAD_REQUEST" as any,
+        code: "BAD_REQUEST",
       });
     }
 
@@ -57,12 +58,12 @@ export const POST = apiHandler(
 
     const newGroup = await groupRepo.create({
       cycle_id: cycle._id,
-      leader_id: user.id as any,
+      leader_id: new Types.ObjectId(user.id),
       invite_code: inviteCode,
       status: "draft",
       members: [
         {
-          student_id: user.id as any,
+          student_id: new Types.ObjectId(user.id),
           email: user.email ?? "student@campus.edu",
           status: "accepted",
           joined_at: new Date(),

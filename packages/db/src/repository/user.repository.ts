@@ -10,10 +10,7 @@ export class UserRepository extends BaseRepository<UserDocument> {
   /**
    * Find a user by email within the scoped tenant institution.
    */
-  public async findByEmail(
-    email: string,
-    session?: ClientSession,
-  ): Promise<UserDocument | null> {
+  public async findByEmail(email: string, session?: ClientSession): Promise<UserDocument | null> {
     let query = this.model
       .findOne({
         email: email.toLowerCase().trim(),
@@ -57,5 +54,23 @@ export class UserRepository extends BaseRepository<UserDocument> {
     }
 
     return matches[0]!;
+  }
+
+  /**
+   * Update a user globally by ID across tenant boundaries (used during auth/mfa operations).
+   */
+  public static async updateUserGlobal(
+    userId: string | Types.ObjectId,
+    update: Record<string, unknown>,
+    session?: ClientSession,
+  ): Promise<UserDocument | null> {
+    let query = UserModel.findOneAndUpdate({ _id: userId }, update, { new: true }).select(
+      "+passwordHash +mfa.secret +mfa.backupCodes",
+    );
+
+    if (session) {
+      query = query.session(session);
+    }
+    return query.exec();
   }
 }

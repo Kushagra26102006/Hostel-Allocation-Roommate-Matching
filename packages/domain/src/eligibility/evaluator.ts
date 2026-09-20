@@ -31,9 +31,7 @@ export function evaluateExpression(
     case "in": {
       const factVal = facts[expr.fact];
       if (factVal === undefined || factVal === null || !Array.isArray(expr.value)) return false;
-      return expr.value.some(
-        (val) => String(val).toLowerCase() === String(factVal).toLowerCase(),
-      );
+      return expr.value.some((val) => String(val).toLowerCase() === String(factVal).toLowerCase());
     }
     case "gte": {
       const raw = facts[expr.fact];
@@ -54,8 +52,9 @@ export function evaluateExpression(
       return expr.rules.some((child) => evaluateExpression(facts, child, depth + 1));
     }
     case "not": {
-      if (expr.rule && "fact" in (expr.rule as any)) {
-        const rawVal = facts[(expr.rule as any).fact];
+      const childRule = expr.rule as { fact?: string } | undefined;
+      if (childRule && typeof childRule.fact === "string") {
+        const rawVal = facts[childRule.fact];
         if (rawVal === undefined || rawVal === null || rawVal === "") {
           return false;
         }
@@ -70,10 +69,7 @@ export function evaluateExpression(
 /**
  * Replaces placeholders in the reasonTemplate (e.g. "{feeCategory}") with actual values from facts.
  */
-export function formatReasonTemplate(
-  template: string,
-  facts: ApplicantFacts,
-): string {
+export function formatReasonTemplate(template: string, facts: ApplicantFacts): string {
   if (!template) return "";
   return template.replace(/\{(\w+)\}/g, (_, key) => {
     const val = facts[key];
@@ -85,10 +81,7 @@ export function formatReasonTemplate(
 /**
  * Evaluates a single policy rule against applicant facts.
  */
-export function evaluateRule(
-  facts: ApplicantFacts,
-  rule: PolicyRule,
-): RuleEvaluationResult {
+export function evaluateRule(facts: ApplicantFacts, rule: PolicyRule): RuleEvaluationResult {
   const passed = evaluateExpression(facts, rule.expression);
   const reason = formatReasonTemplate(rule.reasonTemplate, facts);
 
@@ -105,10 +98,7 @@ export function evaluateRule(
  * Pure evaluator — evaluates a complete RuleSet against applicant facts.
  * Returns overall eligible status and detailed rule-by-rule results.
  */
-export function evaluate(
-  facts: ApplicantFacts,
-  ruleSet: PolicyRuleSet,
-): EvaluationOutput {
+export function evaluate(facts: ApplicantFacts, ruleSet: PolicyRuleSet): EvaluationOutput {
   if (!ruleSet || !Array.isArray(ruleSet.rules) || ruleSet.rules.length === 0) {
     return { eligible: false, results: [] };
   }
@@ -150,7 +140,7 @@ export function describeExpression(expr: RuleExpression): string {
     case "and":
       return (expr.rules || []).map(describeExpression).join(" AND ");
     case "or":
-      return `(${ (expr.rules || []).map(describeExpression).join(" OR ") })`;
+      return `(${(expr.rules || []).map(describeExpression).join(" OR ")})`;
     case "not":
       return `NOT (${describeExpression(expr.rule)})`;
     default:

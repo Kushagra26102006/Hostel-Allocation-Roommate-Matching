@@ -42,12 +42,12 @@ export const DELETE = apiHandler(
         title: "Window Closed",
         status: 422,
         detail: "Group modification is locked because the application window is closed.",
-        code: "BAD_REQUEST" as any,
+        code: "BAD_REQUEST",
       });
     }
 
     // Remove user from members array
-    group.members = group.members.filter((m) => String(m.student_id) !== String(user.id)) as any;
+    group.members = group.members.filter((m) => String(m.student_id) !== String(user.id));
 
     if (group.members.length === 0) {
       group.status = "disbanded";

@@ -1,15 +1,7 @@
-import mongoose, { Schema, model, type Model, type Types } from "mongoose";
-import {
-  baseSchemaPlugin,
-  type BaseTenantDocument,
-} from "../plugins/base-schema.plugin.js";
+import mongoose, { Schema, model, type Model } from "mongoose";
+import { baseSchemaPlugin, type BaseTenantDocument } from "../plugins/base-schema.plugin.js";
 
-export type AllocationCycleStatus =
-  | "draft"
-  | "scheduled"
-  | "open"
-  | "closed"
-  | "archived";
+export type AllocationCycleStatus = "draft" | "scheduled" | "open" | "closed" | "archived";
 
 export interface QuotaBucket {
   name: string;
@@ -39,9 +31,7 @@ export interface IAllocationCycle {
   reminders_sent?: RemindersSent | undefined;
 }
 
-export interface AllocationCycleDocument
-  extends BaseTenantDocument,
-    IAllocationCycle {}
+export interface AllocationCycleDocument extends BaseTenantDocument, IAllocationCycle {}
 
 const quotaBucketSchema = new Schema<QuotaBucket>(
   {
@@ -111,10 +101,7 @@ const allocationCycleSchema = new Schema<AllocationCycleDocument>(
 
 allocationCycleSchema.plugin(baseSchemaPlugin);
 
-allocationCycleSchema.index(
-  { institution_id: 1, academic_year: 1, name: 1 },
-  { unique: true },
-);
+allocationCycleSchema.index({ institution_id: 1, academic_year: 1, name: 1 }, { unique: true });
 
 export const AllocationCycleModel: Model<AllocationCycleDocument> =
   (mongoose.models?.["AllocationCycle"] as Model<AllocationCycleDocument>) ||

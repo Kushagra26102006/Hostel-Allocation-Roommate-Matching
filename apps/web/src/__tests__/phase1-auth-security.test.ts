@@ -2,13 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Types } from "mongoose";
 import { UserModel } from "@hostelhub/db";
 import {
-  getWebEnv,
   parseEnv,
   webEnvSchema,
   validateProductionSecrets,
   resetWebEnvCache,
 } from "@hostelhub/shared";
-import { verifyTurnstileToken } from "@/lib/auth/turnstile";
 
 describe("Phase 1: Security & Auth Hardening Tests", () => {
   beforeEach(() => {
@@ -31,7 +29,7 @@ describe("Phase 1: Security & Auth Hardening Tests", () => {
       // Client attempts to update session with mfaPending: false
       const updatedToken = await jwtCallback!({
         token: { ...initialToken },
-        user: undefined as any,
+        user: undefined as never,
         trigger: "update",
         session: { mfaPending: false },
       });
@@ -48,13 +46,13 @@ describe("Phase 1: Security & Auth Hardening Tests", () => {
         id: "user123",
         mfaPending: false,
         roles: ["student"],
-        activeRole: "student" as any,
+        activeRole: "student",
       };
 
       // Client attempts to elevate activeRole to sys_admin
       const updatedToken = await jwtCallback!({
         token: { ...initialToken },
-        user: undefined as any,
+        user: undefined as never,
         trigger: "update",
         session: { activeRole: "sys_admin" },
       });
@@ -81,7 +79,7 @@ describe("Phase 1: Security & Auth Hardening Tests", () => {
       };
 
       expect(() => {
-        const parsed = parseEnv(webEnvSchema, validBaseEnv as any);
+        const parsed = parseEnv(webEnvSchema, validBaseEnv as unknown as Record<string, string>);
         validateProductionSecrets(parsed);
       }).toThrow(/production security error/i);
     });
@@ -97,14 +95,14 @@ describe("Phase 1: Security & Auth Hardening Tests", () => {
         status: "active",
       });
 
-      let err: any = null;
+      let err: { errors?: { roles?: unknown } } | null = null;
       try {
         await invalidUser.validate();
       } catch (e) {
-        err = e;
+        err = e as { errors?: { roles?: unknown } };
       }
       expect(err).not.toBeNull();
-      expect(err.errors.roles).toBeDefined();
+      expect(err?.errors?.roles).toBeDefined();
     });
 
     it("default JSON serialization excludes passwordHash and mfa secret", () => {

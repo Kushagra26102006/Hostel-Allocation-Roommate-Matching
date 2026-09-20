@@ -4,10 +4,10 @@ import { z } from "zod";
 import { Types, type ClientSession } from "mongoose";
 import {
   runInTransaction,
-  HostelModel,
-  BlockModel,
-  RoomModel,
-  BedModel,
+  HostelRepository,
+  BlockRepository,
+  RoomRepository,
+  BedRepository,
   type GenderPolicy,
   type HostelStatus,
   type RoomType,
@@ -23,30 +23,36 @@ export const inventoryRowSchema = z.object({
   blockName: z.string().min(1, "Block name is required"),
   floorNo: z.coerce.number().int(),
   wing: z.string().min(1, "Wing is required"),
-  liftAccess: z.preprocess((val) => {
-    if (typeof val === "boolean") return val;
-    if (typeof val === "string") {
-      return ["true", "yes", "1"].includes(val.toLowerCase().trim());
-    }
-    return false;
-  }, z.boolean()).default(false),
+  liftAccess: z
+    .preprocess((val) => {
+      if (typeof val === "boolean") return val;
+      if (typeof val === "string") {
+        return ["true", "yes", "1"].includes(val.toLowerCase().trim());
+      }
+      return false;
+    }, z.boolean())
+    .default(false),
   roomNumber: z.string().min(1, "Room number is required"),
   roomType: z.enum(["single", "double", "triple", "quad", "dorm"]).default("double"),
   capacity: z.coerce.number().int().min(1, "Capacity must be at least 1").default(2),
-  accessible: z.preprocess((val) => {
-    if (typeof val === "boolean") return val;
-    if (typeof val === "string") {
-      return ["true", "yes", "1"].includes(val.toLowerCase().trim());
-    }
-    return false;
-  }, z.boolean()).default(false),
-  ac: z.preprocess((val) => {
-    if (typeof val === "boolean") return val;
-    if (typeof val === "string") {
-      return ["true", "yes", "1"].includes(val.toLowerCase().trim());
-    }
-    return false;
-  }, z.boolean()).default(false),
+  accessible: z
+    .preprocess((val) => {
+      if (typeof val === "boolean") return val;
+      if (typeof val === "string") {
+        return ["true", "yes", "1"].includes(val.toLowerCase().trim());
+      }
+      return false;
+    }, z.boolean())
+    .default(false),
+  ac: z
+    .preprocess((val) => {
+      if (typeof val === "boolean") return val;
+      if (typeof val === "string") {
+        return ["true", "yes", "1"].includes(val.toLowerCase().trim());
+      }
+      return false;
+    }, z.boolean())
+    .default(false),
   roomStatus: z.enum(["available", "full", "maintenance", "reserved"]).default("available"),
   bedNo: z.string().min(1, "Bed number is required"),
   bedStatus: z.enum(["available", "held", "out_of_service", "occupied"]).default("available"),
@@ -181,8 +187,9 @@ export async function parseXlsx(
   columnMapping?: Record<string, string>,
 ): Promise<Record<string, unknown>[]> {
   const workbook = new ExcelJS.Workbook();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await workbook.xlsx.load(buffer as any);
+  await workbook.xlsx.load(
+    buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer,
+  );
 
   const worksheet = workbook.worksheets[0];
   if (!worksheet) return [];
@@ -267,9 +274,7 @@ export async function executeInventoryImport(
 ): Promise<ImportResult> {
   const startTime = performance.now();
   const instObjectId =
-    typeof institutionId === "string"
-      ? new Types.ObjectId(institutionId)
-      : institutionId;
+    typeof institutionId === "string" ? new Types.ObjectId(institutionId) : institutionId;
 
   // 1. Validate every row
   const { validRows, errors } = validateRows(rows);
@@ -290,9 +295,8 @@ export async function executeInventoryImport(
 
   // 2. Compute potential creates vs updates
   // Pre-load existing beds to count creates vs updates and resolve entities
-  const existingBeds = await BedModel.find({
-    institution_id: instObjectId,
-  }).select("_id room_id bed_no").lean();
+  const bedRepo = new BedRepository(instObjectId);
+  const existingBeds = await bedRepo.find({});
 
   const existingBedSet = new Set<string>();
   existingBeds.forEach((b) => {
@@ -323,31 +327,33 @@ export async function executeInventoryImport(
     const blockMap = new Map<string, Types.ObjectId>();
     const roomMap = new Map<string, Types.ObjectId>();
 
+    const hostelRepo = new HostelRepository(instObjectId);
+    const blockRepo = new BlockRepository(instObjectId);
+    const roomRepo = new RoomRepository(instObjectId);
+
     // Step A: Upsert Hostels
     for (const row of validRows) {
       if (!hostelMap.has(row.hostelName)) {
-        const existingHostel = await HostelModel.findOne({
-          institution_id: instObjectId,
-          name: row.hostelName,
-        }).session(session);
+        const existingHostel = await hostelRepo.findOne(
+          { name: row.hostelName },
+          undefined,
+          undefined,
+          session,
+        );
 
         if (existingHostel) {
           hostelMap.set(row.hostelName, existingHostel._id as Types.ObjectId);
         } else {
-          const [newHostel] = await HostelModel.create(
-            [
-              {
-                institution_id: instObjectId,
-                name: row.hostelName,
-                gender_policy: row.genderPolicy as GenderPolicy,
-                address: row.address,
-                status: row.status as HostelStatus,
-                version: 1,
-              },
-            ],
-            { session },
+          const newHostel = await hostelRepo.create(
+            {
+              name: row.hostelName,
+              gender_policy: row.genderPolicy as GenderPolicy,
+              address: row.address,
+              status: row.status as HostelStatus,
+            },
+            session,
           );
-          hostelMap.set(row.hostelName, newHostel!._id as Types.ObjectId);
+          hostelMap.set(row.hostelName, newHostel._id as Types.ObjectId);
         }
       }
     }
@@ -358,31 +364,31 @@ export async function executeInventoryImport(
       const blockKey = `${hostelId.toString()}::${row.blockName}::${row.floorNo}`;
 
       if (!blockMap.has(blockKey)) {
-        const existingBlock = await BlockModel.findOne({
-          institution_id: instObjectId,
-          hostel_id: hostelId,
-          name: row.blockName,
-          floor_no: row.floorNo,
-        }).session(session);
+        const existingBlock = await blockRepo.findOne(
+          {
+            hostel_id: hostelId,
+            name: row.blockName,
+            floor_no: row.floorNo,
+          },
+          undefined,
+          undefined,
+          session,
+        );
 
         if (existingBlock) {
           blockMap.set(blockKey, existingBlock._id as Types.ObjectId);
         } else {
-          const [newBlock] = await BlockModel.create(
-            [
-              {
-                institution_id: instObjectId,
-                hostel_id: hostelId,
-                name: row.blockName,
-                floor_no: row.floorNo,
-                wing: row.wing,
-                lift_access: row.liftAccess,
-                version: 1,
-              },
-            ],
-            { session },
+          const newBlock = await blockRepo.create(
+            {
+              hostel_id: hostelId,
+              name: row.blockName,
+              floor_no: row.floorNo,
+              wing: row.wing,
+              lift_access: row.liftAccess,
+            },
+            session,
           );
-          blockMap.set(blockKey, newBlock!._id as Types.ObjectId);
+          blockMap.set(blockKey, newBlock._id as Types.ObjectId);
         }
       }
     }
@@ -395,33 +401,33 @@ export async function executeInventoryImport(
       const roomKey = `${blockId.toString()}::${row.roomNumber}`;
 
       if (!roomMap.has(roomKey)) {
-        const existingRoom = await RoomModel.findOne({
-          institution_id: instObjectId,
-          block_id: blockId,
-          room_number: row.roomNumber,
-        }).session(session);
+        const existingRoom = await roomRepo.findOne(
+          {
+            block_id: blockId,
+            room_number: row.roomNumber,
+          },
+          undefined,
+          undefined,
+          session,
+        );
 
         if (existingRoom) {
           roomMap.set(roomKey, existingRoom._id as Types.ObjectId);
         } else {
-          const [newRoom] = await RoomModel.create(
-            [
-              {
-                institution_id: instObjectId,
-                block_id: blockId,
-                hostel_id: hostelId,
-                room_number: row.roomNumber,
-                room_type: row.roomType as RoomType,
-                capacity: row.capacity,
-                accessible: row.accessible,
-                ac: row.ac,
-                status: row.roomStatus as RoomStatus,
-                version: 1,
-              },
-            ],
-            { session },
+          const newRoom = await roomRepo.create(
+            {
+              block_id: blockId,
+              hostel_id: hostelId,
+              room_number: row.roomNumber,
+              room_type: row.roomType as RoomType,
+              capacity: row.capacity,
+              accessible: row.accessible,
+              ac: row.ac,
+              status: row.roomStatus as RoomStatus,
+            },
+            session,
           );
-          roomMap.set(roomKey, newRoom!._id as Types.ObjectId);
+          roomMap.set(roomKey, newRoom._id as Types.ObjectId);
         }
       }
     }
@@ -464,9 +470,10 @@ export async function executeInventoryImport(
     });
 
     // Execute bulkWrite in transaction
-    const bulkRes = await BedModel.bulkWrite(bedOps, { session });
-    createdCount = bulkRes.upsertedCount;
-    updatedCount = bulkRes.modifiedCount;
+    const bulkRes = (await bedRepo.bulkWrite(bedOps, session)) as
+      { upsertedCount?: number; modifiedCount?: number } | undefined;
+    createdCount = bulkRes?.upsertedCount ?? 0;
+    updatedCount = bulkRes?.modifiedCount ?? 0;
   });
 
   return {

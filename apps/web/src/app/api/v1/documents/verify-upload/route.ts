@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler.js";
 import { ApplicationDocumentRepository, ApplicationRepository } from "@hostelhub/db";
@@ -71,7 +72,9 @@ export const POST = apiHandler(
     let buffer: Buffer;
 
     try {
-      const headRes = await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: body.storage_key }));
+      const headRes = await s3.send(
+        new HeadObjectCommand({ Bucket: bucket, Key: body.storage_key }),
+      );
       sizeBytes = headRes.ContentLength ?? 0;
 
       const getRes = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: body.storage_key }));
@@ -80,15 +83,17 @@ export const POST = apiHandler(
       }
       const byteArray = await getRes.Body.transformToByteArray();
       buffer = Buffer.from(byteArray);
-    } catch (err: any) {
-      if (process.env.NODE_ENV !== "production" && (body as any).file_base64) {
-        buffer = Buffer.from((body as any).file_base64, "base64");
+    } catch (err: unknown) {
+      const storageErrMsg = err instanceof Error ? err.message : String(err);
+      const fallbackBody = body as { file_base64?: string };
+      if (process.env.NODE_ENV !== "production" && fallbackBody.file_base64) {
+        buffer = Buffer.from(fallbackBody.file_base64, "base64");
         sizeBytes = buffer.length;
       } else {
         throw new ApiProblemError({
           title: "Storage Error",
           status: 400,
-          detail: `Failed to fetch uploaded file from storage: ${err.message}`,
+          detail: `Failed to fetch uploaded file from storage: ${storageErrMsg}`,
           code: "BAD_REQUEST",
         });
       }
@@ -120,8 +125,8 @@ export const POST = apiHandler(
     // 6. Save to database
     const docRepo = new ApplicationDocumentRepository(institution_id);
     const doc = await docRepo.create({
-      application_id: body.application_id as any,
-      student_id: user.id as any,
+      application_id: new Types.ObjectId(body.application_id),
+      student_id: new Types.ObjectId(user.id),
       type: body.type,
       storage_key: body.storage_key,
       original_name: body.original_name,

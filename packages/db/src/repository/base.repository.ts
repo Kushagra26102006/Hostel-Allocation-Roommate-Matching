@@ -8,11 +8,7 @@ import {
   type UpdateQuery,
 } from "mongoose";
 import type { BaseTenantDocument } from "../plugins/base-schema.plugin.js";
-import {
-  EntityNotFoundError,
-  TenantRequiredError,
-  VersionConflictError,
-} from "./errors.js";
+import { EntityNotFoundError, TenantRequiredError, VersionConflictError } from "./errors.js";
 
 export interface PaginationOptions<T> {
   limit?: number;
@@ -56,9 +52,7 @@ export class BaseRepository<TDoc extends BaseTenantDocument> {
       institutionId: Types.ObjectId,
     ) => this;
     const objectId =
-      typeof institutionId === "string"
-        ? new Types.ObjectId(institutionId)
-        : institutionId;
+      typeof institutionId === "string" ? new Types.ObjectId(institutionId) : institutionId;
     return new ctor(this.model, objectId);
   }
 
@@ -138,10 +132,7 @@ export class BaseRepository<TDoc extends BaseTenantDocument> {
   /**
    * Create a new document automatically scoped to the tenant.
    */
-  public async create(
-    doc: Partial<TDoc>,
-    session?: ClientSession,
-  ): Promise<TDoc> {
+  public async create(doc: Partial<TDoc>, session?: ClientSession): Promise<TDoc> {
     const payload = {
       ...doc,
       institution_id: this.getInstitutionId(),
@@ -158,6 +149,31 @@ export class BaseRepository<TDoc extends BaseTenantDocument> {
 
     const created = await this.model.create(payload);
     return created as unknown as TDoc;
+  }
+
+  /**
+   * Update a document by ID within the tenant.
+   */
+  public async update(
+    id: string | Types.ObjectId,
+    updateData: UpdateQuery<TDoc>,
+    session?: ClientSession,
+  ): Promise<TDoc | null> {
+    const objectId = typeof id === "string" ? new Types.ObjectId(id) : id;
+    const filter = {
+      _id: objectId,
+      institution_id: this.getInstitutionId(),
+    } as unknown as FilterQuery<TDoc>;
+
+    let query = this.model.findOneAndUpdate(filter, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (session) {
+      query = query.session(session);
+    }
+    return query.exec();
   }
 
   /**
@@ -204,10 +220,12 @@ export class BaseRepository<TDoc extends BaseTenantDocument> {
     }
 
     // Determine whether entity does not exist or version conflict occurred
-    let checkQuery = this.model.findOne({
-      _id: objectId,
-      institution_id: this.getInstitutionId(),
-    } as unknown as FilterQuery<TDoc>).select("version");
+    let checkQuery = this.model
+      .findOne({
+        _id: objectId,
+        institution_id: this.getInstitutionId(),
+      } as unknown as FilterQuery<TDoc>)
+      .select("version");
 
     if (session) {
       checkQuery = checkQuery.session(session);
@@ -216,11 +234,7 @@ export class BaseRepository<TDoc extends BaseTenantDocument> {
     const existing = await checkQuery.lean().exec();
     if (existing) {
       const currentVersion = (existing as unknown as { version: number }).version;
-      throw new VersionConflictError(
-        String(id),
-        expectedVersion,
-        currentVersion,
-      );
+      throw new VersionConflictError(String(id), expectedVersion, currentVersion);
     }
 
     throw new EntityNotFoundError(String(id), this.model.modelName);
@@ -307,9 +321,7 @@ export class BaseRepository<TDoc extends BaseTenantDocument> {
     let nextCursor: string | null = null;
     if (hasNextPage && items.length > 0) {
       const lastItem = items[items.length - 1]!;
-      const lastSortVal = (lastItem as unknown as Record<string, unknown>)[
-        sortField
-      ];
+      const lastSortVal = (lastItem as unknown as Record<string, unknown>)[sortField];
       const payload: CursorPayload = {
         id: (lastItem._id as Types.ObjectId).toString(),
         sortValue: lastSortVal,

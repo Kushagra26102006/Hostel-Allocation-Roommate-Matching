@@ -1,8 +1,5 @@
 import { Types, type ClientSession, type FilterQuery } from "mongoose";
-import {
-  ApplicationModel,
-  type ApplicationDocument,
-} from "../models/application.model.js";
+import { ApplicationModel, type ApplicationDocument } from "../models/application.model.js";
 import { BaseRepository } from "./base.repository.js";
 
 export class ApplicationRepository extends BaseRepository<ApplicationDocument> {
@@ -40,5 +37,24 @@ export class ApplicationRepository extends BaseRepository<ApplicationDocument> {
     if (session) query = query.session(session);
     const result = await query.exec();
     return result as ApplicationDocument[];
+  }
+
+  public async updateEligibilityResult(
+    applicationId: string | Types.ObjectId,
+    eligible: boolean,
+    reasons: string[],
+    session?: ClientSession,
+  ): Promise<ApplicationDocument | null> {
+    const filter: FilterQuery<ApplicationDocument> = {
+      _id: typeof applicationId === "string" ? new Types.ObjectId(applicationId) : applicationId,
+      institution_id: this.getInstitutionId(),
+    };
+    let query = this.model.findOneAndUpdate(
+      filter,
+      { $set: { eligibility_result: { eligible, reasons } } },
+      { new: true },
+    );
+    if (session) query = query.session(session);
+    return query.exec() as Promise<ApplicationDocument | null>;
   }
 }

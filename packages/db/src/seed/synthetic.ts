@@ -58,10 +58,9 @@ export async function generateSyntheticData(
   const applicantCount = options.applicants ?? 8000;
   const bedTargetCount = options.beds ?? 8000;
   const seedValue = options.seed ?? 42;
-  const isReset = options.reset ?? false;
   const silent = options.silent ?? false;
 
-  const log = (...args: any[]) => {
+  const log = (...args: unknown[]) => {
     if (!silent) console.log(...args);
   };
 
@@ -127,17 +126,14 @@ export async function generateSyntheticData(
     { name: "Aryabhata Research Hostel (Coed)", gender_policy: "coed" },
   ];
 
-  const hostelDocs: any[] = [];
-  const blockDocs: any[] = [];
-  const roomDocs: any[] = [];
-  const bedDocs: any[] = [];
+  const hostelDocs: Record<string, unknown>[] = [];
+  const blockDocs: Record<string, unknown>[] = [];
+  const roomDocs: Record<string, unknown>[] = [];
+  const bedDocs: Record<string, unknown>[] = [];
 
   let generatedBedCount = 0;
   let accessibleBedsCount = 0;
   let outOfServiceBedsCount = 0;
-
-  // Compute structure targeting bedTargetCount
-  const bedsPerHostelTarget = Math.ceil(bedTargetCount / hostelConfigs.length);
 
   for (let hIdx = 0; hIdx < hostelConfigs.length; hIdx++) {
     const config = hostelConfigs[hIdx]!;
@@ -153,7 +149,8 @@ export async function generateSyntheticData(
 
     const blocksInHostel = 3;
     const totalFloors = 10;
-    const roomsPerFloor = Math.ceil(bedTargetCount / (hostelConfigs.length * blocksInHostel * totalFloors * 1.9)) + 5;
+    const roomsPerFloor =
+      Math.ceil(bedTargetCount / (hostelConfigs.length * blocksInHostel * totalFloors * 1.9)) + 5;
 
     for (let bIdx = 0; bIdx < blocksInHostel; bIdx++) {
       const bId = makeObjectId(`block-${hIdx}`, bIdx);
@@ -240,7 +237,9 @@ export async function generateSyntheticData(
     }
   }
 
-  log(`✓ Generated Inventory: ${hostelDocs.length} Hostels, ${blockDocs.length} Blocks, ${roomDocs.length} Rooms, ${bedDocs.length} Beds.`);
+  log(
+    `✓ Generated Inventory: ${hostelDocs.length} Hostels, ${blockDocs.length} Blocks, ${roomDocs.length} Rooms, ${bedDocs.length} Beds.`,
+  );
 
   // 4. Generate Allocation Cycle
   const cycleId = makeObjectId("cycle", 1);
@@ -262,11 +261,11 @@ export async function generateSyntheticData(
   };
 
   // 5. Generate Applicants (Users, Applications, Preferences, Groups, Encrypted Questionnaires)
-  const userDocs: any[] = [];
-  const appDocs: any[] = [];
-  const prefDocs: any[] = [];
-  const consentDocs: any[] = [];
-  const compatibilityDocs: any[] = [];
+  const userDocs: Record<string, unknown>[] = [];
+  const appDocs: Record<string, unknown>[] = [];
+  const prefDocs: Record<string, unknown>[] = [];
+  const consentDocs: Record<string, unknown>[] = [];
+  const compatibilityDocs: Record<string, unknown>[] = [];
 
   const programmes = ["BTech", "MTech", "MBA", "PhD"];
   const years = [1, 2, 3, 4];
@@ -303,7 +302,8 @@ export async function generateSyntheticData(
       institution_id: instId,
       email,
       name: `${firstName} ${lastName}`,
-      passwordHash: "$argon2id$v=19$m=65536,p=4,t=3$/aEDYPkaP7x/AkWVbdI6bA$IAHpSXfJvy1fKgpbRECs3Yq5gjmIp+QPtdCB0ofSch0",
+      passwordHash:
+        "$argon2id$v=19$m=65536,p=4,t=3$/aEDYPkaP7x/AkWVbdI6bA$IAHpSXfJvy1fKgpbRECs3Yq5gjmIp+QPtdCB0ofSch0",
       roles: ["student"],
       status: "active",
       is_synthetic: true,
@@ -356,14 +356,38 @@ export async function generateSyntheticData(
 
     // Questionnaire & Consent (Correlated responses)
     const answers: QuestionnaireAnswers = {
-      sleep: { value: faker.number.int({ min: 1, max: 5 }), importance: faker.number.int({ min: 1, max: 3 }) },
-      study: { value: faker.number.int({ min: 1, max: 5 }), importance: faker.number.int({ min: 1, max: 3 }) },
-      tidiness: { value: faker.number.int({ min: 1, max: 5 }), importance: faker.number.int({ min: 1, max: 3 }) },
-      noise: { value: faker.number.int({ min: 1, max: 5 }), importance: faker.number.int({ min: 1, max: 3 }) },
-      guests: { value: faker.number.int({ min: 1, max: 5 }), importance: faker.number.int({ min: 1, max: 3 }) },
-      temperature: { value: faker.number.int({ min: 1, max: 5 }), importance: faker.number.int({ min: 1, max: 3 }) },
-      social: { value: faker.number.int({ min: 1, max: 5 }), importance: faker.number.int({ min: 1, max: 3 }) },
-      sharing: { value: faker.number.int({ min: 1, max: 5 }), importance: faker.number.int({ min: 1, max: 3 }) },
+      sleep: {
+        value: faker.number.int({ min: 1, max: 5 }),
+        importance: faker.number.int({ min: 1, max: 3 }),
+      },
+      study: {
+        value: faker.number.int({ min: 1, max: 5 }),
+        importance: faker.number.int({ min: 1, max: 3 }),
+      },
+      tidiness: {
+        value: faker.number.int({ min: 1, max: 5 }),
+        importance: faker.number.int({ min: 1, max: 3 }),
+      },
+      noise: {
+        value: faker.number.int({ min: 1, max: 5 }),
+        importance: faker.number.int({ min: 1, max: 3 }),
+      },
+      guests: {
+        value: faker.number.int({ min: 1, max: 5 }),
+        importance: faker.number.int({ min: 1, max: 3 }),
+      },
+      temperature: {
+        value: faker.number.int({ min: 1, max: 5 }),
+        importance: faker.number.int({ min: 1, max: 3 }),
+      },
+      social: {
+        value: faker.number.int({ min: 1, max: 5 }),
+        importance: faker.number.int({ min: 1, max: 3 }),
+      },
+      sharing: {
+        value: faker.number.int({ min: 1, max: 5 }),
+        importance: faker.number.int({ min: 1, max: 3 }),
+      },
       smoking: {
         value: faker.number.float({ min: 0, max: 1 }) < 0.85 ? "non_smoker" : "smoker",
         importance: faker.number.int({ min: 1, max: 3 }),
@@ -396,7 +420,7 @@ export async function generateSyntheticData(
   log(`✓ Generated ${userDocs.length} Applicants & Encrypted Questionnaires.`);
 
   // 6. Generate Roommate Groups (~10% of applicants) + Edge Cases
-  const groupDocs: any[] = [];
+  const groupDocs: Record<string, unknown>[] = [];
   const groupableStudents = userDocs.slice(100, Math.floor(applicantCount * 0.1) + 100);
 
   let groupIdx = 0;
@@ -453,8 +477,18 @@ export async function generateSyntheticData(
     leader_id: dbStudentA._id,
     invite_code: `GRP-DEALBREAKER-PAIR-${seedValue}`,
     members: [
-      { student_id: dbStudentA._id, email: dbStudentA.email, status: "accepted", joined_at: new Date() },
-      { student_id: dbStudentB._id, email: dbStudentB.email, status: "accepted", joined_at: new Date() },
+      {
+        student_id: dbStudentA._id,
+        email: dbStudentA.email,
+        status: "accepted",
+        joined_at: new Date(),
+      },
+      {
+        student_id: dbStudentB._id,
+        email: dbStudentB.email,
+        status: "accepted",
+        joined_at: new Date(),
+      },
     ],
     status: "confirmed",
   });
@@ -463,12 +497,12 @@ export async function generateSyntheticData(
   const encA = encryptPayload(
     { smoking: { value: "smoker", importance: 3, dealBreaker: true } },
     instId.toString(),
-    dbStudentA._id.toString(),
+    (dbStudentA._id as Types.ObjectId).toString(),
   );
   const encB = encryptPayload(
     { smoking: { value: "non_smoker", importance: 3, dealBreaker: true } },
     instId.toString(),
-    dbStudentB._id.toString(),
+    (dbStudentB._id as Types.ObjectId).toString(),
   );
 
   compatibilityDocs[15] = {
@@ -492,7 +526,10 @@ export async function generateSyntheticData(
   log("⚡ Executing high-speed bulk database operations...");
   const bulkBatchSize = 2000;
 
-  const bulkInsert = async (model: any, docs: any[]) => {
+  const bulkInsert = async (
+    model: { insertMany: (docs: unknown[], options?: unknown) => Promise<unknown> },
+    docs: unknown[],
+  ) => {
     for (let i = 0; i < docs.length; i += bulkBatchSize) {
       const chunk = docs.slice(i, i + bulkBatchSize);
       await model.insertMany(chunk, { ordered: false });
@@ -514,7 +551,7 @@ export async function generateSyntheticData(
   await bulkInsert(ConsentRecordModel, consentDocs);
   await bulkInsert(CompatibilityResponseModel, compatibilityDocs);
 
-  const durationSeconds = Math.round((Date.now() - startTime) / 1000 * 100) / 100;
+  const durationSeconds = Math.round(((Date.now() - startTime) / 1000) * 100) / 100;
 
   // Compute deterministic hash of generated counts & metadata
   const summaryRaw = JSON.stringify({

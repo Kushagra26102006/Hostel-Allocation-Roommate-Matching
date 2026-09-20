@@ -1,13 +1,20 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes } from "crypto";
+import { Types } from "mongoose";
 import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler.js";
-import { ApplicationRepository, AllocationCycleRepository, EntityNotFoundError } from "@hostelhub/db";
+import {
+  ApplicationRepository,
+  AllocationCycleRepository,
+  EntityNotFoundError,
+} from "@hostelhub/db";
 import { paginationQuerySchema } from "@/lib/api/pagination.js";
 import { ApiProblemError } from "@/lib/api/errors.js";
 
 const applicationQuerySchema = paginationQuerySchema.extend({
   cycle_id: z.string().optional(),
-  status: z.enum(["draft", "submitted", "under_review", "approved", "rejected", "waitlisted"]).optional(),
+  status: z
+    .enum(["draft", "submitted", "under_review", "approved", "rejected", "waitlisted"])
+    .optional(),
 });
 
 const createApplicationSchema = z.object({
@@ -27,7 +34,9 @@ export const GET = apiHandler(
     const filter: Record<string, unknown> = {};
 
     // Object-level filter: if student, limit to student's own applications
-    const isStudent = user?.roles.includes("student") && !user?.roles.some((r) => ["hostel_admin", "warden", "sys_admin"].includes(r));
+    const isStudent =
+      user?.roles.includes("student") &&
+      !user?.roles.some((r) => ["hostel_admin", "warden", "sys_admin"].includes(r));
     if (isStudent && user) {
       filter.student_id = user.id;
     }
@@ -35,15 +44,12 @@ export const GET = apiHandler(
     if (query.cycle_id) filter.cycle_id = query.cycle_id;
     if (query.status) filter.status = query.status;
 
-    const result = await repo.paginate(
-      filter,
-      {
-        ...(query.limit ? { limit: query.limit } : {}),
-        ...(query.cursor ? { cursor: query.cursor } : {}),
-        sortField: (query.sortField as "_id") ?? "_id",
-        sortOrder: query.sortOrder ?? "desc",
-      },
-    );
+    const result = await repo.paginate(filter, {
+      ...(query.limit ? { limit: query.limit } : {}),
+      ...(query.cursor ? { cursor: query.cursor } : {}),
+      sortField: (query.sortField as "_id") ?? "_id",
+      sortOrder: query.sortOrder ?? "desc",
+    });
 
     return result;
   },
@@ -78,7 +84,7 @@ export const POST = apiHandler(
         title: "Window Closed",
         status: 422,
         detail: "Allocation cycle window is closed for new applications.",
-        code: "BAD_REQUEST" as any,
+        code: "BAD_REQUEST",
       });
     }
 
@@ -96,8 +102,8 @@ export const POST = apiHandler(
 
     try {
       const newApp = await appRepo.create({
-        cycle_id: cycle._id,
-        student_id: user.id as any,
+        cycle_id: new Types.ObjectId(cycle._id),
+        student_id: new Types.ObjectId(user.id),
         reference_number: refNum,
         status: "draft",
         eligibility_result: { eligible: true, reasons: [] },
@@ -106,8 +112,9 @@ export const POST = apiHandler(
       });
 
       return newApp;
-    } catch (err: any) {
-      if (err?.code === 11000 || err?.name === "MongoServerError") {
+    } catch (err: unknown) {
+      const mongoErr = err as { code?: number; name?: string };
+      if (mongoErr?.code === 11000 || mongoErr?.name === "MongoServerError") {
         const raceExisting = await appRepo.findByStudentAndCycle(user.id, body.cycle_id);
         if (raceExisting) return raceExisting;
       }

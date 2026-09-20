@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler.js";
 import { PolicyRuleSetRepository } from "@hostelhub/db";
+import type { PolicyRule } from "@hostelhub/domain";
 import { paginationQuerySchema } from "@/lib/api/pagination.js";
 
 const ruleSetQuerySchema = paginationQuerySchema.extend({
@@ -9,19 +10,21 @@ const ruleSetQuerySchema = paginationQuerySchema.extend({
 
 const createRuleSetSchema = z.object({
   name: z.string().min(1, "Rule set name is required"),
-  rules: z.array(
-    z.object({
-      id: z.string().min(1),
-      name: z.string().min(1),
-      expression: z.record(z.unknown()),
-      reasonTemplate: z.string().min(1),
-      policyRef: z.string().min(1),
-      owner: z.string().default("hostel_admin"),
-      effectiveFrom: z.string().or(z.date()).optional(),
-      effectiveTo: z.string().or(z.date()).optional(),
-      version: z.number().default(1),
-    }),
-  ).default([]),
+  rules: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        name: z.string().min(1),
+        expression: z.record(z.unknown()),
+        reasonTemplate: z.string().min(1),
+        policyRef: z.string().min(1),
+        owner: z.string().default("hostel_admin"),
+        effectiveFrom: z.string().or(z.date()).optional(),
+        effectiveTo: z.string().or(z.date()).optional(),
+        version: z.number().default(1),
+      }),
+    )
+    .default([]),
 });
 
 export const GET = apiHandler(
@@ -35,15 +38,12 @@ export const GET = apiHandler(
     const filter: Record<string, unknown> = {};
     if (query.name) filter.name = query.name;
 
-    const result = await repo.paginate(
-      filter,
-      {
-        ...(query.limit ? { limit: query.limit } : {}),
-        ...(query.cursor ? { cursor: query.cursor } : {}),
-        sortField: (query.sortField as "_id") ?? "_id",
-        sortOrder: query.sortOrder ?? "desc",
-      },
-    );
+    const result = await repo.paginate(filter, {
+      ...(query.limit ? { limit: query.limit } : {}),
+      ...(query.cursor ? { cursor: query.cursor } : {}),
+      sortField: (query.sortField as "_id") ?? "_id",
+      sortOrder: query.sortOrder ?? "desc",
+    });
 
     return result;
   },
@@ -62,7 +62,7 @@ export const POST = apiHandler(
       name: body.name,
       version: 1,
       is_locked: false,
-      rules: body.rules as any,
+      rules: body.rules as unknown as PolicyRule[],
     });
     return ruleSet;
   },

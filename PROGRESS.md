@@ -36,8 +36,17 @@ Tracks milestones for the HostelHub project.
 
 ---
 
-## Milestone 1 — Domain modelling 🔜
+## Milestone 1 — Data Modelling & Security Hardening ✅
 
-- [ ] Define core aggregates: Hostel, Room, Booking, Guest
-- [ ] Add Zod schemas to `packages/domain`
-- [ ] Wire up Prisma in `packages/db`
+**Date:** 2026-09-21  
+**Status:** Complete
+
+### What was done
+
+- [x] Defined core aggregates and Mongoose schemas in `packages/db` with tenant safety (`institution_id`) plugin
+- [x] MFA & Session Security (Server-authoritative session, backup codes entropy/HMAC, Turnstile, HIBP password checks)
+- [x] Data Integrity & Authorization (Application lifecycle state transitions, AST eligibility evaluator rules, tenant safety)
+- [x] Document Storage & Malware Scanning (Magic byte validation, S3 presigned URLs, ClamAV adapter)
+- [x] BullMQ Worker & Audit Chains (Deduplicated reminders, atomic status transitions, HMAC-SHA-256 audit chain verification)
+- [x] API Platform & Error Handling (RFC 9457 Problem details, rate limiting, idempotency key reservations)
+- [x] Repository Layer Enforcements & ESLint boundary rules across monorepo

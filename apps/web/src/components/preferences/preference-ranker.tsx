@@ -18,9 +18,16 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { motion, AnimatePresence } from "framer-motion";
-import { GripVertical, ArrowUp, ArrowDown, MapPin, Sparkles, Check, AlertCircle, Loader2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import {
+  GripVertical,
+  ArrowUp,
+  ArrowDown,
+  MapPin,
+  Check,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -43,14 +50,9 @@ interface SortableItemProps {
 }
 
 function SortableHostelCard({ hostel, rank, total, onMoveUp, onMoveDown }: SortableItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: hostel.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: hostel.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -65,7 +67,9 @@ function SortableHostelCard({ hostel, rank, total, onMoveUp, onMoveDown }: Sorta
       transition={{ type: "spring", stiffness: 350, damping: 25 }}
       className={cn(
         "rounded-2xl border bg-surface/90 backdrop-blur-md p-4 shadow-md transition-shadow",
-        isDragging ? "border-brand-500 shadow-2xl z-20 scale-[1.02]" : "border-border/60 hover:border-border",
+        isDragging
+          ? "border-brand-500 shadow-2xl z-20 scale-[1.02]"
+          : "border-border/60 hover:border-border",
       )}
     >
       <div className="flex items-center gap-4">
@@ -108,7 +112,8 @@ function SortableHostelCard({ hostel, rank, total, onMoveUp, onMoveDown }: Sorta
             <span className="capitalize">{hostel.roomType} Seater</span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-brand-400" /> {hostel.walkingTimeMin} min walk to campus
+              <MapPin className="w-3 h-3 text-brand-400" /> {hostel.walkingTimeMin} min walk to
+              campus
             </span>
           </div>
           <p className="text-[11px] text-emerald-400 mt-1 font-medium">{hostel.availabilityHint}</p>
@@ -244,7 +249,9 @@ export function PreferenceRanker({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-text">Hostel Preference Ranking</h2>
-          <p className="text-xs text-muted">Drag cards or use arrow buttons to rank choices in order of preference.</p>
+          <p className="text-xs text-muted">
+            Drag cards or use arrow buttons to rank choices in order of preference.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {isSaving && (

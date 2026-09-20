@@ -23,7 +23,7 @@
     "@types/fast-json-stable-stringify": "^2.1.0",
     "mongodb-memory-server": "^10.1.4",
     "tsx": "^4.19.0",
-    "typescript": "*",
-    "vitest": "*"
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.1"
   }
 }

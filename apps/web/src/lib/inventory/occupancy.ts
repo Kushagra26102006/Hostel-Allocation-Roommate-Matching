@@ -1,9 +1,9 @@
-import mongoose, { Types } from "mongoose";
+import { Types } from "mongoose";
 import {
-  HostelModel,
-  BlockModel,
-  RoomModel,
-  BedModel,
+  HostelRepository,
+  BlockRepository,
+  RoomRepository,
+  BedRepository,
   type HostelDocument,
   type BlockDocument,
   type RoomDocument,
@@ -67,16 +67,15 @@ export async function getOccupancyMetrics(
   const queryFilter: Record<string, unknown> = {};
   if (institutionId) {
     queryFilter.institution_id =
-      typeof institutionId === "string"
-        ? new Types.ObjectId(institutionId)
-        : institutionId;
+      typeof institutionId === "string" ? new Types.ObjectId(institutionId) : institutionId;
   }
 
   let beds: BedDocument[] = [];
   try {
-    const bedsQuery = BedModel.find(queryFilter);
-    beds = typeof bedsQuery.lean === "function" ? await bedsQuery.lean<BedDocument[]>() : await bedsQuery;
-  } catch (err) {
+    const bedRepo = new BedRepository(institutionId ?? undefined);
+    beds = await bedRepo.find({});
+  } catch (err: unknown) {
+    if (err instanceof ApiProblemError) throw err;
     throw new ApiProblemError({
       type: "https://hostelhub.campus.edu/probs/service-unavailable",
       title: "Service Unavailable",
@@ -119,8 +118,7 @@ export async function getOccupancyMetrics(
   }
 
   const effectiveTotal = totalBeds - outOfServiceBeds;
-  const occupancyRate =
-    effectiveTotal > 0 ? Math.round((occupiedBeds / effectiveTotal) * 100) : 0;
+  const occupancyRate = effectiveTotal > 0 ? Math.round((occupiedBeds / effectiveTotal) * 100) : 0;
 
   const publicSummary: PublicOccupancySummary = {
     totalBeds,
@@ -142,14 +140,14 @@ export async function getOccupancyMetrics(
   let rooms: RoomDocument[] = [];
 
   try {
-    const hostelsQuery = HostelModel.find(queryFilter);
-    hostels = typeof hostelsQuery.lean === "function" ? await hostelsQuery.lean<HostelDocument[]>() : await hostelsQuery;
+    const inst = institutionId ?? undefined;
+    const hostelRepo = new HostelRepository(inst);
+    const blockRepo = new BlockRepository(inst);
+    const roomRepo = new RoomRepository(inst);
 
-    const blocksQuery = BlockModel.find(queryFilter);
-    blocks = typeof blocksQuery.lean === "function" ? await blocksQuery.lean<BlockDocument[]>() : await blocksQuery;
-
-    const roomsQuery = RoomModel.find(queryFilter);
-    rooms = typeof roomsQuery.lean === "function" ? await roomsQuery.lean<RoomDocument[]>() : await roomsQuery;
+    hostels = await hostelRepo.find({});
+    blocks = await blockRepo.find({});
+    rooms = await roomRepo.find({});
   } catch {
     // If details load fails, return summary with empty breakdowns
     return {

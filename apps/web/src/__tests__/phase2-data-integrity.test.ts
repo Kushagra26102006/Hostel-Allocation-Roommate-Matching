@@ -1,9 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { objectIdSchema, isValidObjectId } from "@/lib/api/validation";
+import { describe, it, expect, vi } from "vitest";
+import { objectIdSchema } from "@/lib/api/validation";
 import { PATCH as updateAppRoute } from "@/app/api/v1/applications/[id]/route";
-import { POST as submitAppRoute } from "@/app/api/v1/applications/[id]/submit/route";
 import { evaluateRuleSet } from "@hostelhub/domain";
-import { TenantRequiredError, BaseRepository, ApplicationRepository } from "@hostelhub/db";
+import {
+  TenantRequiredError,
+  BaseRepository,
+  ApplicationRepository,
+  type BaseTenantDocument,
+} from "@hostelhub/db";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn().mockResolvedValue({
@@ -34,21 +38,24 @@ describe("Phase 2 Data Integrity & Authorization Tests", () => {
         institution_id: "507f1f77bcf86cd799439010",
         status: "draft",
         version: 1,
-      } as any);
+      } as never);
 
       vi.spyOn(ApplicationRepository.prototype, "updateWithVersion").mockResolvedValue({
         _id: "507f1f77bcf86cd799439011",
         status: "draft",
-      } as any);
+      } as never);
 
-      const mockReq = new Request("http://localhost:3000/api/v1/applications/507f1f77bcf86cd799439011", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "approved" }),
-      });
+      const mockReq = new Request(
+        "http://localhost:3000/api/v1/applications/507f1f77bcf86cd799439011",
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "approved" }),
+        },
+      );
 
       // Pass route parameters and user context
-      const response = await updateAppRoute(mockReq as any, {
+      const response = await updateAppRoute(mockReq, {
         params: Promise.resolve({ id: "507f1f77bcf86cd799439011" }),
       });
 
@@ -78,21 +85,33 @@ describe("Phase 2 Data Integrity & Authorization Tests", () => {
       };
 
       // null fact
-      const resultNull = evaluateRuleSet({ distanceKm: null as any }, ruleSet as any);
+      const resultNull = evaluateRuleSet(
+        { distanceKm: null as unknown as number },
+        ruleSet as never,
+      );
       expect(resultNull.eligible).toBe(false);
       expect(resultNull.results[0]?.passed).toBe(false);
 
       // empty string fact
-      const resultEmptyStr = evaluateRuleSet({ distanceKm: "" as any }, ruleSet as any);
+      const resultEmptyStr = evaluateRuleSet(
+        { distanceKm: "" as unknown as number },
+        ruleSet as never,
+      );
       expect(resultEmptyStr.eligible).toBe(false);
       expect(resultEmptyStr.results[0]?.passed).toBe(false);
 
       // boolean false fact
-      const resultFalse = evaluateRuleSet({ distanceKm: false as any }, ruleSet as any);
+      const resultFalse = evaluateRuleSet(
+        { distanceKm: false as unknown as number },
+        ruleSet as never,
+      );
       expect(resultFalse.eligible).toBe(false);
 
       // array fact
-      const resultArray = evaluateRuleSet({ distanceKm: [50] as any }, ruleSet as any);
+      const resultArray = evaluateRuleSet(
+        { distanceKm: [50] as unknown as number },
+        ruleSet as never,
+      );
       expect(resultArray.eligible).toBe(false);
     });
 
@@ -119,7 +138,7 @@ describe("Phase 2 Data Integrity & Authorization Tests", () => {
       };
 
       // Missing fact 'hasHold' under 'not' should fail closed if fact is required/missing
-      const resultMissing = evaluateRuleSet({}, ruleSet as any);
+      const resultMissing = evaluateRuleSet({}, ruleSet as never);
       expect(resultMissing.eligible).toBe(false);
     });
 
@@ -139,21 +158,21 @@ describe("Phase 2 Data Integrity & Authorization Tests", () => {
         ],
       };
 
-      const resultExpired = evaluateRuleSet({ level: "UG" }, pastRuleSet as any);
+      const resultExpired = evaluateRuleSet({ level: "UG" }, pastRuleSet as never);
       expect(resultExpired.eligible).toBe(false);
     });
   });
 
   describe("2.4 Repository Tenant Safety", () => {
     it("throws TenantRequiredError when institutionId is empty or not provided", () => {
-      class TestRepo extends BaseRepository<any> {
-        protected model = {} as any;
+      class TestRepo extends BaseRepository<BaseTenantDocument> {
+        protected model = {} as never;
         public testGetInstitutionId() {
           return this.getInstitutionId();
         }
       }
 
-      const repoWithoutTenant = new TestRepo(undefined as any);
+      const repoWithoutTenant = new TestRepo(undefined as never);
       expect(() => repoWithoutTenant.testGetInstitutionId()).toThrow(TenantRequiredError);
     });
   });

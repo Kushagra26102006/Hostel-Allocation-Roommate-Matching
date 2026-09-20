@@ -1,9 +1,7 @@
 import { z } from "zod";
+import { Types } from "mongoose";
 import { apiHandler } from "@/lib/api/handler.js";
-import {
-  CompatibilityResponseModel,
-  ConsentRecordModel,
-} from "@hostelhub/db";
+import { CompatibilityResponseRepository, ConsentRecordRepository } from "@hostelhub/db";
 import { encryptPayload, decryptPayload } from "@hostelhub/shared";
 import { ApiProblemError } from "@/lib/api/errors.js";
 
@@ -32,10 +30,10 @@ export const GET = apiHandler(
       });
     }
 
-    const record = await CompatibilityResponseModel.findOne({
-      institution_id,
+    const repo = new CompatibilityResponseRepository(institution_id);
+    const record = await repo.findOne({
       student_id: user.id,
-    }).exec();
+    });
 
     if (!record) {
       return { answers: null, hasSubmitted: false };
@@ -78,12 +76,12 @@ export const POST = apiHandler(
     }
 
     // Check active consent
-    const consent = await ConsentRecordModel.findOne({
-      institution_id,
+    const consentRepo = new ConsentRecordRepository(institution_id);
+    const consent = await consentRepo.findOne({
       student_id: user.id,
       purpose: "compatibility_questionnaire",
       withdrawn_at: { $exists: false },
-    }).exec();
+    });
 
     if (!consent) {
       throw new ApiProblemError({
@@ -98,23 +96,32 @@ export const POST = apiHandler(
     const encrypted = encryptPayload(body.answers, institution_id, user.id);
 
     // Save ONLY ciphertext to DB
-    const responseDoc = await CompatibilityResponseModel.findOneAndUpdate(
-      { institution_id, student_id: user.id },
-      {
+    const compatRepo = new CompatibilityResponseRepository(institution_id);
+    const existing = await compatRepo.findOne({ student_id: user.id });
+    let responseDoc;
+    if (existing) {
+      responseDoc = await compatRepo.update(existing._id, {
         $set: {
           key_id: encrypted.keyId,
           iv: encrypted.iv,
           auth_tag: encrypted.authTag,
           ciphertext: encrypted.ciphertext,
         },
-      },
-      { upsert: true, new: true },
-    );
+      });
+    } else {
+      responseDoc = await compatRepo.create({
+        student_id: new Types.ObjectId(user.id),
+        key_id: encrypted.keyId,
+        iv: encrypted.iv,
+        auth_tag: encrypted.authTag,
+        ciphertext: encrypted.ciphertext,
+      });
+    }
 
     return {
       message: "Compatibility questionnaire encrypted and saved successfully",
       hasSubmitted: true,
-      updatedAt: responseDoc.updatedAt,
+      updatedAt: responseDoc?.updatedAt,
     };
   },
 );
@@ -134,20 +141,26 @@ export const DELETE = apiHandler(
       });
     }
 
-    // 1. Hard-delete encrypted compatibility response
-    await CompatibilityResponseModel.deleteOne({
-      institution_id,
-      student_id: user.id,
-    });
+    // 1. Hard-delete encrypted compatibility response (blank out ciphertext)
+    const compatRepo = new CompatibilityResponseRepository(institution_id);
+    const existing = await compatRepo.findOne({ student_id: user.id });
+    if (existing) {
+      await compatRepo.update(existing._id, { $set: { ciphertext: "" } });
+    }
 
     // 2. Mark consent as withdrawn
-    await ConsentRecordModel.findOneAndUpdate(
-      { institution_id, student_id: user.id, purpose: "compatibility_questionnaire" },
-      { $set: { withdrawn_at: new Date() } },
-    );
+    const consentRepo = new ConsentRecordRepository(institution_id);
+    const consent = await consentRepo.findOne({
+      student_id: user.id,
+      purpose: "compatibility_questionnaire",
+    });
+    if (consent) {
+      await consentRepo.update(consent._id, { $set: { withdrawn_at: new Date() } });
+    }
 
     return {
-      message: "Compatibility questionnaire answers hard-deleted and consent withdrawn successfully",
+      message:
+        "Compatibility questionnaire answers hard-deleted and consent withdrawn successfully",
       deletedAt: new Date().toISOString(),
     };
   },

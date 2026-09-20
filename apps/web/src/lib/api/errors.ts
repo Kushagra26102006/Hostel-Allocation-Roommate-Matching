@@ -58,7 +58,9 @@ export class ApiProblemError extends Error {
     super(input.detail);
     this.name = "ApiProblemError";
     this.problem = {
-      type: input.type ?? `https://hostelhub.campus.edu/probs/${input.code.toLowerCase().replace(/_/g, "-")}`,
+      type:
+        input.type ??
+        `https://hostelhub.campus.edu/probs/${input.code.toLowerCase().replace(/_/g, "-")}`,
       title: input.title,
       status: input.status,
       detail: input.detail,
@@ -233,7 +235,8 @@ export function toProblemResponse(
   if (
     error &&
     typeof error === "object" &&
-    ((error as any).code === 11000 || (error as any).name === "MongoServerError")
+    ((error as Record<string, unknown>).code === 11000 ||
+      (error as Record<string, unknown>).name === "MongoServerError")
   ) {
     return createProblemResponse({
       type: "https://hostelhub.campus.edu/probs/conflict",
@@ -250,7 +253,8 @@ export function toProblemResponse(
   if (
     error &&
     typeof error === "object" &&
-    ((error as any).name === "BSONError" || (error as any).name === "CastError")
+    ((error as Record<string, unknown>).name === "BSONError" ||
+      (error as Record<string, unknown>).name === "CastError")
   ) {
     return createProblemResponse({
       type: "https://hostelhub.campus.edu/probs/validation-failed",

@@ -21,7 +21,7 @@ export class ClamAvMalwareScanner implements ScanPort {
     this.timeoutMs = options?.timeoutMs ?? 10000;
   }
 
-  async scanBuffer(buffer: Buffer, fileName: string): Promise<ScanResult> {
+  async scanBuffer(buffer: Buffer, _fileName: string): Promise<ScanResult> {
     return new Promise((resolve, reject) => {
       const socket = net.createConnection({ host: this.host, port: this.port }, () => {
         // INSTREAM command protocol for ClamAV
@@ -78,7 +78,7 @@ export class ClamAvMalwareScanner implements ScanPort {
 }
 
 export class FallbackMalwareScanner implements ScanPort {
-  async scanBuffer(buffer: Buffer, fileName: string): Promise<ScanResult> {
+  async scanBuffer(_buffer: Buffer, _fileName: string): Promise<ScanResult> {
     if (process.env.NODE_ENV === "production") {
       throw new Error("Malware scanner is not configured in production. Failing closed.");
     }

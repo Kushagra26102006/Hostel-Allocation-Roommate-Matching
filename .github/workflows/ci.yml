@@ -1,0 +1,70 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build-and-test:
+    name: Build, Lint, Typecheck and Test
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping:1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Typecheck
+        run: pnpm typecheck
+
+      - name: Run Lint
+        run: pnpm lint
+
+      - name: Run Tests
+        env:
+          MONGODB_URI: "mongodb://localhost:27017/hostelhub?directConnection=true"
+          REDIS_URL: "redis://localhost:6379"
+          AUTH_SECRET: "hostelhub-ci-secret-32bytes-long!"
+          MASTER_ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+          ENCRYPTION_KEY_ID: "v1"
+          TURNSTILE_SECRET_KEY: "1x0000000000000000000000000000000AA"
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: "1x0000000000000000000000AA"
+        run: pnpm test
+
+      - name: Run i18n Check
+        run: pnpm i18n:check

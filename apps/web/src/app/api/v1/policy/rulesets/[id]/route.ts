@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler.js";
-import { PolicyRuleSetRepository, PolicyRuleSetModel, EntityNotFoundError } from "@hostelhub/db";
+import { PolicyRuleSetRepository, EntityNotFoundError } from "@hostelhub/db";
 import { ApiProblemError } from "@/lib/api/errors.js";
 
 const paramsSchema = z.object({
@@ -10,19 +10,21 @@ const paramsSchema = z.object({
 const updateRuleSetSchema = z.object({
   name: z.string().optional(),
   is_locked: z.boolean().optional(),
-  rules: z.array(
-    z.object({
-      id: z.string().min(1),
-      name: z.string().min(1),
-      expression: z.record(z.unknown()),
-      reasonTemplate: z.string().min(1),
-      policyRef: z.string().min(1),
-      owner: z.string().default("hostel_admin"),
-      effectiveFrom: z.string().or(z.date()).optional(),
-      effectiveTo: z.string().or(z.date()).optional(),
-      version: z.number().default(1),
-    }),
-  ).optional(),
+  rules: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        name: z.string().min(1),
+        expression: z.record(z.unknown()),
+        reasonTemplate: z.string().min(1),
+        policyRef: z.string().min(1),
+        owner: z.string().default("hostel_admin"),
+        effectiveFrom: z.string().or(z.date()).optional(),
+        effectiveTo: z.string().or(z.date()).optional(),
+        version: z.number().default(1),
+      }),
+    )
+    .optional(),
 });
 
 export const GET = apiHandler(
@@ -61,15 +63,11 @@ export const PATCH = apiHandler(
         title: "Rule Set Locked",
         status: 422,
         detail: "Policy rule set is locked and immutable once used in an allocation run.",
-        code: "BAD_REQUEST" as any,
+        code: "BAD_REQUEST",
       });
     }
 
-    const updated = await PolicyRuleSetModel.findOneAndUpdate(
-      { _id: params.id, institution_id },
-      { $set: body },
-      { new: true, runValidators: true },
-    );
+    const updated = await repo.update(params.id, body);
 
     return updated;
   },

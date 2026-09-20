@@ -1,24 +1,11 @@
 import NextAuth from "next-auth";
-import type { DefaultSession } from "next-auth";
+import type { DefaultSession, User, Account, Session } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import {
-  AuditService,
-  connectDb,
-  InstitutionRepository,
-  UserRepository,
-} from "@hostelhub/db";
+import { AuditService, connectDb, InstitutionRepository, UserRepository } from "@hostelhub/db";
 import { getWebEnv, type UserRole } from "@hostelhub/shared";
-import {
-  checkPasswordBreached,
-  validatePasswordLength,
-  verifyPassword,
-} from "@/lib/auth/password";
-import {
-  isLockedOut,
-  recordFailedAttempt,
-  resetFailedAttempts,
-} from "@/lib/auth/rate-limiter";
+import { checkPasswordBreached, validatePasswordLength, verifyPassword } from "@/lib/auth/password";
+import { isLockedOut, recordFailedAttempt, resetFailedAttempts } from "@/lib/auth/rate-limiter";
 import { verifyTurnstileToken } from "@/lib/auth/turnstile";
 
 declare module "next-auth" {
@@ -65,8 +52,12 @@ const providers = [
       const password = credentials?.["password"] as string | undefined;
       const turnstileToken = credentials?.["turnstileToken"] as string | undefined;
 
-      const clientIp =
-        (req?.headers as any)?.get?.("x-forwarded-for")?.split(",")[0]?.trim() ?? undefined;
+      const headers = req?.headers as unknown as Headers | Record<string, string> | undefined;
+      const xForwardedFor =
+        headers && "get" in headers && typeof headers.get === "function"
+          ? headers.get("x-forwarded-for")
+          : (headers as Record<string, string>)?.["x-forwarded-for"];
+      const clientIp = xForwardedFor?.split(",")[0]?.trim() ?? undefined;
 
       if (!email || !password) {
         throw new Error("Email and password are required.");
@@ -118,7 +109,10 @@ const providers = [
               institution_id: user.institution_id,
               actor: { email },
               action: "AUTH_LOCKOUT",
-              target: { failedCount: rec.failedCount, durationSeconds: rec.lockoutRemainingSeconds },
+              target: {
+                failedCount: rec.failedCount,
+                durationSeconds: rec.lockoutRemainingSeconds,
+              },
             });
           }
         }
@@ -220,7 +214,15 @@ export const authConfig = {
     },
   },
   callbacks: {
-    async signIn({ user, account, profile }: any) {
+    async signIn({
+      user,
+      account,
+      profile,
+    }: {
+      user: User;
+      account?: Account | null;
+      profile?: Record<string, unknown>;
+    }) {
       if (account?.provider === "google") {
         if (!profile?.email_verified) {
           return false;
@@ -263,7 +265,17 @@ export const authConfig = {
       }
       return true;
     },
-    async jwt({ token, user, trigger, session }: any) {
+    async jwt({
+      token,
+      user,
+      trigger,
+      session,
+    }: {
+      token: Record<string, unknown>;
+      user?: User;
+      trigger?: string;
+      session?: Record<string, unknown>;
+    }) {
       const now = Date.now();
 
       if (user) {
@@ -300,32 +312,31 @@ export const authConfig = {
       if (trigger === "update" && session) {
         // SERVER-AUTHORITATIVE MFA: Never copy session.mfaPending directly!
         // mfaPending can only be cleared if server-verified (e.g. verifiedViaServer flag set internally)
-        if (session.verifiedViaServer === true) {
+        if (session["verifiedViaServer"] === true) {
           token["mfaPending"] = false;
         }
 
         // SERVER-VALIDATED ROLE SWITCH: Only allow switching to a role present in user's token.roles
-        if (session.activeRole) {
+        if (session["activeRole"]) {
           const validRoles = (token["roles"] as UserRole[]) ?? [];
-          if (validRoles.includes(session.activeRole as UserRole)) {
-            token["activeRole"] = session.activeRole;
+          if (validRoles.includes(session["activeRole"] as UserRole)) {
+            token["activeRole"] = session["activeRole"];
           }
         }
       }
 
       return token;
     },
-    async session({ session, token }: any) {
+    async session({ session, token }: { session: Session; token: Record<string, unknown> }) {
       if (token["invalid"]) {
-        return null as any;
+        return null as unknown as Session;
       }
 
       if (token && session.user) {
         session.user.id = token["id"] as string;
         session.user.institution_id = token["institution_id"] as string;
         session.user.roles = (token["roles"] as UserRole[]) ?? ["student"];
-        session.user.hostelAssignments =
-          (token["hostelAssignments"] as string[]) ?? [];
+        session.user.hostelAssignments = (token["hostelAssignments"] as string[]) ?? [];
         session.user.mfaEnabled = (token["mfaEnabled"] as boolean) ?? false;
         session.user.mfaPending = (token["mfaPending"] as boolean) ?? false;
         session.user.activeRole = (token["activeRole"] as UserRole) ?? session.user.roles[0];

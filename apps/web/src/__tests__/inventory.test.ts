@@ -1,15 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Types } from "mongoose";
-import {
-  HostelModel,
-  BedModel,
-  HostelRepository,
-  BedRepository,
-} from "@hostelhub/db";
-import {
-  inventoryRowSchema,
-  executeInventoryImport,
-} from "../lib/inventory/import-engine.js";
+import { HostelModel, BedModel, HostelRepository, BedRepository } from "@hostelhub/db";
+import { inventoryRowSchema, executeInventoryImport } from "../lib/inventory/import-engine.js";
 import { getOccupancyMetrics } from "../lib/inventory/occupancy.js";
 import { POST as createHostelRoute } from "../app/api/v1/inventory/hostels/route.js";
 import { PATCH as patchBedRoute } from "../app/api/v1/inventory/beds/[id]/route.js";
@@ -138,11 +130,14 @@ describe("Module M1: Hostel and Room Inventory", () => {
 
   describe("3. Dry-Run vs Commit", () => {
     it("dry-run validates rows and computes counts without persisting data", async () => {
-      vi.spyOn(BedModel, "find").mockReturnValue({
+      const mockQuery = {
+        session: vi.fn().mockReturnThis(),
+        exec: vi.fn().mockResolvedValue([]),
         select: vi.fn().mockReturnValue({
           lean: vi.fn().mockResolvedValue([]),
         }),
-      } as never);
+      };
+      vi.spyOn(BedModel, "find").mockReturnValue(mockQuery as never);
 
       const rows = [
         {
@@ -323,14 +318,18 @@ describe("Module M1: Hostel and Room Inventory", () => {
 
   describe("7. Occupancy Calculations", () => {
     it("calculates public occupancy summary with totals and percentage", async () => {
-      vi.spyOn(BedModel, "find").mockReturnValue({
-        lean: vi.fn().mockResolvedValue([
-          { status: "occupied" },
-          { status: "occupied" },
-          { status: "occupied" },
-          { status: "available" },
-        ]),
-      } as never);
+      const mockBeds = [
+        { status: "occupied" },
+        { status: "occupied" },
+        { status: "occupied" },
+        { status: "available" },
+      ];
+      const mockQuery = {
+        session: vi.fn().mockReturnThis(),
+        exec: vi.fn().mockResolvedValue(mockBeds),
+        lean: vi.fn().mockResolvedValue(mockBeds),
+      };
+      vi.spyOn(BedModel, "find").mockReturnValue(mockQuery as never);
 
       const metrics = await getOccupancyMetrics(tenantA, false);
 

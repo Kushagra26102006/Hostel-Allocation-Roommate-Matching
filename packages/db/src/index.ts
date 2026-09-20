@@ -18,10 +18,7 @@ export {
 } from "./connection.js";
 
 // Base Schema Plugin
-export {
-  baseSchemaPlugin,
-  type BaseTenantDocument,
-} from "./plugins/base-schema.plugin.js";
+export { baseSchemaPlugin, type BaseTenantDocument } from "./plugins/base-schema.plugin.js";
 
 // Repositories
 export {
@@ -41,6 +38,8 @@ export { ApplicationDocumentRepository } from "./repository/application-document
 export { PolicyRuleSetRepository } from "./repository/policy-ruleset.repository.js";
 export { PreferenceRepository } from "./repository/preference.repository.js";
 export { GroupRepository } from "./repository/group.repository.js";
+export { ConsentRecordRepository } from "./repository/consent-record.repository.js";
+export { CompatibilityResponseRepository } from "./repository/compatibility-response.repository.js";
 
 // Repository & Schema Errors
 export {
@@ -65,11 +64,7 @@ export {
   type HostelStatus,
 } from "./models/hostel.model.js";
 
-export {
-  BlockModel,
-  type IBlock,
-  type BlockDocument,
-} from "./models/block.model.js";
+export { BlockModel, type IBlock, type BlockDocument } from "./models/block.model.js";
 
 export {
   RoomModel,
@@ -171,16 +166,9 @@ export {
 } from "./models/audit-head.model.js";
 
 // Audit Service & Cryptographic Hashing
-export {
-  AuditService,
-  type AppendAuditInput,
-} from "./services/audit.service.js";
+export { AuditService, type AppendAuditInput } from "./services/audit.service.js";
 
-export {
-  toCanonicalJson,
-  sha256,
-  computeAuditHash,
-} from "./services/canonical-json.js";
+export { toCanonicalJson, sha256, computeAuditHash } from "./services/canonical-json.js";
 
 // Seed
 export { seedDatabase, type SeedResult } from "./seed.js";
@@ -189,4 +177,3 @@ export {
   type SyntheticSeedOptions,
   type SyntheticSeedSummary,
 } from "./seed/synthetic.js";
-

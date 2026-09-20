@@ -24,7 +24,8 @@ We adopt the following stack for the HostelHub monorepo:
 | **Language**          | TypeScript (strict)     | Catches errors at compile time; `strict: true` + `exactOptionalPropertyTypes` maximises safety |
 | **Web framework**     | Next.js 15 (App Router) | RSC-first, built-in routing, Vercel deployment path; large ecosystem                           |
 | **Styling**           | Tailwind CSS            | Utility-first; co-locates styles with markup; zero dead CSS in production                      |
-| **Background worker** | Node 20 + tsx           | Minimal overhead; tsx gives instant TS execution without a build step in dev                   |
+| **Database & ORM**    | MongoDB + Mongoose      | Document database with rich schema validation, tenancy support & transactions                  |
+| **Background worker** | Node 20 + BullMQ        | Redis-backed queue worker for window schedules, cycle transitions & reminders                  |
 | **Unit testing**      | Vitest                  | First-class TypeScript support; jest-compatible API; fast due to esbuild transform             |
 | **E2E testing**       | Playwright              | Cross-browser, reliable, first-class TS API; superior to Cypress for CI stability              |
 | **Linting**           | ESLint flat config      | Future-proof config format; integrates cleanly with `@typescript-eslint` v8                    |
@@ -40,6 +41,7 @@ We adopt the following stack for the HostelHub monorepo:
 - **Strong type safety** across the entire codebase from day one (TypeScript strict mode).
 - **Shared packages** (`domain`, `db`, `shared`) prevent duplicate code and enforce a clean
   dependency graph.
+- **Mongoose ORM** with repository layer and tenant plugins enforces tenant isolation (`institution_id`) across all data access.
 - **Conventional commits** give a free audit trail and make `semantic-release` trivial to add later.
 - **Vitest** is significantly faster than Jest for a TypeScript monorepo.
 - **Playwright** is CI-stable and supports all major browsers.
@@ -51,8 +53,6 @@ We adopt the following stack for the HostelHub monorepo:
 - **Next.js App Router** is still relatively new; some third-party libraries don't support
   React Server Components yet. Mitigated by keeping all external library surface area in
   Client Components for now.
-- **No ORM decided yet** — `packages/db` is a placeholder. A follow-up ADR (0002) will
-  choose between Prisma, Drizzle, and Kysely once data-access patterns are clearer.
 
 ---
 

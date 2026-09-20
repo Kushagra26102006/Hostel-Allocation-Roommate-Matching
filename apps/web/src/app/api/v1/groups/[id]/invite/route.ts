@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { Types } from "mongoose";
 import { apiHandler } from "@/lib/api/handler.js";
-import { GroupRepository, GroupModel, AllocationCycleRepository, EntityNotFoundError } from "@hostelhub/db";
+import { GroupRepository, AllocationCycleRepository, EntityNotFoundError } from "@hostelhub/db";
 import { ApiProblemError } from "@/lib/api/errors.js";
 
 const paramsSchema = z.object({
@@ -53,7 +54,7 @@ export const POST = apiHandler(
         title: "Window Closed",
         status: 422,
         detail: "Group modification is locked because the application window is closed.",
-        code: "BAD_REQUEST" as any,
+        code: "BAD_REQUEST",
       });
     }
 
@@ -63,7 +64,7 @@ export const POST = apiHandler(
         title: "Group Full",
         status: 422,
         detail: "Group size cannot exceed the maximum room capacity limit of 4 members.",
-        code: "BAD_REQUEST" as any,
+        code: "BAD_REQUEST",
       });
     }
 
@@ -71,7 +72,7 @@ export const POST = apiHandler(
     const isMember = group.members.some((m) => String(m.student_id) === String(user.id));
     if (!isMember) {
       group.members.push({
-        student_id: user.id as any,
+        student_id: new Types.ObjectId(user.id),
         email: user.email ?? body.email ?? "student@campus.edu",
         status: "pending",
         joined_at: new Date(),

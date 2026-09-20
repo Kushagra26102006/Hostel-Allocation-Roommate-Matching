@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { CheckCircle2, XCircle, ArrowRight, ShieldCheck, HelpCircle } from "lucide-react";
+import { CheckCircle2, XCircle, ArrowRight, ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -26,7 +26,7 @@ interface StudentEligibilityCardProps {
 export function StudentEligibilityCard({
   eligible,
   results,
-  applicationId = "current",
+  applicationId: _applicationId = "current",
 }: StudentEligibilityCardProps) {
   return (
     <Card className="max-w-2xl mx-auto border-border/60 bg-surface/80 backdrop-blur-md shadow-xl">
@@ -50,18 +50,17 @@ export function StudentEligibilityCard({
           {results.map((res) => {
             // Infer how to fix link if not explicitly provided
             let fixLink = res.howToFixLink;
-            let fixLabel = res.howToFixLabel;
 
             if (!res.passed && !fixLink) {
               if (res.ruleId.includes("doc") || res.reason.toLowerCase().includes("document")) {
                 fixLink = `/applications/new?step=1`;
-                fixLabel = "Upload Document (Step 2)";
-              } else if (res.reason.toLowerCase().includes("address") || res.reason.toLowerCase().includes("distance")) {
+              } else if (
+                res.reason.toLowerCase().includes("address") ||
+                res.reason.toLowerCase().includes("distance")
+              ) {
                 fixLink = `/applications/new?step=0`;
-                fixLabel = "Update Permanent Address (Step 1)";
               } else {
                 fixLink = `/applications/new?step=0`;
-                fixLabel = "Review Application Data";
               }
             }
 
@@ -95,7 +94,11 @@ export function StudentEligibilityCard({
                 {!res.passed && fixLink && (
                   <div className="pt-2 border-t border-rose-500/20 flex justify-end">
                     <Link href={fixLink}>
-                      <Button variant="ghost" size="sm" className="text-xs text-rose-300 hover:text-rose-200">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-rose-300 hover:text-rose-200"
+                      >
                         How to fix <ArrowRight className="w-3.5 h-3.5 ml-1" />
                       </Button>
                     </Link>

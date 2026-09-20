@@ -44,7 +44,10 @@ export const GET = apiHandler(
     if (!isAuthorized && user) {
       const appRepo = new ApplicationRepository(institution_id);
       const app = await appRepo.findById(String(doc.application_id));
-      if (app && canAccessApplication(user as any, app as any)) {
+      if (
+        app &&
+        canAccessApplication(user, app as unknown as Parameters<typeof canAccessApplication>[1])
+      ) {
         isAuthorized = true;
       }
     }

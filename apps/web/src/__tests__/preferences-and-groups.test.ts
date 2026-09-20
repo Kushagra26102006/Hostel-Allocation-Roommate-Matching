@@ -8,10 +8,7 @@ import {
   GroupRepository,
 } from "@hostelhub/db";
 import { PUT as updatePreferencesRoute } from "../app/api/v1/applications/[id]/preferences/route";
-import { POST as createGroupRoute } from "../app/api/v1/groups/route";
-import { POST as joinInviteGroupRoute } from "../app/api/v1/groups/[id]/invite/route";
 import { POST as acceptGroupRoute } from "../app/api/v1/groups/[id]/accept/route";
-import { DELETE as leaveGroupRoute } from "../app/api/v1/groups/[id]/leave/route";
 
 // Mock NextAuth
 vi.mock("@/auth", () => ({
@@ -208,8 +205,18 @@ describe("Module M4: Preference Management and Group Applications", () => {
         invite_code: "XYZ123",
         status: "draft",
         members: [
-          { student_id: new Types.ObjectId(studentAId), email: "a@campus.edu", status: "accepted", joined_at: new Date() },
-          { student_id: new Types.ObjectId(studentBId), email: "b@campus.edu", status: "pending", joined_at: new Date() },
+          {
+            student_id: new Types.ObjectId(studentAId),
+            email: "a@campus.edu",
+            status: "accepted",
+            joined_at: new Date(),
+          },
+          {
+            student_id: new Types.ObjectId(studentBId),
+            email: "b@campus.edu",
+            status: "pending",
+            joined_at: new Date(),
+          },
         ],
         save: mockGroupSave,
       };
@@ -223,7 +230,7 @@ describe("Module M4: Preference Management and Group Applications", () => {
       const res = await acceptGroupRoute(req, {
         params: Promise.resolve({ id: groupId }),
       });
-      const updatedGroup = await res.json();
+      await res.json();
 
       expect(res.status).toBe(200);
       expect(mockGroupDoc.status).toBe("confirmed"); // Both A and B accepted => status confirmed

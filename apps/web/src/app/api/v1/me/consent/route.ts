@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler.js";
-import { ConsentRecordModel, CompatibilityResponseModel } from "@hostelhub/db";
+import { ConsentRecordRepository, CompatibilityResponseRepository } from "@hostelhub/db";
 import { ApiProblemError } from "@/lib/api/errors.js";
 
 const postConsentSchema = z.object({
@@ -24,10 +24,10 @@ export const GET = apiHandler(
       });
     }
 
-    const records = await ConsentRecordModel.find({
-      institution_id,
+    const consentRepo = new ConsentRecordRepository(institution_id);
+    const records = await consentRepo.find({
       student_id: user.id,
-    }).sort({ createdAt: -1 });
+    });
 
     return records;
   },
@@ -49,32 +49,31 @@ export const POST = apiHandler(
       });
     }
 
+    const consentRepo = new ConsentRecordRepository(institution_id);
+
     if (body.action === "grant") {
-      const record = await ConsentRecordModel.findOneAndUpdate(
-        { institution_id, student_id: user.id, purpose: body.purpose },
-        {
-          $set: {
-            granted_at: new Date(),
-            text_version: body.text_version,
-          },
-          $unset: { withdrawn_at: "" },
+      const record = await consentRepo.update(user.id, {
+        $set: {
+          granted_at: new Date(),
+          text_version: body.text_version,
+          purpose: body.purpose,
+          student_id: user.id,
         },
-        { upsert: true, new: true },
-      );
+        $unset: { withdrawn_at: "" },
+      });
       return record;
     } else {
       // Action: withdraw consent => mark withdrawn AND hard-delete questionnaire data
-      const record = await ConsentRecordModel.findOneAndUpdate(
-        { institution_id, student_id: user.id, purpose: body.purpose },
-        { $set: { withdrawn_at: new Date() } },
-        { new: true },
-      );
+      const record = await consentRepo.update(user.id, {
+        $set: { withdrawn_at: new Date() },
+      });
 
       if (body.purpose === "compatibility_questionnaire") {
-        await CompatibilityResponseModel.deleteOne({
-          institution_id,
-          student_id: user.id,
-        });
+        const compatRepo = new CompatibilityResponseRepository(institution_id);
+        const existing = await compatRepo.findOne({ student_id: user.id });
+        if (existing) {
+          await compatRepo.update(existing._id, { $set: { ciphertext: "" } });
+        }
       }
 
       return record;

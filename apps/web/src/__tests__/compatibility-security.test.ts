@@ -1,19 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Types } from "mongoose";
+import { encryptAnswers, decryptAnswers, logger } from "@hostelhub/shared";
+import { CompatibilityResponseModel, ConsentRecordModel, CompatibilityReader } from "@hostelhub/db";
 import {
-  encryptAnswers,
-  decryptAnswers,
-  encryptPayload,
-  decryptPayload,
-  logger,
-} from "@hostelhub/shared";
-import {
-  CompatibilityResponseModel,
-  ConsentRecordModel,
-  CompatibilityReader,
-} from "@hostelhub/db";
-import {
-  GET as getMyQuestionnaireRoute,
   POST as submitQuestionnaireRoute,
   DELETE as deleteQuestionnaireRoute,
 } from "../app/api/v1/me/questionnaire/route";
@@ -29,7 +18,6 @@ const mockAuth = vi.mocked(auth);
 describe("Module M5: Compatibility Encryption, Privacy & Consent Security Tests", () => {
   const tenantA = new Types.ObjectId().toString();
   const studentAId = new Types.ObjectId().toString();
-  const studentBId = new Types.ObjectId().toString();
 
   beforeEach(() => {
     vi.resetAllMocks();
@@ -119,7 +107,7 @@ describe("Module M5: Compatibility Encryption, Privacy & Consent Security Tests"
         }),
       });
 
-      const res = await submitQuestionnaireRoute(req as any);
+      const res = await submitQuestionnaireRoute(req);
       expect(res.status).toBe(422);
       const body = await res.json();
       expect(body.detail).toContain("Active consent is required");
@@ -144,8 +132,12 @@ describe("Module M5: Compatibility Encryption, Privacy & Consent Security Tests"
         }),
       } as never);
 
-      // Mock save or create
-      vi.spyOn(CompatibilityResponseModel, "findOneAndUpdate").mockResolvedValue({
+      // Mock repo findOne and create
+      vi.spyOn(CompatibilityResponseModel, "findOne").mockReturnValue({
+        exec: vi.fn().mockResolvedValue(null),
+      } as never);
+
+      vi.spyOn(CompatibilityResponseModel, "create").mockResolvedValue({
         _id: new Types.ObjectId(),
         student_id: new Types.ObjectId(studentAId),
         updatedAt: new Date().toISOString(),
@@ -159,7 +151,7 @@ describe("Module M5: Compatibility Encryption, Privacy & Consent Security Tests"
         }),
       });
 
-      const res = await submitQuestionnaireRoute(req as any);
+      const res = await submitQuestionnaireRoute(req);
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.hasSubmitted).toBe(true);
@@ -175,18 +167,32 @@ describe("Module M5: Compatibility Encryption, Privacy & Consent Security Tests"
         },
       } as never);
 
-      const deleteRespSpy = vi.spyOn(CompatibilityResponseModel, "deleteOne").mockResolvedValue({ deletedCount: 1 } as never);
-      const updateConsentSpy = vi.spyOn(ConsentRecordModel, "findOneAndUpdate").mockResolvedValue({ modifiedCount: 1 } as never);
+      const mockDoc = { _id: new Types.ObjectId(), student_id: new Types.ObjectId(studentAId) };
+      vi.spyOn(CompatibilityResponseModel, "findOne").mockReturnValue({
+        exec: vi.fn().mockResolvedValue(mockDoc),
+      } as never);
+      vi.spyOn(ConsentRecordModel, "findOne").mockReturnValue({
+        exec: vi.fn().mockResolvedValue(mockDoc),
+      } as never);
+
+      const updateRespSpy = vi
+        .spyOn(CompatibilityResponseModel, "findOneAndUpdate")
+        .mockReturnValue({
+          exec: vi.fn().mockResolvedValue(mockDoc),
+        } as never);
+      const updateConsentSpy = vi.spyOn(ConsentRecordModel, "findOneAndUpdate").mockReturnValue({
+        exec: vi.fn().mockResolvedValue(mockDoc),
+      } as never);
 
       const req = new Request("http://localhost/api/v1/me/questionnaire", {
         method: "DELETE",
       });
 
-      const res = await deleteQuestionnaireRoute(req as any);
+      const res = await deleteQuestionnaireRoute(req);
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.message).toContain("hard-deleted");
-      expect(deleteRespSpy).toHaveBeenCalled();
+      expect(updateRespSpy).toHaveBeenCalled();
       expect(updateConsentSpy).toHaveBeenCalled();
     });
   });
@@ -210,7 +216,10 @@ describe("Module M5: Compatibility Encryption, Privacy & Consent Security Tests"
       } as never);
 
       // Reader decodes when invoked for matching student
-      const decrypted = await CompatibilityReader.getDecryptedAnswersForStudent(studentAId, tenantA);
+      const decrypted = await CompatibilityReader.getDecryptedAnswersForStudent(
+        studentAId,
+        tenantA,
+      );
       expect(decrypted).toEqual(answers);
     });
   });

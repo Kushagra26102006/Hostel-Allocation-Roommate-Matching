@@ -1,8 +1,12 @@
 import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler.js";
-import { ApplicationRepository, ApplicationModel, PolicyRuleSetRepository, EntityNotFoundError } from "@hostelhub/db";
-import { evaluate, CsvErpAdapter, type ApplicantFacts, type PolicyRuleSet } from "@hostelhub/domain";
-import { ApiProblemError } from "@/lib/api/errors.js";
+import { ApplicationRepository, PolicyRuleSetRepository, EntityNotFoundError } from "@hostelhub/db";
+import {
+  evaluate,
+  CsvErpAdapter,
+  type ApplicantFacts,
+  type PolicyRuleSet,
+} from "@hostelhub/domain";
 
 const evaluateSchema = z.object({
   application_id: z.string().optional(),
@@ -51,7 +55,8 @@ export const POST = apiHandler(
               id: "r_1",
               name: "Level & Year Requirement",
               expression: { op: "equals", fact: "level", value: "UG" },
-              reasonTemplate: "Only Undergraduate (UG) programme students are eligible for this cycle.",
+              reasonTemplate:
+                "Only Undergraduate (UG) programme students are eligible for this cycle.",
               policyRef: "POL-2026-01",
               owner: "hostel_admin",
               effectiveFrom: new Date(),
@@ -71,7 +76,8 @@ export const POST = apiHandler(
               id: "r_3",
               name: "Distance Threshold",
               expression: { op: "gte", fact: "distanceKm", value: 50 },
-              reasonTemplate: "Your permanent residence distance ({distanceKm} km) is below the minimum 50 km cutoff.",
+              reasonTemplate:
+                "Your permanent residence distance ({distanceKm} km) is below the minimum 50 km cutoff.",
               policyRef: "POL-2026-03",
               owner: "hostel_admin",
               effectiveFrom: new Date(),
@@ -82,7 +88,7 @@ export const POST = apiHandler(
 
     // Gather applicant facts from ERP adapter + application form data + request facts
     const erp = new CsvErpAdapter();
-    const studentId = application ? String(application.student_id) : user?.id ?? "usr_student";
+    const studentId = application ? String(application.student_id) : (user?.id ?? "usr_student");
     const erpFacts = (await erp.getStudentFacts(studentId)) || {};
 
     const appFormData = (application?.form_data as Record<string, unknown>) || {};
@@ -102,17 +108,8 @@ export const POST = apiHandler(
     // If evaluating a persistent application, record the result & rule set version
     if (application) {
       const failedReasons = evalOutput.results.filter((r) => !r.passed).map((r) => r.reason);
-      await ApplicationModel.findOneAndUpdate(
-        { _id: application._id, institution_id },
-        {
-          $set: {
-            eligibility_result: {
-              eligible: evalOutput.eligible,
-              reasons: failedReasons,
-            },
-          },
-        },
-      );
+      const appRepo = new ApplicationRepository(institution_id);
+      await appRepo.updateEligibilityResult(application._id, evalOutput.eligible, failedReasons);
     }
 
     return {

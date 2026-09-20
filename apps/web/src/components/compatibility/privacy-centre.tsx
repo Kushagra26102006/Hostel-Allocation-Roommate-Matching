@@ -1,10 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ShieldCheck, Download, Trash2, Lock, FileText, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
+import { Download, Trash2, Lock, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import type { QuestionnaireAnswers } from "@hostelhub/domain";
 
 export function PrivacyCentre() {
@@ -85,12 +91,16 @@ export function PrivacyCentre() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-text">Privacy & Consent Centre</h1>
-        <p className="text-xs text-muted">Manage your encrypted compatibility data, export JSON backups, or hard-delete your records anytime.</p>
+        <p className="text-xs text-muted">
+          Manage your encrypted compatibility data, export JSON backups, or hard-delete your records
+          anytime.
+        </p>
       </div>
 
       {deleteSuccess && (
         <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4" /> Your questionnaire answers have been hard-deleted and consent withdrawn.
+          <CheckCircle2 className="w-4 h-4" /> Your questionnaire answers have been hard-deleted and
+          consent withdrawn.
         </div>
       )}
 
@@ -102,7 +112,8 @@ export function PrivacyCentre() {
             My Compatibility Questionnaire Answers
           </CardTitle>
           <CardDescription>
-            Stored in database using AES-256-GCM encryption with per-institution keys. Decrypted only for your view.
+            Stored in database using AES-256-GCM encryption with per-institution keys. Decrypted
+            only for your view.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -112,19 +123,29 @@ export function PrivacyCentre() {
             </div>
           ) : !hasSubmitted || !answers ? (
             <div className="py-8 text-center text-xs text-muted space-y-2">
-              <p>You have not submitted a compatibility questionnaire yet or consent has been withdrawn.</p>
+              <p>
+                You have not submitted a compatibility questionnaire yet or consent has been
+                withdrawn.
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {Object.entries(answers).map(([key, item]) => (
-                  <div key={key} className="p-3 rounded-xl border border-border/40 bg-surface/40 flex justify-between items-center text-xs">
+                  <div
+                    key={key}
+                    className="p-3 rounded-xl border border-border/40 bg-surface/40 flex justify-between items-center text-xs"
+                  >
                     <div>
-                      <p className="font-semibold uppercase tracking-wider text-[11px] text-muted">{key}</p>
+                      <p className="font-semibold uppercase tracking-wider text-[11px] text-muted">
+                        {key}
+                      </p>
                       <p className="font-bold text-text mt-0.5">Value: {String(item.value)}</p>
                     </div>
                     <div className="text-right">
-                      <span className="text-[10px] text-muted">Importance: {item.importance}/3</span>
+                      <span className="text-[10px] text-muted">
+                        Importance: {item.importance}/3
+                      </span>
                       {item.dealBreaker && (
                         <p className="text-[10px] font-bold text-amber-400">Deal-breaker</p>
                       )}
@@ -163,10 +184,15 @@ export function PrivacyCentre() {
           </DialogHeader>
           <div className="space-y-3 py-2 text-xs text-muted">
             <p>Are you sure you want to hard-delete your compatibility questionnaire answers?</p>
-            <p>This action will immediately purge ciphertext from the database and record your consent withdrawal. This cannot be undone.</p>
+            <p>
+              This action will immediately purge ciphertext from the database and record your
+              consent withdrawal. This cannot be undone.
+            </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
+              Cancel
+            </Button>
             <Button
               className="bg-rose-600 hover:bg-rose-700 text-white"
               disabled={deleting}

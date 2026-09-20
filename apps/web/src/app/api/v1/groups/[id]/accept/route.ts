@@ -42,7 +42,7 @@ export const POST = apiHandler(
         title: "Window Closed",
         status: 422,
         detail: "Group modification is locked because the application window is closed.",
-        code: "BAD_REQUEST" as any,
+        code: "BAD_REQUEST",
       });
     }
 
@@ -60,7 +60,7 @@ export const POST = apiHandler(
         title: "Not Member",
         status: 400,
         detail: "You are not a member of this group.",
-        code: "BAD_REQUEST" as any,
+        code: "BAD_REQUEST",
       });
     }
 

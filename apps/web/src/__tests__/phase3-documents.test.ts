@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { validateMagicBytes } from "@/lib/storage/magic-bytes";
 import { getPresignedPutUrl } from "@/lib/storage/presigner";
 import { ClamAvMalwareScanner, FallbackMalwareScanner } from "@/lib/services/scan-port";
@@ -29,8 +29,16 @@ describe("Phase 3: Document Uploads & Security", () => {
 
   describe("Presign URL Generation", () => {
     it("includes ContentLength condition to enforce file size limit", async () => {
-      const res = await getPresignedPutUrl("test.pdf", "application/pdf", "inst_123", "usr_456", 1024);
-      expect(res.storageKey).toBe("tenants/inst_123/students/usr_456/" + res.storageKey.split("/").pop());
+      const res = await getPresignedPutUrl(
+        "test.pdf",
+        "application/pdf",
+        "inst_123",
+        "usr_456",
+        1024,
+      );
+      expect(res.storageKey).toBe(
+        "tenants/inst_123/students/usr_456/" + res.storageKey.split("/").pop(),
+      );
       expect(res.uploadUrl).toBeDefined();
     });
   });

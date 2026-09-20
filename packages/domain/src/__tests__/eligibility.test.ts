@@ -2,13 +2,10 @@ import { describe, it, expect } from "vitest";
 import {
   evaluateExpression,
   formatReasonTemplate,
-  evaluateRule,
   evaluate,
   describeExpression,
-  CsvErpAdapter,
   type ApplicantFacts,
   type RuleExpression,
-  type PolicyRule,
   type PolicyRuleSet,
 } from "../eligibility/index.js";
 
@@ -93,7 +90,8 @@ describe("Module M3: Eligibility & Policy Evaluator", () => {
 
   describe("2. Reason Text Placeholder Rendering", () => {
     it("renders placeholders like {feeCategory} and {distanceKm} with actual fact values", () => {
-      const template = "Your fee category ({feeCategory}) is not verified. Distance: {distanceKm} km.";
+      const template =
+        "Your fee category ({feeCategory}) is not verified. Distance: {distanceKm} km.";
       const formatted = formatReasonTemplate(template, sampleFacts);
 
       expect(formatted).toBe("Your fee category (regular) is not verified. Distance: 150 km.");

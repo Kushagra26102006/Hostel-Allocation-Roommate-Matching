@@ -1,4 +1,3 @@
-import { logger } from "@hostelhub/shared";
 import { getRedis } from "@/lib/redis";
 
 interface MemoryEntry {
@@ -12,19 +11,22 @@ const slidingWindowStore = new Map<string, { timestamps: number[]; expiresAt: nu
 
 // Periodic memory store cleanup every 5 minutes to prevent memory leaks
 if (typeof setInterval !== "undefined") {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of memoryStore.entries()) {
-      if (entry.lockedUntil < now && now - entry.lastAttempt > 3600 * 1000) {
-        memoryStore.delete(key);
+  setInterval(
+    () => {
+      const now = Date.now();
+      for (const [key, entry] of memoryStore.entries()) {
+        if (entry.lockedUntil < now && now - entry.lastAttempt > 3600 * 1000) {
+          memoryStore.delete(key);
+        }
       }
-    }
-    for (const [key, entry] of slidingWindowStore.entries()) {
-      if (entry.expiresAt < now) {
-        slidingWindowStore.delete(key);
+      for (const [key, entry] of slidingWindowStore.entries()) {
+        if (entry.expiresAt < now) {
+          slidingWindowStore.delete(key);
+        }
       }
-    }
-  }, 5 * 60 * 1000).unref?.();
+    },
+    5 * 60 * 1000,
+  ).unref?.();
 }
 
 /**
@@ -46,10 +48,7 @@ export interface LockoutStatus {
 /**
  * Check whether an identifier (email or IP) is currently locked out.
  */
-export async function isLockedOut(
-  identifier: string,
-  ip?: string,
-): Promise<LockoutStatus> {
+export async function isLockedOut(identifier: string, ip?: string): Promise<LockoutStatus> {
   const keys = [identifier.toLowerCase().trim()];
   if (ip) keys.push(`ip:${ip}`);
 
@@ -97,10 +96,7 @@ export async function isLockedOut(
 /**
  * Record a failed authentication attempt and apply progressive lockout if threshold reached.
  */
-export async function recordFailedAttempt(
-  identifier: string,
-  ip?: string,
-): Promise<LockoutStatus> {
+export async function recordFailedAttempt(identifier: string, ip?: string): Promise<LockoutStatus> {
   const key = identifier.toLowerCase().trim();
   const now = Date.now();
   const redis = getRedis();
@@ -166,10 +162,7 @@ export async function recordFailedAttempt(
 /**
  * Reset failed attempts on successful login.
  */
-export async function resetFailedAttempts(
-  identifier: string,
-  ip?: string,
-): Promise<void> {
+export async function resetFailedAttempts(identifier: string, ip?: string): Promise<void> {
   const key = identifier.toLowerCase().trim();
   const redis = getRedis();
 

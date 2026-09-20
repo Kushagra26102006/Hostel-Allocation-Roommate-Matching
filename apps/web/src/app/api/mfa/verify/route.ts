@@ -1,30 +1,15 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import {
-  AuditService,
-  connectDb,
-  UserRepository,
-  UserModel,
-} from "@hostelhub/db";
+import { AuditService, connectDb, UserRepository } from "@hostelhub/db";
 import { decryptPayload } from "@hostelhub/shared";
-import {
-  verifyAndConsumeBackupCode,
-  verifyTotpToken,
-} from "@/lib/auth/mfa";
-import {
-  isLockedOut,
-  recordFailedAttempt,
-  resetFailedAttempts,
-} from "@/lib/auth/rate-limiter";
+import { verifyAndConsumeBackupCode, verifyTotpToken } from "@/lib/auth/mfa";
+import { isLockedOut, recordFailedAttempt, resetFailedAttempts } from "@/lib/auth/rate-limiter";
 
 export async function POST(req: Request): Promise<NextResponse> {
   const session = await auth();
 
   if (!session?.user?.id || !session?.user?.email) {
-    return NextResponse.json(
-      { error: "Authentication required." },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   }
 
   const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? undefined;
@@ -57,7 +42,11 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   // 1. Initial Enrolment Confirmation
   if (body.isEnrolment) {
-    const pendingSetup = (user as any).mfaPendingSetup;
+    const pendingSetup = (
+      user as unknown as {
+        mfaPendingSetup?: { secret: string; expiresAt: Date; hashedCodes?: string[] };
+      }
+    ).mfaPendingSetup;
     if (!pendingSetup || !pendingSetup.secret || new Date(pendingSetup.expiresAt).getTime() < now) {
       await recordFailedAttempt(`mfa_verify:${session.user.id}`, clientIp);
       return NextResponse.json(
@@ -91,17 +80,14 @@ export async function POST(req: Request): Promise<NextResponse> {
       lastTimeStep: currentTimeStep,
     };
 
-    await UserModel.updateOne(
-      { _id: user._id },
-      {
-        $set: {
-          mfa: user.mfa,
-        },
-        $unset: {
-          mfaPendingSetup: "",
-        },
+    await UserRepository.updateUserGlobal(user._id, {
+      $set: {
+        mfa: user.mfa,
       },
-    );
+      $unset: {
+        mfaPendingSetup: "",
+      },
+    });
 
     await resetFailedAttempts(`mfa_verify:${session.user.id}`, clientIp);
 
@@ -117,10 +103,7 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   // 2. Regular Login Verification (TOTP or Backup Code)
   if (!user.mfa?.enabled || !user.mfa?.secret) {
-    return NextResponse.json(
-      { error: "MFA is not configured for this account." },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "MFA is not configured for this account." }, { status: 400 });
   }
 
   let storedSecret: string;
@@ -134,10 +117,7 @@ export async function POST(req: Request): Promise<NextResponse> {
   // A. Verify Single-Use Backup Code
   if (body.backupCode) {
     const storedHashedCodes = user.mfa.backupCodes ?? [];
-    const { valid } = verifyAndConsumeBackupCode(
-      body.backupCode,
-      storedHashedCodes,
-    );
+    const { valid } = verifyAndConsumeBackupCode(body.backupCode, storedHashedCodes);
 
     if (!valid) {
       await recordFailedAttempt(`mfa_verify:${session.user.id}`, clientIp);
@@ -149,10 +129,9 @@ export async function POST(req: Request): Promise<NextResponse> {
 
     // Atomic consumption of backup code via $pull
     const candidateHash = (await import("@/lib/auth/mfa")).hashBackupCode(body.backupCode);
-    await UserModel.updateOne(
-      { _id: user._id },
-      { $pull: { "mfa.backupCodes": candidateHash } },
-    );
+    await UserRepository.updateUserGlobal(user._id, {
+      $pull: { "mfa.backupCodes": candidateHash },
+    });
 
     await resetFailedAttempts(`mfa_verify:${session.user.id}`, clientIp);
 
@@ -185,17 +164,13 @@ export async function POST(req: Request): Promise<NextResponse> {
     const isValid = verifyTotpToken(body.token, storedSecret);
     if (!isValid) {
       await recordFailedAttempt(`mfa_verify:${session.user.id}`, clientIp);
-      return NextResponse.json(
-        { error: "Invalid TOTP code. Please try again." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid TOTP code. Please try again." }, { status: 400 });
     }
 
     // Update last used time step to prevent replay attacks
-    await UserModel.updateOne(
-      { _id: user._id },
-      { $set: { "mfa.lastTimeStep": currentTimeStep } },
-    );
+    await UserRepository.updateUserGlobal(user._id, {
+      $set: { "mfa.lastTimeStep": currentTimeStep },
+    });
 
     await resetFailedAttempts(`mfa_verify:${session.user.id}`, clientIp);
 
@@ -213,8 +188,5 @@ export async function POST(req: Request): Promise<NextResponse> {
     });
   }
 
-  return NextResponse.json(
-    { error: "Verification code is required." },
-    { status: 400 },
-  );
+  return NextResponse.json({ error: "Verification code is required." }, { status: 400 });
 }

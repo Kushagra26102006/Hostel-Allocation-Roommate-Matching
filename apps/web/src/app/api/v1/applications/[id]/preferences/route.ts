@@ -14,14 +14,16 @@ const paramsSchema = z.object({
 });
 
 const putPreferencesSchema = z.object({
-  preferences: z.array(
-    z.object({
-      rank: z.number().min(1),
-      hostel_id: z.string().min(1),
-      room_type: z.enum(["single", "double", "triple"]).default("double"),
-      roommate_ids: z.array(z.string()).default([]),
-    }),
-  ).min(1, "At least 1 preference is required"),
+  preferences: z
+    .array(
+      z.object({
+        rank: z.number().min(1),
+        hostel_id: z.string().min(1),
+        room_type: z.enum(["single", "double", "triple"]).default("double"),
+        roommate_ids: z.array(z.string()).default([]),
+      }),
+    )
+    .min(1, "At least 1 preference is required"),
 });
 
 export const GET = apiHandler(
@@ -73,7 +75,7 @@ export const PUT = apiHandler(
         title: "Window Closed",
         status: 422,
         detail: "Preference updates are locked because the application window is closed.",
-        code: "BAD_REQUEST" as any,
+        code: "BAD_REQUEST",
       });
     }
 

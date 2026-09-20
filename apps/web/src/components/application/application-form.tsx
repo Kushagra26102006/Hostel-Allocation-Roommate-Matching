@@ -5,14 +5,27 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, AlertCircle, Upload, FileText, CheckCircle2, ShieldCheck, Loader2, Sparkles } from "lucide-react";
+import {
+  Check,
+  Upload,
+  FileText,
+  CheckCircle2,
+  ShieldCheck,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
 import { Stepper } from "@/components/stepper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 
 const profileSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
@@ -60,31 +73,43 @@ const STEPS = ["Profile", "Documents", "Preferences", "Questionnaire", "Review &
 export function ApplicationForm({ cycleId, initialApplication }: ApplicationFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [applicationId, setApplicationId] = useState<string | null>(initialApplication?.id ?? null);
-  const [referenceNumber, setReferenceNumber] = useState<string | null>(initialApplication?.reference_number ?? null);
+  const [referenceNumber, setReferenceNumber] = useState<string | null>(
+    initialApplication?.reference_number ?? null,
+  );
   const [version, setVersion] = useState<number>(initialApplication?.version ?? 1);
-  const [autosaveStatus, setAutosaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [autosaveStatus, setAutosaveStatus] = useState<"idle" | "saving" | "saved" | "error">(
+    "idle",
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionReceipt, setSubmissionReceipt] = useState<{
     reference_number: string;
     submitted_at: string;
-  } | null>(initialApplication?.status === "submitted" ? {
-    reference_number: initialApplication.reference_number,
-    submitted_at: new Date().toISOString(),
-  } : null);
+  } | null>(
+    initialApplication?.status === "submitted"
+      ? {
+          reference_number: initialApplication.reference_number,
+          submitted_at: new Date().toISOString(),
+        }
+      : null,
+  );
 
-  const [documentFiles, setDocumentFiles] = useState<Record<string, {
-    name: string;
-    status: "uploading" | "clean" | "error";
-    progress: number;
-    docId?: string;
-  }>>({});
+  const [documentFiles, setDocumentFiles] = useState<
+    Record<
+      string,
+      {
+        name: string;
+        status: "uploading" | "clean" | "error";
+        progress: number;
+        docId?: string;
+      }
+    >
+  >({});
 
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [shakeStep, setShakeStep] = useState(false);
 
   const {
     register,
-    handleSubmit,
     control,
     setValue,
     watch,
@@ -331,14 +356,20 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
           >
             <CheckCircle2 className="w-10 h-10" />
           </motion.div>
-          <CardTitle className="text-2xl font-bold text-emerald-400">Application Submitted!</CardTitle>
-          <CardDescription>Your application has been received and logged in the system.</CardDescription>
+          <CardTitle className="text-2xl font-bold text-emerald-400">
+            Application Submitted!
+          </CardTitle>
+          <CardDescription>
+            Your application has been received and logged in the system.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="p-4 rounded-lg bg-surface/50 border border-emerald-500/20 space-y-3 font-mono text-sm">
             <div className="flex justify-between border-b border-border/40 pb-2">
               <span className="text-muted">Reference Number:</span>
-              <span className="font-bold text-emerald-400">{submissionReceipt.reference_number}</span>
+              <span className="font-bold text-emerald-400">
+                {submissionReceipt.reference_number}
+              </span>
             </div>
             <div className="flex justify-between border-b border-border/40 pb-2">
               <span className="text-muted">Submitted At:</span>
@@ -416,19 +447,29 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
                     <div>
                       <Label htmlFor="fullName">Full Name</Label>
                       <div className="relative">
-                        <Input id="fullName" {...register("profile.fullName")} placeholder="John Doe" />
+                        <Input
+                          id="fullName"
+                          {...register("profile.fullName")}
+                          placeholder="John Doe"
+                        />
                         {touchedFields.profile?.fullName && !errors.profile?.fullName && (
                           <CheckCircle2 className="w-4 h-4 text-emerald-500 absolute right-3 top-3" />
                         )}
                       </div>
                       {errors.profile?.fullName && (
-                        <p className="text-xs text-rose-400 mt-1">{errors.profile.fullName.message}</p>
+                        <p className="text-xs text-rose-400 mt-1">
+                          {errors.profile.fullName.message}
+                        </p>
                       )}
                     </div>
 
                     <div>
                       <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" {...register("profile.email")} placeholder="john@campus.edu" />
+                      <Input
+                        id="email"
+                        {...register("profile.email")}
+                        placeholder="john@campus.edu"
+                      />
                       {errors.profile?.email && (
                         <p className="text-xs text-rose-400 mt-1">{errors.profile.email.message}</p>
                       )}
@@ -436,7 +477,11 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
 
                     <div>
                       <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" {...register("profile.phone")} placeholder="+91 9876543210" />
+                      <Input
+                        id="phone"
+                        {...register("profile.phone")}
+                        placeholder="+91 9876543210"
+                      />
                       {errors.profile?.phone && (
                         <p className="text-xs text-rose-400 mt-1">{errors.profile.phone.message}</p>
                       )}
@@ -445,13 +490,20 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
                     <div>
                       <Label htmlFor="pincode">PIN Code (Auto-fill city & state)</Label>
                       <div className="relative">
-                        <Input id="pincode" {...register("profile.pincode")} maxLength={6} placeholder="110001" />
+                        <Input
+                          id="pincode"
+                          {...register("profile.pincode")}
+                          maxLength={6}
+                          placeholder="110001"
+                        />
                         {pincodeLoading && (
                           <Loader2 className="w-4 h-4 text-brand-400 animate-spin absolute right-3 top-3" />
                         )}
                       </div>
                       {errors.profile?.pincode && (
-                        <p className="text-xs text-rose-400 mt-1">{errors.profile.pincode.message}</p>
+                        <p className="text-xs text-rose-400 mt-1">
+                          {errors.profile.pincode.message}
+                        </p>
                       )}
                     </div>
 
@@ -474,7 +526,11 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
 
                   <div>
                     <Label htmlFor="address">Permanent Address</Label>
-                    <Input id="address" {...register("profile.address")} placeholder="House No, Street, Landmark" />
+                    <Input
+                      id="address"
+                      {...register("profile.address")}
+                      placeholder="House No, Street, Landmark"
+                    />
                     {errors.profile?.address && (
                       <p className="text-xs text-rose-400 mt-1">{errors.profile.address.message}</p>
                     )}
@@ -497,11 +553,16 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
                   {["id_proof", "income_certificate", "caste_certificate"].map((docType) => {
                     const docInfo = documentFiles[docType];
                     return (
-                      <div key={docType} className="p-4 rounded-xl border border-border/60 bg-surface/40 flex items-center justify-between">
+                      <div
+                        key={docType}
+                        className="p-4 rounded-xl border border-border/60 bg-surface/40 flex items-center justify-between"
+                      >
                         <div className="flex items-center gap-3">
                           <FileText className="w-8 h-8 text-brand-400" />
                           <div>
-                            <p className="font-semibold capitalize text-sm">{docType.replace("_", " ")}</p>
+                            <p className="font-semibold capitalize text-sm">
+                              {docType.replace("_", " ")}
+                            </p>
                             <p className="text-xs text-muted">PDF or Image up to 5MB</p>
                             {docInfo && (
                               <p className="text-xs text-emerald-400 flex items-center gap-1 mt-1">
@@ -556,7 +617,9 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
                         control={control}
                         render={({ field }) => (
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger><SelectValue placeholder="Select room type" /></SelectTrigger>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select room type" />
+                            </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="single">Single Seater</SelectItem>
                               <SelectItem value="double">Double Seater</SelectItem>
@@ -574,7 +637,9 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
                         control={control}
                         render={({ field }) => (
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger><SelectValue placeholder="Select AC preference" /></SelectTrigger>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select AC preference" />
+                            </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="ac">Air Conditioned (AC)</SelectItem>
                               <SelectItem value="non_ac">Non-AC</SelectItem>
@@ -607,7 +672,9 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
                         control={control}
                         render={({ field }) => (
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger><SelectValue placeholder="Select priority tier" /></SelectTrigger>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select priority tier" />
+                            </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="general">General Bucket</SelectItem>
                               <SelectItem value="merit">Merit Scholar</SelectItem>
@@ -635,10 +702,24 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
                   </h2>
 
                   <div className="p-4 rounded-lg bg-surface/50 border border-border/40 space-y-3 text-sm">
-                    <p><span className="font-semibold">Student Name:</span> {formValues.profile.fullName}</p>
-                    <p><span className="font-semibold">Email:</span> {formValues.profile.email}</p>
-                    <p><span className="font-semibold">Address:</span> {formValues.profile.address}, {formValues.profile.city}, {formValues.profile.state} - {formValues.profile.pincode}</p>
-                    <p><span className="font-semibold">Priority Tier:</span> <span className="uppercase text-brand-400 font-bold">{formValues.questionnaire.priorityTier}</span></p>
+                    <p>
+                      <span className="font-semibold">Student Name:</span>{" "}
+                      {formValues.profile.fullName}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Email:</span> {formValues.profile.email}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Address:</span> {formValues.profile.address},{" "}
+                      {formValues.profile.city}, {formValues.profile.state} -{" "}
+                      {formValues.profile.pincode}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Priority Tier:</span>{" "}
+                      <span className="uppercase text-brand-400 font-bold">
+                        {formValues.questionnaire.priorityTier}
+                      </span>
+                    </p>
                   </div>
                 </motion.div>
               )}

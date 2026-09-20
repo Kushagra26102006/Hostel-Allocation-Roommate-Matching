@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface CycleWizardForm {
   academic_year: string;
@@ -24,7 +23,7 @@ export function CycleWizard({ onCreated }: { onCreated?: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const { register, control, handleSubmit, setValue, watch, formState: { errors } } = useForm<CycleWizardForm>({
+  const { register, control, handleSubmit } = useForm<CycleWizardForm>({
     defaultValues: {
       academic_year: "2026-2027",
       name: "Main Autumn Allocation Cycle",
@@ -44,12 +43,20 @@ export function CycleWizard({ onCreated }: { onCreated?: () => void }) {
     },
   });
 
-  const { fields: quotaFields, append: appendQuota, remove: removeQuota } = useFieldArray({
+  const {
+    fields: quotaFields,
+    append: appendQuota,
+    remove: removeQuota,
+  } = useFieldArray({
     control,
     name: "quota_buckets",
   });
 
-  const { fields: docFields, append: appendDoc, remove: removeDoc } = useFieldArray({
+  const {
+    fields: docFields,
+    append: appendDoc,
+    remove: removeDoc,
+  } = useFieldArray({
     control,
     name: "document_requirements",
   });
@@ -87,7 +94,8 @@ export function CycleWizard({ onCreated }: { onCreated?: () => void }) {
           Create Allocation Cycle Wizard
         </CardTitle>
         <CardDescription>
-          Configure application open/close schedule window, quota seat capacity buckets, document requirements & priority tier rules.
+          Configure application open/close schedule window, quota seat capacity buckets, document
+          requirements & priority tier rules.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -110,11 +118,19 @@ export function CycleWizard({ onCreated }: { onCreated?: () => void }) {
             </div>
             <div>
               <Label htmlFor="window_open">Window Open (Server Clock)</Label>
-              <Input id="window_open" type="datetime-local" {...register("window_open", { required: true })} />
+              <Input
+                id="window_open"
+                type="datetime-local"
+                {...register("window_open", { required: true })}
+              />
             </div>
             <div>
               <Label htmlFor="window_close">Window Close (Server Clock)</Label>
-              <Input id="window_close" type="datetime-local" {...register("window_close", { required: true })} />
+              <Input
+                id="window_close"
+                type="datetime-local"
+                {...register("window_close", { required: true })}
+              />
             </div>
           </div>
 
@@ -124,16 +140,34 @@ export function CycleWizard({ onCreated }: { onCreated?: () => void }) {
               <Label className="text-base font-semibold flex items-center gap-2">
                 <Layers className="w-4 h-4 text-brand-400" /> Quota Buckets & Seat Capacities
               </Label>
-              <Button type="button" variant="outline" size="sm" onClick={() => appendQuota({ name: "New Category", capacity: 10 })}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => appendQuota({ name: "New Category", capacity: 10 })}
+              >
                 <Plus className="w-4 h-4 mr-1" /> Add Bucket
               </Button>
             </div>
             <div className="space-y-2">
               {quotaFields.map((field: Record<string, unknown>, idx: number) => (
                 <div key={field.id as string} className="flex items-center gap-3">
-                  <Input {...register(`quota_buckets.${idx}.name` as const)} placeholder="Bucket Name" />
-                  <Input type="number" {...register(`quota_buckets.${idx}.capacity` as const, { valueAsNumber: true })} placeholder="Seats" className="w-32" />
-                  <Button type="button" variant="ghost" size="icon" onClick={() => removeQuota(idx)}>
+                  <Input
+                    {...register(`quota_buckets.${idx}.name` as const)}
+                    placeholder="Bucket Name"
+                  />
+                  <Input
+                    type="number"
+                    {...register(`quota_buckets.${idx}.capacity` as const, { valueAsNumber: true })}
+                    placeholder="Seats"
+                    className="w-32"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeQuota(idx)}
+                  >
                     <Trash2 className="w-4 h-4 text-rose-400" />
                   </Button>
                 </div>
@@ -147,15 +181,29 @@ export function CycleWizard({ onCreated }: { onCreated?: () => void }) {
               <Label className="text-base font-semibold flex items-center gap-2">
                 <FileCheck className="w-4 h-4 text-brand-400" /> Required Application Documents
               </Label>
-              <Button type="button" variant="outline" size="sm" onClick={() => appendDoc({ type: "other", label: "Additional Cert", required: true })}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  appendDoc({ type: "other", label: "Additional Cert", required: true })
+                }
+              >
                 <Plus className="w-4 h-4 mr-1" /> Add Document Rule
               </Button>
             </div>
             <div className="space-y-2">
               {docFields.map((field: Record<string, unknown>, idx: number) => (
                 <div key={field.id as string} className="flex items-center gap-3">
-                  <Input {...register(`document_requirements.${idx}.type` as const)} placeholder="doc_type" className="w-40" />
-                  <Input {...register(`document_requirements.${idx}.label` as const)} placeholder="Display Label" />
+                  <Input
+                    {...register(`document_requirements.${idx}.type` as const)}
+                    placeholder="doc_type"
+                    className="w-40"
+                  />
+                  <Input
+                    {...register(`document_requirements.${idx}.label` as const)}
+                    placeholder="Display Label"
+                  />
                   <Button type="button" variant="ghost" size="icon" onClick={() => removeDoc(idx)}>
                     <Trash2 className="w-4 h-4 text-rose-400" />
                   </Button>
@@ -165,8 +213,16 @@ export function CycleWizard({ onCreated }: { onCreated?: () => void }) {
           </div>
 
           <div className="pt-4 flex justify-end">
-            <Button type="submit" disabled={isSubmitting} className="bg-brand-600 hover:bg-brand-700 text-white font-bold">
-              {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Save & Schedule Allocation Cycle"}
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-brand-600 hover:bg-brand-700 text-white font-bold"
+            >
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                "Save & Schedule Allocation Cycle"
+              )}
             </Button>
           </div>
         </form>

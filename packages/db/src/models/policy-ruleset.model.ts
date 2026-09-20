@@ -1,8 +1,5 @@
-import mongoose, { Schema, model, type Model, type Types } from "mongoose";
-import {
-  baseSchemaPlugin,
-  type BaseTenantDocument,
-} from "../plugins/base-schema.plugin.js";
+import mongoose, { Schema, model, type Model } from "mongoose";
+import { baseSchemaPlugin, type BaseTenantDocument } from "../plugins/base-schema.plugin.js";
 import type { PolicyRule } from "@hostelhub/domain";
 
 export interface IPolicyRuleSet {
@@ -12,9 +9,7 @@ export interface IPolicyRuleSet {
   rules: PolicyRule[];
 }
 
-export interface PolicyRuleSetDocument
-  extends BaseTenantDocument,
-    IPolicyRuleSet {}
+export interface PolicyRuleSetDocument extends BaseTenantDocument, IPolicyRuleSet {}
 
 const policyRuleSchema = new Schema<PolicyRule>(
   {
@@ -59,10 +54,7 @@ const policyRuleSetSchema = new Schema<PolicyRuleSetDocument>(
 
 policyRuleSetSchema.plugin(baseSchemaPlugin);
 
-policyRuleSetSchema.index(
-  { institution_id: 1, name: 1, version: 1 },
-  { unique: true },
-);
+policyRuleSetSchema.index({ institution_id: 1, name: 1, version: 1 }, { unique: true });
 
 export const PolicyRuleSetModel: Model<PolicyRuleSetDocument> =
   (mongoose.models?.["PolicyRuleSet"] as Model<PolicyRuleSetDocument>) ||

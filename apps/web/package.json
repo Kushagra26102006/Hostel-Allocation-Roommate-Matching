@@ -22,7 +22,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.9.1",
-    "@hostelhub/db": "workspace:^",
+    "@hostelhub/db": "workspace:*",
     "@hostelhub/domain": "workspace:*",
     "@hostelhub/shared": "workspace:*",
     "@radix-ui/react-accordion": "^1.2.20",
@@ -85,7 +85,7 @@
     "postcss": "^8.4.45",
     "storybook": "^8.6.18",
     "tailwindcss": "^3.4.10",
-    "typescript": "*",
-    "vitest": "*"
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.1"
   }
 }

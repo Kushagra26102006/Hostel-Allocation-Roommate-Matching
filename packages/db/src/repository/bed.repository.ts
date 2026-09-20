@@ -1,4 +1,4 @@
-import type { ClientSession, Types } from "mongoose";
+import type { ClientSession, Types, AnyBulkWriteOperation } from "mongoose";
 import { BedModel, type BedDocument, type BedStatus } from "../models/bed.model.js";
 import { BaseRepository } from "./base.repository.js";
 
@@ -36,5 +36,12 @@ export class BedRepository extends BaseRepository<BedDocument> {
     session?: ClientSession,
   ): Promise<BedDocument> {
     return this.updateWithVersion(bedId, currentVersion, update, session);
+  }
+
+  public async bulkWrite(
+    ops: AnyBulkWriteOperation<BedDocument>[],
+    session?: ClientSession,
+  ): Promise<unknown> {
+    return this.model.bulkWrite(ops, session ? { session } : {});
   }
 }

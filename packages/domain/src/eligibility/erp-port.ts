@@ -38,7 +38,7 @@ export class CsvErpAdapter implements ErpPort {
       const facts: ApplicantFacts = {
         studentId,
         programme: String(record["programme"] ?? "General"),
-        level: (record["level"] as any) ?? "UG",
+        level: (record["level"] as ApplicantFacts["level"]) ?? "UG",
         year: Number(record["year"] ?? 1),
         feeCategory: String(record["feeCategory"] ?? "General"),
         hasHold: parseBool(record["hasHold"]),

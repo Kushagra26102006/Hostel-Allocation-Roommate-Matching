@@ -2,12 +2,19 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { ArrowRight, SkipForward, CheckCircle2, Sliders, ShieldAlert, Sparkles, Loader2 } from "lucide-react";
+import {
+  ArrowRight,
+  SkipForward,
+  CheckCircle2,
+  Sliders,
+  ShieldAlert,
+  Sparkles,
+  Loader2,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { QuestionnaireDefinition, QuestionnaireAnswers } from "@hostelhub/domain";
 
@@ -102,7 +109,9 @@ export function QuestionnaireCards({ definition, onCompleted }: QuestionnaireCar
       {/* Progress Header */}
       <div className="space-y-2">
         <div className="flex justify-between text-xs font-semibold text-muted">
-          <span>Question {currentIndex + 1} of {totalItems}</span>
+          <span>
+            Question {currentIndex + 1} of {totalItems}
+          </span>
           <span>{progressPercent}% Complete</span>
         </div>
         <Progress value={progressPercent} className="h-2" />
@@ -149,7 +158,9 @@ export function QuestionnaireCards({ definition, onCompleted }: QuestionnaireCar
                       )}
                     >
                       <span>{opt.label}</span>
-                      {selectedOption === opt.value && <CheckCircle2 className="w-4 h-4 text-brand-400" />}
+                      {selectedOption === opt.value && (
+                        <CheckCircle2 className="w-4 h-4 text-brand-400" />
+                      )}
                     </button>
                   ))}
                 </div>
@@ -192,7 +203,12 @@ export function QuestionnaireCards({ definition, onCompleted }: QuestionnaireCar
 
       {/* Action Footer Buttons */}
       <div className="flex items-center justify-between pt-2">
-        <Button variant="ghost" size="sm" onClick={handleSkip} className="text-muted hover:text-text">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleSkip}
+          className="text-muted hover:text-text"
+        >
           <SkipForward className="w-4 h-4 mr-2" /> Skip Question
         </Button>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ShieldCheck, Lock, EyeOff, Check, ArrowRight, Info, FileText } from "lucide-react";
+import { ShieldCheck, Lock, EyeOff, ArrowRight, Info } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -54,7 +54,10 @@ export function ConsentPanel({ onConsentGranted }: ConsentPanelProps) {
             <Lock className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-text">AES-256-GCM End-to-End Encryption</p>
-              <p>Your questionnaire responses are encrypted client/server-side with a per-institution key before being stored. Plaintext answers are never stored in the database.</p>
+              <p>
+                Your questionnaire responses are encrypted client/server-side with a per-institution
+                key before being stored. Plaintext answers are never stored in the database.
+              </p>
             </div>
           </div>
 
@@ -62,7 +65,10 @@ export function ConsentPanel({ onConsentGranted }: ConsentPanelProps) {
             <EyeOff className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-text">No Protected Attributes Collected</p>
-              <p>HostelHub explicitly does NOT collect or score protected attributes (race, religion, sexual orientation, disability status).</p>
+              <p>
+                HostelHub explicitly does NOT collect or score protected attributes (race, religion,
+                sexual orientation, disability status).
+              </p>
             </div>
           </div>
 
@@ -70,7 +76,10 @@ export function ConsentPanel({ onConsentGranted }: ConsentPanelProps) {
             <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-text">Full Control & Instant Hard-Deletion</p>
-              <p>You can view, export, or hard-delete your answers at any time in the Privacy Centre. Withdrawing consent immediately purges your questionnaire data.</p>
+              <p>
+                You can view, export, or hard-delete your answers at any time in the Privacy Centre.
+                Withdrawing consent immediately purges your questionnaire data.
+              </p>
             </div>
           </div>
         </div>
@@ -82,7 +91,8 @@ export function ConsentPanel({ onConsentGranted }: ConsentPanelProps) {
             disabled={loading}
             className="bg-brand-600 hover:bg-brand-700 text-white font-bold w-full sm:w-auto"
           >
-            {loading ? "Recording..." : "I Consent & Agree to Proceed"} <ArrowRight className="w-4 h-4 ml-2" />
+            {loading ? "Recording..." : "I Consent & Agree to Proceed"}{" "}
+            <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
       </CardContent>

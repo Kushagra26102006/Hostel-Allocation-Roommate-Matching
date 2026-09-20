@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import {
-  connectDb,
-  UserRepository,
-  UserModel,
-} from "@hostelhub/db";
+import { connectDb, UserRepository } from "@hostelhub/db";
 import { encryptPayload, decryptPayload } from "@hostelhub/shared";
 import {
   generateBackupCodes,
@@ -44,14 +40,10 @@ export async function POST(req: Request): Promise<NextResponse> {
       user.institution_id.toString(),
     );
 
-    if (
-      !body.currentTotpToken ||
-      !verifyTotpToken(body.currentTotpToken, currentSecret)
-    ) {
+    if (!body.currentTotpToken || !verifyTotpToken(body.currentTotpToken, currentSecret)) {
       return NextResponse.json(
         {
-          error:
-            "Re-enrolment requires verifying your current MFA authenticator code.",
+          error: "Re-enrolment requires verifying your current MFA authenticator code.",
         },
         { status: 400 },
       );
@@ -64,30 +56,18 @@ export async function POST(req: Request): Promise<NextResponse> {
   const { plainCodes, hashedCodes } = generateBackupCodes(10);
 
   // Encrypt TOTP secret at rest with per-institution HKDF key
-  const encryptedSecret = JSON.stringify(
-    encryptPayload(rawSecret, user.institution_id.toString()),
-  );
+  const encryptedSecret = JSON.stringify(encryptPayload(rawSecret, user.institution_id.toString()));
 
-  // Save pending MFA setup on user model (or memory/Redis) with 15-min expiration
-  (user as any).mfaPendingSetup = {
-    secret: encryptedSecret,
-    hashedCodes,
-    expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-  };
-
-  // We use direct update to save mfaPendingSetup on user doc
-  await UserModel.updateOne(
-    { _id: user._id },
-    {
-      $set: {
-        mfaPendingSetup: {
-          secret: encryptedSecret,
-          hashedCodes,
-          expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-        },
+  // Save pending MFA setup on user document with 15-min expiration
+  await UserRepository.updateUserGlobal(user._id, {
+    $set: {
+      mfaPendingSetup: {
+        secret: encryptedSecret,
+        hashedCodes,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
       },
     },
-  );
+  });
 
   // Return ONLY qrCode, uri, and plain backupCodes to display ONCE.
   // Never send secret or hashedCodes back to client!

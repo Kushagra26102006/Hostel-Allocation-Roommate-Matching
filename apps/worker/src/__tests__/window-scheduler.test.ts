@@ -6,23 +6,23 @@ import { processCycleWindowCheck, setupWindowScheduler } from "../window-schedul
 describe("Phase 4.1: Worker & Window Scheduler", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.spyOn(AuditService, "append").mockResolvedValue({} as any);
+    vi.spyOn(AuditService, "append").mockResolvedValue({} as never);
   });
 
   it("opens scheduled cycles atomically when window_open <= now", async () => {
-    const now = new Date();
     const cycleId = new Types.ObjectId();
 
-    vi.spyOn(AllocationCycleModel, "find").mockResolvedValueOnce([
-      { _id: cycleId, name: "Fall 2026", status: "scheduled" } as any,
-    ]).mockResolvedValueOnce([]).mockResolvedValueOnce([]);
+    vi.spyOn(AllocationCycleModel, "find")
+      .mockResolvedValueOnce([{ _id: cycleId, name: "Fall 2026", status: "scheduled" } as never])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([]);
 
     vi.spyOn(AllocationCycleModel, "findOneAndUpdate").mockResolvedValueOnce({
       _id: cycleId,
       institution_id: new Types.ObjectId(),
       name: "Fall 2026",
       status: "open",
-    } as any);
+    } as never);
 
     const result = await processCycleWindowCheck();
     expect(result.opened).toBe(1);
@@ -38,7 +38,7 @@ describe("Phase 4.1: Worker & Window Scheduler", () => {
 
     vi.spyOn(AllocationCycleModel, "find")
       .mockResolvedValueOnce([]) // scheduled due to open
-      .mockResolvedValueOnce([{ _id: cycleId, name: "Fall 2026", status: "open" } as any]) // open due to close
+      .mockResolvedValueOnce([{ _id: cycleId, name: "Fall 2026", status: "open" } as never]) // open due to close
       .mockResolvedValueOnce([]);
 
     vi.spyOn(AllocationCycleModel, "findOneAndUpdate").mockResolvedValueOnce({
@@ -46,7 +46,7 @@ describe("Phase 4.1: Worker & Window Scheduler", () => {
       institution_id: new Types.ObjectId(),
       name: "Fall 2026",
       status: "closed",
-    } as any);
+    } as never);
 
     const result = await processCycleWindowCheck();
     expect(result.closed).toBe(1);
@@ -73,12 +73,12 @@ describe("Phase 4.1: Worker & Window Scheduler", () => {
     vi.spyOn(AllocationCycleModel, "find")
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([cycleMock as any]);
+      .mockResolvedValueOnce([cycleMock as never]);
 
     vi.spyOn(AllocationCycleModel, "findOneAndUpdate").mockResolvedValueOnce({
       ...cycleMock,
       reminders_sent: { "48h": now },
-    } as any);
+    } as never);
 
     const result = await processCycleWindowCheck();
     expect(result.remindersSent).toBe(1);
@@ -91,7 +91,7 @@ describe("Phase 4.1: Worker & Window Scheduler", () => {
       emit: vi.fn(),
       duplicate: vi.fn().mockReturnThis(),
       options: { maxRetriesPerRequest: null },
-    } as any;
+    } as never;
 
     const { worker, queue } = await setupWindowScheduler(mockRedis);
     expect(worker).toBeDefined();
