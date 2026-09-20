@@ -9,18 +9,16 @@ const roomQuerySchema = paginationQuerySchema.extend({
   block_id: z.string().optional(),
   hostel_id: z.string().optional(),
   room_type: z.enum(["single", "double", "triple", "quad", "dorm"]).optional(),
-  ac: z
-    .preprocess((val) => {
-      if (typeof val === "boolean") return val;
-      if (typeof val === "string") return val.toLowerCase() === "true";
-      return undefined;
-    }, z.boolean().optional()),
-  accessible: z
-    .preprocess((val) => {
-      if (typeof val === "boolean") return val;
-      if (typeof val === "string") return val.toLowerCase() === "true";
-      return undefined;
-    }, z.boolean().optional()),
+  ac: z.preprocess((val) => {
+    if (typeof val === "boolean") return val;
+    if (typeof val === "string") return val.toLowerCase() === "true";
+    return undefined;
+  }, z.boolean().optional()),
+  accessible: z.preprocess((val) => {
+    if (typeof val === "boolean") return val;
+    if (typeof val === "string") return val.toLowerCase() === "true";
+    return undefined;
+  }, z.boolean().optional()),
   status: z.enum(["available", "full", "maintenance", "reserved"]).optional(),
 });
 
@@ -51,15 +49,12 @@ export const GET = apiHandler(
     if (query.ac !== undefined) filter.ac = query.ac;
     if (query.accessible !== undefined) filter.accessible = query.accessible;
 
-    const result = await repo.paginate(
-      filter,
-      {
-        ...(query.limit ? { limit: query.limit } : {}),
-        ...(query.cursor ? { cursor: query.cursor } : {}),
-        sortField: (query.sortField as "_id") ?? "_id",
-        sortOrder: query.sortOrder ?? "asc",
-      },
-    );
+    const result = await repo.paginate(filter, {
+      ...(query.limit ? { limit: query.limit } : {}),
+      ...(query.cursor ? { cursor: query.cursor } : {}),
+      sortField: (query.sortField as "_id") ?? "_id",
+      sortOrder: query.sortOrder ?? "asc",
+    });
 
     return result;
   },

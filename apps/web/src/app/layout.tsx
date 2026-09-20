@@ -13,7 +13,10 @@ import { Toaster } from "sonner";
 import "./globals.css";
 
 // Node 25 experimental localStorage workaround: uninitialized globalThis.localStorage breaks libraries
-if (typeof globalThis.localStorage !== "undefined" && typeof (globalThis as unknown as Storage).getItem !== "function") {
+if (
+  typeof globalThis.localStorage !== "undefined" &&
+  typeof (globalThis as unknown as Storage).getItem !== "function"
+) {
   delete (globalThis as Record<string, unknown>).localStorage;
 }
 

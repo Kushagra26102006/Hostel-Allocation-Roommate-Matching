@@ -1,12 +1,5 @@
 export type OrdinalItemKey =
-  | "sleep"
-  | "study"
-  | "tidiness"
-  | "noise"
-  | "guests"
-  | "temperature"
-  | "social"
-  | "sharing";
+  "sleep" | "study" | "tidiness" | "noise" | "guests" | "temperature" | "social" | "sharing";
 
 export type CategoricalItemKey = "smoking";
 

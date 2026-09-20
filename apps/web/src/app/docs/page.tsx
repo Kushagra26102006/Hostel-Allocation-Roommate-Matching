@@ -18,7 +18,9 @@ export default function DocsPage() {
           </div>
           <div>
             <h1 className="text-base font-bold text-white">HostelHub OpenAPI 3.1 Explorer</h1>
-            <p className="text-xs text-slate-400">Development Documentation &bull; Spec: /api/v1/openapi.json</p>
+            <p className="text-xs text-slate-400">
+              Development Documentation &bull; Spec: /api/v1/openapi.json
+            </p>
           </div>
         </div>
         <a

@@ -31,9 +31,7 @@ export const Default: Story = {
             Inspect current room mattress, study table, and key allocations.
           </SheetDescription>
         </SheetHeader>
-        <div className="py-4 text-sm text-muted">
-          All items verified upon semester check-in.
-        </div>
+        <div className="py-4 text-sm text-muted">All items verified upon semester check-in.</div>
       </SheetContent>
     </Sheet>
   ),

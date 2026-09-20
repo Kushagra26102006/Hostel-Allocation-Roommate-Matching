@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  pairScore,
-  roomScore,
-  dealBreakerConflict,
-} from "../compatibility/index.js";
+import { pairScore, roomScore, dealBreakerConflict } from "../compatibility/index.js";
 import type { QuestionnaireAnswers, QuestionnaireItemKey } from "../compatibility/types.js";
 
 describe("Compatibility Scoring Engine", () => {
@@ -148,7 +144,16 @@ describe("Compatibility Scoring Engine", () => {
   describe("Property Tests", () => {
     const generateRandomAnswers = (seed: number): QuestionnaireAnswers => {
       const result: QuestionnaireAnswers = {};
-      const keys: QuestionnaireItemKey[] = ["sleep", "study", "tidiness", "noise", "guests", "temperature", "social", "sharing"];
+      const keys: QuestionnaireItemKey[] = [
+        "sleep",
+        "study",
+        "tidiness",
+        "noise",
+        "guests",
+        "temperature",
+        "social",
+        "sharing",
+      ];
       keys.forEach((key, idx) => {
         if ((seed + idx) % 3 !== 0) {
           const val = (((seed * 7 + idx * 3) % 5) + 1) as number;

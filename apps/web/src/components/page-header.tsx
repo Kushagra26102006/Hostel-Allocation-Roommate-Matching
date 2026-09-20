@@ -69,15 +69,11 @@ export function PageHeader({
 
           {/* Title + description */}
           <h1 className="font-heading text-xl font-bold text-text truncate">{title}</h1>
-          {description && (
-            <p className="text-sm text-muted">{description}</p>
-          )}
+          {description && <p className="text-sm text-muted">{description}</p>}
         </div>
 
         {/* Actions slot */}
-        {actions && (
-          <div className="flex items-center gap-2 shrink-0">{actions}</div>
-        )}
+        {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
       </div>
     </header>
   );

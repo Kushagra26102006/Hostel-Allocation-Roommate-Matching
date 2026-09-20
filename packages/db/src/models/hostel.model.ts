@@ -1,8 +1,5 @@
 import mongoose, { Schema, model, type Model } from "mongoose";
-import {
-  baseSchemaPlugin,
-  type BaseTenantDocument,
-} from "../plugins/base-schema.plugin.js";
+import { baseSchemaPlugin, type BaseTenantDocument } from "../plugins/base-schema.plugin.js";
 
 export type GenderPolicy = "male" | "female" | "coed";
 export type HostelStatus = "active" | "inactive" | "maintenance";

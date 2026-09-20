@@ -101,7 +101,12 @@ function scanDir(dir) {
       // Check for raw text between JSX tags that might be unlocalized (heuristic)
       // Excludes components that use messages or have legitimate technical text
       const rawTextMatches = content.match(/>[A-Za-z]{4,}\s+[A-Za-z]{4,}</g);
-      if (rawTextMatches && !content.includes("getMessages") && !content.includes("messages") && !fullPath.includes("components/ui")) {
+      if (
+        rawTextMatches &&
+        !content.includes("getMessages") &&
+        !content.includes("messages") &&
+        !fullPath.includes("components/ui")
+      ) {
         // Warning flag
       }
     }

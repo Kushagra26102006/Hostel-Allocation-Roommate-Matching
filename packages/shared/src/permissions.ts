@@ -12,12 +12,7 @@
  */
 
 export type UserRole =
-  | "student"
-  | "warden"
-  | "chief_warden"
-  | "hostel_admin"
-  | "dean"
-  | "sys_admin";
+  "student" | "warden" | "chief_warden" | "hostel_admin" | "dean" | "sys_admin";
 
 export type Capability =
   // Student capabilities
@@ -129,9 +124,7 @@ export function hasPermission(
   roles: UserRole | readonly UserRole[],
   capability: Capability,
 ): boolean {
-  const roleList: readonly UserRole[] = Array.isArray(roles)
-    ? roles
-    : [roles];
+  const roleList: readonly UserRole[] = Array.isArray(roles) ? roles : [roles];
   return roleList.some((r) => {
     const caps = ROLE_PERMISSIONS[r];
     return caps ? caps.includes(capability) : false;

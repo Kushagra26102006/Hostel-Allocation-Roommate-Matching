@@ -48,9 +48,7 @@ export function FeatureBentoGrid() {
           >
             {copy.title}
           </h2>
-          <p className="mt-4 text-base text-muted sm:text-lg">
-            {copy.subtitle}
-          </p>
+          <p className="mt-4 text-base text-muted sm:text-lg">{copy.subtitle}</p>
         </div>
 
         {/* Bento Grid */}
@@ -82,12 +80,8 @@ export function FeatureBentoGrid() {
                   </div>
 
                   {/* Title & Description */}
-                  <h3 className="mt-6 font-heading text-xl font-bold text-text">
-                    {card.title}
-                  </h3>
-                  <p className="mt-2.5 text-sm leading-relaxed text-muted">
-                    {card.description}
-                  </p>
+                  <h3 className="mt-6 font-heading text-xl font-bold text-text">{card.title}</h3>
+                  <p className="mt-2.5 text-sm leading-relaxed text-muted">{card.description}</p>
                 </div>
 
                 {/* Bottom decorative preview */}

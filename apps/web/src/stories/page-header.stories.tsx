@@ -33,10 +33,7 @@ export const Dark: Story = {
   args: {
     title: "Hostel Hub Security",
     description: "Night curfews and automated gate pass validations",
-    breadcrumb: [
-      { label: "Admin", href: "/" },
-      { label: "Gate Passes" },
-    ],
+    breadcrumb: [{ label: "Admin", href: "/" }, { label: "Gate Passes" }],
     actions: (
       <Button variant="secondary" size="sm">
         Export CSV

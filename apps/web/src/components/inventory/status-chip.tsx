@@ -1,14 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  CheckCircle2,
-  Clock,
-  UserCheck,
-  AlertTriangle,
-  Wrench,
-  BookmarkCheck,
-} from "lucide-react";
+import { CheckCircle2, Clock, UserCheck, AlertTriangle, Wrench, BookmarkCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type InventoryStatus =
@@ -30,7 +23,13 @@ interface StatusChipProps {
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; icon: React.ComponentType<{ className?: string }>; bg: string; text: string; border: string }
+  {
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    bg: string;
+    text: string;
+    border: string;
+  }
 > = {
   available: {
     label: "Available",

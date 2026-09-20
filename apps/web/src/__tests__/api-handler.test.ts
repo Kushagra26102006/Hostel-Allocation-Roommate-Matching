@@ -286,12 +286,9 @@ describe("Shared API Infrastructure (apiHandler)", () => {
     });
 
     it("converts thrown VersionConflictError to 409 VERSION_CONFLICT Problem", async () => {
-      const conflictHandler = apiHandler(
-        { public: true },
-        async () => {
-          throw new VersionConflictError("doc_123", 2, 3);
-        },
-      );
+      const conflictHandler = apiHandler({ public: true }, async () => {
+        throw new VersionConflictError("doc_123", 2, 3);
+      });
 
       const res = await conflictHandler();
       const problem = await res.json();

@@ -124,11 +124,10 @@ export default function MfaEnrolPage() {
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 mb-3 shadow-inner">
           <ShieldAlert className="w-6 h-6" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">
-          Mandatory MFA Enrolment
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">Mandatory MFA Enrolment</h1>
         <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-          Administrative &amp; governance roles require Time-based One-Time Password (TOTP) verification.
+          Administrative &amp; governance roles require Time-based One-Time Password (TOTP)
+          verification.
         </p>
       </div>
 
@@ -185,7 +184,11 @@ export default function MfaEnrolPage() {
                 onClick={handleCopyCodes}
                 className="flex items-center gap-1 text-[11px] text-slate-300 hover:text-white bg-white/5 px-2 py-1 rounded-md transition-colors"
               >
-                {copiedCodes ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                {copiedCodes ? (
+                  <Check className="w-3 h-3 text-emerald-400" />
+                ) : (
+                  <Copy className="w-3 h-3" />
+                )}
                 <span>Copy</span>
               </button>
               <button

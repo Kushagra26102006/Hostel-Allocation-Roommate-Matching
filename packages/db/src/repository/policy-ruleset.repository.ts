@@ -1,8 +1,5 @@
 import { Types, type ClientSession, type FilterQuery } from "mongoose";
-import {
-  PolicyRuleSetModel,
-  type PolicyRuleSetDocument,
-} from "../models/policy-ruleset.model.js";
+import { PolicyRuleSetModel, type PolicyRuleSetDocument } from "../models/policy-ruleset.model.js";
 import { BaseRepository } from "./base.repository.js";
 
 export class PolicyRuleSetRepository extends BaseRepository<PolicyRuleSetDocument> {
@@ -10,9 +7,7 @@ export class PolicyRuleSetRepository extends BaseRepository<PolicyRuleSetDocumen
     super(PolicyRuleSetModel, institutionId);
   }
 
-  public async findLatestActive(
-    session?: ClientSession,
-  ): Promise<PolicyRuleSetDocument | null> {
+  public async findLatestActive(session?: ClientSession): Promise<PolicyRuleSetDocument | null> {
     const filter: FilterQuery<PolicyRuleSetDocument> = {
       institution_id: this.getInstitutionId(),
     };
@@ -33,11 +28,7 @@ export class PolicyRuleSetRepository extends BaseRepository<PolicyRuleSetDocumen
       institution_id: this.getInstitutionId(),
     };
 
-    let query = this.model.findOneAndUpdate(
-      filter,
-      { $set: { is_locked: true } },
-      { new: true },
-    );
+    let query = this.model.findOneAndUpdate(filter, { $set: { is_locked: true } }, { new: true });
     if (session) query = query.session(session);
     const result = await query.exec();
     return result as PolicyRuleSetDocument | null;

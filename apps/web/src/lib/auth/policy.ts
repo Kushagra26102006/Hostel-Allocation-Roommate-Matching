@@ -1,8 +1,4 @@
-import {
-  type Capability,
-  type UserRole,
-  hasPermission,
-} from "@hostelhub/shared";
+import { type Capability, type UserRole, hasPermission } from "@hostelhub/shared";
 
 export class ForbiddenError extends Error {
   public readonly capability?: Capability | undefined;
@@ -78,16 +74,17 @@ export function canAccessApplication(
   const appStudentId = String(application.studentId ?? application.student_id ?? "");
 
   // Student can only access their own application
-  if (user.roles.includes("student") && !user.roles.some((r) => ["chief_warden", "hostel_admin", "dean", "sys_admin", "warden"].includes(r))) {
+  if (
+    user.roles.includes("student") &&
+    !user.roles.some((r) =>
+      ["chief_warden", "hostel_admin", "dean", "sys_admin", "warden"].includes(r),
+    )
+  ) {
     return appStudentId === user.id;
   }
 
   // Institutional leadership & operations can access all applications in institution
-  if (
-    user.roles.some((r) =>
-      ["chief_warden", "hostel_admin", "dean", "sys_admin"].includes(r),
-    )
-  ) {
+  if (user.roles.some((r) => ["chief_warden", "hostel_admin", "dean", "sys_admin"].includes(r))) {
     return true;
   }
 
@@ -131,11 +128,7 @@ export function canAccessHostel(
   }
 
   // Campus-wide roles have access to all hostels
-  if (
-    user.roles.some((r) =>
-      ["chief_warden", "hostel_admin", "dean", "sys_admin"].includes(r),
-    )
-  ) {
+  if (user.roles.some((r) => ["chief_warden", "hostel_admin", "dean", "sys_admin"].includes(r))) {
     return true;
   }
 

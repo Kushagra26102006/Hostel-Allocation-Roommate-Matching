@@ -1,16 +1,8 @@
 import mongoose, { Schema, model, type Model } from "mongoose";
-import {
-  baseSchemaPlugin,
-  type BaseTenantDocument,
-} from "../plugins/base-schema.plugin.js";
+import { baseSchemaPlugin, type BaseTenantDocument } from "../plugins/base-schema.plugin.js";
 
 export type UserRole =
-  | "student"
-  | "warden"
-  | "chief_warden"
-  | "hostel_admin"
-  | "dean"
-  | "sys_admin";
+  "student" | "warden" | "chief_warden" | "hostel_admin" | "dean" | "sys_admin";
 
 export type UserStatus = "active" | "suspended" | "pending" | "invited";
 
@@ -82,14 +74,7 @@ const userSchema = new Schema<UserDocument>(
     roles: {
       type: [String],
       required: true,
-      enum: [
-        "student",
-        "warden",
-        "chief_warden",
-        "hostel_admin",
-        "dean",
-        "sys_admin",
-      ],
+      enum: ["student", "warden", "chief_warden", "hostel_admin", "dean", "sys_admin"],
       default: ["student"],
       validate: {
         validator: (v: string[]) => Array.isArray(v) && v.length > 0,
@@ -136,5 +121,4 @@ userSchema.plugin(baseSchemaPlugin);
 userSchema.index({ institution_id: 1, email: 1 }, { unique: true });
 
 export const UserModel: Model<UserDocument> =
-  (mongoose.models?.["User"] as Model<UserDocument>) ||
-  model<UserDocument>("User", userSchema);
+  (mongoose.models?.["User"] as Model<UserDocument>) || model<UserDocument>("User", userSchema);

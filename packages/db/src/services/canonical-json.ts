@@ -30,7 +30,9 @@ export function computeAuditHash(
     process.env["MASTER_ENCRYPTION_KEY"] ??
     "hostelhub_master_secret_encryption_key_32_bytes_long!";
 
-  return createHmac("sha256", key).update(prevHash + canonical).digest("hex");
+  return createHmac("sha256", key)
+    .update(prevHash + canonical)
+    .digest("hex");
 }
 
 /**

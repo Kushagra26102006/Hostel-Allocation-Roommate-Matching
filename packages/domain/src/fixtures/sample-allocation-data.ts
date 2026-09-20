@@ -36,12 +36,54 @@ export const SAMPLE_HOSTELS: FixtureHostel[] = [
 ];
 
 export const SAMPLE_ROOMS: FixtureRoom[] = [
-  { id: "room-101", hostelId: "hostel-male-alpha", roomNumber: "A-101", roomType: "single", capacity: 1, accessible: true },
-  { id: "room-102", hostelId: "hostel-male-alpha", roomNumber: "A-102", roomType: "double", capacity: 2, accessible: false },
-  { id: "room-103", hostelId: "hostel-male-alpha", roomNumber: "A-103", roomType: "triple", capacity: 3, accessible: false },
-  { id: "room-201", hostelId: "hostel-female-beta", roomNumber: "B-201", roomType: "single", capacity: 1, accessible: false },
-  { id: "room-202", hostelId: "hostel-female-beta", roomNumber: "B-202", roomType: "double", capacity: 2, accessible: true },
-  { id: "room-203", hostelId: "hostel-female-beta", roomNumber: "B-203", roomType: "triple", capacity: 3, accessible: false },
+  {
+    id: "room-101",
+    hostelId: "hostel-male-alpha",
+    roomNumber: "A-101",
+    roomType: "single",
+    capacity: 1,
+    accessible: true,
+  },
+  {
+    id: "room-102",
+    hostelId: "hostel-male-alpha",
+    roomNumber: "A-102",
+    roomType: "double",
+    capacity: 2,
+    accessible: false,
+  },
+  {
+    id: "room-103",
+    hostelId: "hostel-male-alpha",
+    roomNumber: "A-103",
+    roomType: "triple",
+    capacity: 3,
+    accessible: false,
+  },
+  {
+    id: "room-201",
+    hostelId: "hostel-female-beta",
+    roomNumber: "B-201",
+    roomType: "single",
+    capacity: 1,
+    accessible: false,
+  },
+  {
+    id: "room-202",
+    hostelId: "hostel-female-beta",
+    roomNumber: "B-202",
+    roomType: "double",
+    capacity: 2,
+    accessible: true,
+  },
+  {
+    id: "room-203",
+    hostelId: "hostel-female-beta",
+    roomNumber: "B-203",
+    roomType: "triple",
+    capacity: 3,
+    accessible: false,
+  },
 ];
 
 export const SAMPLE_APPLICANTS: FixtureApplicant[] = [
@@ -237,7 +279,13 @@ export const SAMPLE_EDGE_CASES = {
   exactTies: ["student-01", "student-02"],
   oversizedGroup: {
     groupId: "group-oversized-5",
-    memberIds: ["student-06-grp", "student-07-grp", "student-08-grp", "student-09-grp", "student-10-grp"],
+    memberIds: [
+      "student-06-grp",
+      "student-07-grp",
+      "student-08-grp",
+      "student-09-grp",
+      "student-10-grp",
+    ],
     maxRoomCapacity: 3,
   },
   dealBreakerConflictPair: ["student-04-smoker", "student-05-non-smoker"],

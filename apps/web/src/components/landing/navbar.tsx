@@ -2,13 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import {
-  Building2,
-  Globe,
-  Menu,
-  X,
-  ArrowRight,
-} from "lucide-react";
+import { Building2, Globe, Menu, X, ArrowRight } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { getMessages } from "@/lib/i18n";
@@ -46,10 +40,7 @@ export function LandingNavbar() {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav
-          className="hidden items-center gap-1 md:flex"
-          aria-label="Main Navigation"
-        >
+        <nav className="hidden items-center gap-1 md:flex" aria-label="Main Navigation">
           {navLinks.map((link) => (
             <a
               key={link.href}
@@ -91,9 +82,7 @@ export function LandingNavbar() {
                   <span className="h-1.5 w-1.5 rounded-full bg-success" />
                 </button>
                 <div className="my-1 border-t border-border/50" />
-                <div className="px-2.5 py-1 text-[11px] text-muted">
-                  {nav.language.hi}
-                </div>
+                <div className="px-2.5 py-1 text-[11px] text-muted">{nav.language.hi}</div>
               </div>
             )}
           </div>

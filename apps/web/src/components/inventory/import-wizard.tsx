@@ -101,9 +101,7 @@ export function ImportWizard({ isOpen, onClose, onSuccess }: ImportWizardProps) 
     const mapping: Record<string, string> = {};
     for (const target of TARGET_FIELDS) {
       const match = headers.find(
-        (h) =>
-          h.toLowerCase().replace(/[\s_-]+/g, "") ===
-          target.key.toLowerCase(),
+        (h) => h.toLowerCase().replace(/[\s_-]+/g, "") === target.key.toLowerCase(),
       );
       if (match) {
         mapping[target.key] = match;
@@ -155,7 +153,9 @@ export function ImportWizard({ isOpen, onClose, onSuccess }: ImportWizardProps) 
       const result = await res.json();
       if (res.ok && result.success) {
         setCommitSuccess(true);
-        toast.success(`Successfully imported ${result.creates} new records and updated ${result.updates}!`);
+        toast.success(
+          `Successfully imported ${result.creates} new records and updated ${result.updates}!`,
+        );
         onSuccess();
       } else {
         toast.error("Commit failed: transaction rolled back with 0 changes.");
@@ -194,9 +194,7 @@ export function ImportWizard({ isOpen, onClose, onSuccess }: ImportWizardProps) 
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/60 px-6 py-4">
           <div>
-            <h2 className="text-lg font-bold text-foreground">
-              Bulk Inventory Import Wizard
-            </h2>
+            <h2 className="text-lg font-bold text-foreground">Bulk Inventory Import Wizard</h2>
             <p className="text-xs text-muted-foreground">
               Upload CSV or Excel spreadsheets to populate Hostels, Blocks, Rooms, and Beds.
             </p>
@@ -221,16 +219,13 @@ export function ImportWizard({ isOpen, onClose, onSuccess }: ImportWizardProps) 
               key={s.num}
               className={cn(
                 "flex items-center justify-center gap-1.5 py-3 border-r border-border/30 last:border-r-0 transition-colors",
-                step === s.num && "bg-primary/10 text-primary font-bold border-b-2 border-b-primary",
+                step === s.num &&
+                  "bg-primary/10 text-primary font-bold border-b-2 border-b-primary",
                 step > s.num && "text-emerald-600 dark:text-emerald-400 font-semibold",
                 step < s.num && "text-muted-foreground",
               )}
             >
-              {step > s.num ? (
-                <Check className="h-3.5 w-3.5" />
-              ) : (
-                <span>{s.label}</span>
-              )}
+              {step > s.num ? <Check className="h-3.5 w-3.5" /> : <span>{s.label}</span>}
             </div>
           ))}
         </div>
@@ -280,7 +275,8 @@ export function ImportWizard({ isOpen, onClose, onSuccess }: ImportWizardProps) 
           {step === 2 && (
             <div className="flex flex-col gap-4">
               <p className="text-xs text-muted-foreground">
-                Map each required inventory field to the corresponding column header from your uploaded file.
+                Map each required inventory field to the corresponding column header from your
+                uploaded file.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
@@ -290,9 +286,7 @@ export function ImportWizard({ isOpen, onClose, onSuccess }: ImportWizardProps) 
                     className="flex flex-col gap-1 rounded-lg border border-border/80 bg-card p-3 shadow-xs"
                   >
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-foreground">
-                        {field.label}
-                      </span>
+                      <span className="font-semibold text-foreground">{field.label}</span>
                       {field.required && (
                         <span className="rounded bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-bold text-rose-500">
                           Required
@@ -329,9 +323,7 @@ export function ImportWizard({ isOpen, onClose, onSuccess }: ImportWizardProps) 
               <div className="grid grid-cols-4 gap-3 text-center">
                 <div className="rounded-xl border border-border bg-card p-3">
                   <span className="text-xs text-muted-foreground">Total Rows</span>
-                  <div className="text-lg font-bold text-foreground">
-                    {dryRunReport.totalRows}
-                  </div>
+                  <div className="text-lg font-bold text-foreground">{dryRunReport.totalRows}</div>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-3">
                   <span className="text-xs text-muted-foreground">Validation</span>
@@ -346,15 +338,11 @@ export function ImportWizard({ isOpen, onClose, onSuccess }: ImportWizardProps) 
                 </div>
                 <div className="rounded-xl border border-border bg-card p-3">
                   <span className="text-xs text-muted-foreground">Creates</span>
-                  <div className="text-lg font-bold text-sky-500">
-                    {dryRunReport.creates}
-                  </div>
+                  <div className="text-lg font-bold text-sky-500">{dryRunReport.creates}</div>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-3">
                   <span className="text-xs text-muted-foreground">Updates</span>
-                  <div className="text-lg font-bold text-amber-500">
-                    {dryRunReport.updates}
-                  </div>
+                  <div className="text-lg font-bold text-amber-500">{dryRunReport.updates}</div>
                 </div>
               </div>
 
@@ -370,26 +358,20 @@ export function ImportWizard({ isOpen, onClose, onSuccess }: ImportWizardProps) 
                 </div>
 
                 <div className="flex h-5 w-full overflow-hidden rounded-md bg-muted/60 p-0.5 gap-[1px]">
-                  {Array.from({ length: Math.min(dryRunReport.totalRows, 120) }).map(
-                    (_, i) => {
-                      const rowNum = Math.floor(
-                        (i / 120) * dryRunReport.totalRows,
-                      ) + 1;
-                      const hasError = dryRunReport.errors.some(
-                        (e) => e.row === rowNum,
-                      );
-                      return (
-                        <div
-                          key={i}
-                          title={`Row ~${rowNum}: ${hasError ? "Validation Error" : "Valid"}`}
-                          className={cn(
-                            "flex-1 h-full rounded-[1px] transition-transform hover:scale-125 hover:z-10",
-                            hasError ? "bg-rose-500 shadow-xs" : "bg-emerald-500/80",
-                          )}
-                        />
-                      );
-                    },
-                  )}
+                  {Array.from({ length: Math.min(dryRunReport.totalRows, 120) }).map((_, i) => {
+                    const rowNum = Math.floor((i / 120) * dryRunReport.totalRows) + 1;
+                    const hasError = dryRunReport.errors.some((e) => e.row === rowNum);
+                    return (
+                      <div
+                        key={i}
+                        title={`Row ~${rowNum}: ${hasError ? "Validation Error" : "Valid"}`}
+                        className={cn(
+                          "flex-1 h-full rounded-[1px] transition-transform hover:scale-125 hover:z-10",
+                          hasError ? "bg-rose-500 shadow-xs" : "bg-emerald-500/80",
+                        )}
+                      />
+                    );
+                  })}
                 </div>
               </div>
 
@@ -436,7 +418,8 @@ export function ImportWizard({ isOpen, onClose, onSuccess }: ImportWizardProps) 
                 <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-700 dark:text-emerald-400">
                   <CheckCircle2 className="h-4 w-4 shrink-0" />
                   <span>
-                    Ready to commit! All {dryRunReport.totalRows} rows passed schema and duplicate checks.
+                    Ready to commit! All {dryRunReport.totalRows} rows passed schema and duplicate
+                    checks.
                   </span>
                 </div>
               )}
@@ -455,21 +438,21 @@ export function ImportWizard({ isOpen, onClose, onSuccess }: ImportWizardProps) 
                     Import Completed Successfully!
                   </h3>
                   <p className="text-xs text-muted-foreground max-w-sm text-center">
-                    All inventory records committed in one transaction. The tree view and occupancy metrics have been updated.
+                    All inventory records committed in one transaction. The tree view and occupancy
+                    metrics have been updated.
                   </p>
                 </>
               ) : (
                 <>
                   <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                    <RefreshCw
-                      className={cn("h-8 w-8", isCommitting && "animate-spin")}
-                    />
+                    <RefreshCw className={cn("h-8 w-8", isCommitting && "animate-spin")} />
                   </div>
                   <h3 className="text-base font-bold text-foreground">
                     {isCommitting ? "Committing Inventory..." : "Ready to Commit"}
                   </h3>
                   <p className="text-xs text-muted-foreground max-w-sm text-center">
-                    Writes are executed in a single atomic transaction. Any error will immediately roll back all operations.
+                    Writes are executed in a single atomic transaction. Any error will immediately
+                    roll back all operations.
                   </p>
                 </>
               )}

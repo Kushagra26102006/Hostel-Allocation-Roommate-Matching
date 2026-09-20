@@ -11,21 +11,31 @@ const cycleQuerySchema = paginationQuerySchema.extend({
 const createCycleSchema = z.object({
   academic_year: z.string().min(1, "Academic year is required"),
   name: z.string().min(1, "Name is required"),
-  window_open: z.string().or(z.date()).transform((val) => new Date(val)),
-  window_close: z.string().or(z.date()).transform((val) => new Date(val)),
-  quota_buckets: z.array(
-    z.object({
-      name: z.string().min(1),
-      capacity: z.number().min(0),
-    }),
-  ).default([]),
-  document_requirements: z.array(
-    z.object({
-      type: z.string().min(1),
-      label: z.string().min(1),
-      required: z.boolean().default(true),
-    }),
-  ).default([]),
+  window_open: z
+    .string()
+    .or(z.date())
+    .transform((val) => new Date(val)),
+  window_close: z
+    .string()
+    .or(z.date())
+    .transform((val) => new Date(val)),
+  quota_buckets: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        capacity: z.number().min(0),
+      }),
+    )
+    .default([]),
+  document_requirements: z
+    .array(
+      z.object({
+        type: z.string().min(1),
+        label: z.string().min(1),
+        required: z.boolean().default(true),
+      }),
+    )
+    .default([]),
   priority_tier_order: z.array(z.string()).default(["pwd", "single_parent", "merit", "general"]),
   status: z.enum(["draft", "scheduled", "open", "closed", "archived"]).default("draft"),
 });
@@ -42,15 +52,12 @@ export const GET = apiHandler(
     if (query.academic_year) filter.academic_year = query.academic_year;
     if (query.status) filter.status = query.status;
 
-    const result = await repo.paginate(
-      filter,
-      {
-        ...(query.limit ? { limit: query.limit } : {}),
-        ...(query.cursor ? { cursor: query.cursor } : {}),
-        sortField: (query.sortField as "_id") ?? "_id",
-        sortOrder: query.sortOrder ?? "desc",
-      },
-    );
+    const result = await repo.paginate(filter, {
+      ...(query.limit ? { limit: query.limit } : {}),
+      ...(query.cursor ? { cursor: query.cursor } : {}),
+      sortField: (query.sortField as "_id") ?? "_id",
+      sortOrder: query.sortOrder ?? "desc",
+    });
 
     return result;
   },

@@ -3,7 +3,8 @@ import { RuleBuilder } from "@/components/policy/rule-builder";
 
 export const metadata = {
   title: "Eligibility Rule Builder & Policy | HostelHub Staff",
-  description: "Configure eligibility rules using AST DSL, preview in plain language, test applicants, and export policy mappings.",
+  description:
+    "Configure eligibility rules using AST DSL, preview in plain language, test applicants, and export policy mappings.",
 };
 
 export default function StaffPolicyPage() {

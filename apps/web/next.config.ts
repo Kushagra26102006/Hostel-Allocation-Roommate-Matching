@@ -1,11 +1,15 @@
 import type { NextConfig } from "next";
 
 // Node 25 experimental localStorage workaround: uninitialized globalThis.localStorage breaks libraries like next-themes
-if (typeof globalThis.localStorage !== "undefined" && typeof (globalThis as unknown as Storage).getItem !== "function") {
+if (
+  typeof globalThis.localStorage !== "undefined" &&
+  typeof (globalThis as unknown as Storage).getItem !== "function"
+) {
   delete (globalThis as Record<string, unknown>).localStorage;
 }
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   // Allow importing workspace packages as source (no pre-build needed in dev)
   transpilePackages: ["@hostelhub/domain", "@hostelhub/shared"],
   images: {

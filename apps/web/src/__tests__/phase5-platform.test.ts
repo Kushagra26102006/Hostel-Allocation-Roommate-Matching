@@ -2,7 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler";
 import { GET as openApiRoute } from "@/app/api/v1/openapi.json/route";
-import { checkIdempotency, saveIdempotentResponse, clearMemoryIdempotencyStore } from "@/lib/api/idempotency";
+import {
+  checkIdempotency,
+  saveIdempotentResponse,
+  clearMemoryIdempotencyStore,
+} from "@/lib/api/idempotency";
 
 describe("Phase 5: API Platform Security & Resiliency", () => {
   beforeEach(() => {
@@ -60,14 +64,31 @@ describe("Phase 5: API Platform Security & Resiliency", () => {
       const firstCheck = await checkIdempotency(key, inst, body, user, "POST", "/api/v1/groups");
       expect(firstCheck.isReplay).toBe(false);
 
-      await saveIdempotentResponse(key, inst, body, 200, { "Content-Type": "application/json" }, JSON.stringify({ ok: true }), user, "POST", "/api/v1/groups");
+      await saveIdempotentResponse(
+        key,
+        inst,
+        body,
+        200,
+        { "Content-Type": "application/json" },
+        JSON.stringify({ ok: true }),
+        user,
+        "POST",
+        "/api/v1/groups",
+      );
 
       // Second identical call is recognized as replay
       const secondCheck = await checkIdempotency(key, inst, body, user, "POST", "/api/v1/groups");
       expect(secondCheck.isReplay).toBe(true);
 
       // Call on DIFFERENT route with same key is NOT a replay
-      const diffRouteCheck = await checkIdempotency(key, inst, body, user, "POST", "/api/v1/applications");
+      const diffRouteCheck = await checkIdempotency(
+        key,
+        inst,
+        body,
+        user,
+        "POST",
+        "/api/v1/applications",
+      );
       expect(diffRouteCheck.isReplay).toBe(false);
     });
   });

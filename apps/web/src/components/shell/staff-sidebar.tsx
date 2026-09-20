@@ -3,12 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Building2,
-  ChevronLeft,
-  ChevronRight,
-  LogOut,
-} from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useRoleStore, ROLES_METADATA, type Role } from "@/stores/role-store";
@@ -56,10 +51,7 @@ export function StaffSidebar() {
       </div>
 
       {/* Navigation List */}
-      <nav
-        aria-label="Staff Navigation"
-        className="flex-1 overflow-y-auto px-2 py-4 space-y-1"
-      >
+      <nav aria-label="Staff Navigation" className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
         {!collapsed && (
           <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted font-mono">
             {messages.shell.sidebar.navigation}
@@ -115,11 +107,7 @@ export function StaffSidebar() {
         <button
           type="button"
           onClick={() => setCollapsed((prev) => !prev)}
-          aria-label={
-            collapsed
-              ? messages.shell.sidebar.expand
-              : messages.shell.sidebar.collapse
-          }
+          aria-label={collapsed ? messages.shell.sidebar.expand : messages.shell.sidebar.collapse}
           className="flex w-full items-center justify-center rounded-ctrl py-2 text-xs text-muted hover:bg-surface hover:text-text transition-colors"
         >
           {collapsed ? (

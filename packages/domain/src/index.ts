@@ -5,7 +5,7 @@
 
 export type HostelId = string & { readonly _brand: "HostelId" };
 
-export interface Hostel {
+export interface LegacyHostel {
   id: HostelId;
   name: string;
   city: string;
@@ -21,3 +21,4 @@ export * from "./eligibility/index.js";
 export * from "./compatibility/index.js";
 export * from "./fixtures/sample-allocation-data.js";
 export * from "./allocation/index.js";
+export * from "./review/index.js";

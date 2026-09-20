@@ -1,8 +1,5 @@
 import mongoose, { Schema, model, type Model, type Types } from "mongoose";
-import {
-  baseSchemaPlugin,
-  type BaseTenantDocument,
-} from "../plugins/base-schema.plugin.js";
+import { baseSchemaPlugin, type BaseTenantDocument } from "../plugins/base-schema.plugin.js";
 
 export interface IBlock {
   hostel_id: Types.ObjectId;
@@ -49,10 +46,7 @@ const blockSchema = new Schema<BlockDocument>(
 blockSchema.plugin(baseSchemaPlugin);
 
 // Compound index for tenant-scoped block and floor lookup
-blockSchema.index(
-  { institution_id: 1, hostel_id: 1, name: 1, floor_no: 1 },
-  { unique: true },
-);
+blockSchema.index({ institution_id: 1, hostel_id: 1, name: 1, floor_no: 1 }, { unique: true });
 
 export const BlockModel: Model<BlockDocument> =
   (mongoose.models?.["Block"] as Model<BlockDocument>) ||

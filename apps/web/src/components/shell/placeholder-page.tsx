@@ -119,7 +119,8 @@ export function PlaceholderPage({
           title={title}
           description={description}
           action={{
-            label: simulatedCount > 0 ? `Simulated ${simulatedCount}x` : messages.common.emptyAction,
+            label:
+              simulatedCount > 0 ? `Simulated ${simulatedCount}x` : messages.common.emptyAction,
             onClick: () => setSimulatedCount((prev) => prev + 1),
           }}
           className="max-w-md w-full"

@@ -1,8 +1,5 @@
 import mongoose, { Schema, model, type Model, type Types } from "mongoose";
-import {
-  baseSchemaPlugin,
-  type BaseTenantDocument,
-} from "../plugins/base-schema.plugin.js";
+import { baseSchemaPlugin, type BaseTenantDocument } from "../plugins/base-schema.plugin.js";
 
 export interface IPreference {
   application_id: Types.ObjectId;
@@ -13,9 +10,7 @@ export interface IPreference {
   roommate_ids: Types.ObjectId[];
 }
 
-export interface PreferenceDocument
-  extends BaseTenantDocument,
-    IPreference {}
+export interface PreferenceDocument extends BaseTenantDocument, IPreference {}
 
 const preferenceSchema = new Schema<PreferenceDocument>(
   {
@@ -60,10 +55,7 @@ const preferenceSchema = new Schema<PreferenceDocument>(
 preferenceSchema.plugin(baseSchemaPlugin);
 
 // Unique compound index: application_id + rank
-preferenceSchema.index(
-  { institution_id: 1, application_id: 1, rank: 1 },
-  { unique: true },
-);
+preferenceSchema.index({ institution_id: 1, application_id: 1, rank: 1 }, { unique: true });
 
 export const PreferenceModel: Model<PreferenceDocument> =
   (mongoose.models?.["Preference"] as Model<PreferenceDocument>) ||

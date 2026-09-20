@@ -1,10 +1,4 @@
-import mongoose, {
-  Schema,
-  model,
-  type Document,
-  type Model,
-  type Types,
-} from "mongoose";
+import mongoose, { Schema, model, type Document, type Model, type Types } from "mongoose";
 
 export interface IAuditEntry {
   institution_id: Types.ObjectId;
@@ -24,9 +18,7 @@ export interface AuditEntryDocument extends Document, IAuditEntry {}
 
 export class ImmutableAuditError extends Error {
   constructor(operation: string) {
-    super(
-      `AuditEntry is immutable and append-only: "${operation}" is strictly prohibited.`,
-    );
+    super(`AuditEntry is immutable and append-only: "${operation}" is strictly prohibited.`);
     this.name = "ImmutableAuditError";
     Object.setPrototypeOf(this, ImmutableAuditError.prototype);
   }
@@ -104,7 +96,8 @@ const blockedOperations = [
 
 for (const op of blockedOperations) {
   auditEntrySchema.pre(op, function () {
-    const options = (this as unknown as { getOptions?: () => Record<string, unknown> }).getOptions?.() ?? {};
+    const options =
+      (this as unknown as { getOptions?: () => Record<string, unknown> }).getOptions?.() ?? {};
     if (options["__allowTamperingForTesting"]) {
       return;
     }
@@ -114,7 +107,8 @@ for (const op of blockedOperations) {
 
 // Block document-level delete
 auditEntrySchema.pre("deleteOne", { document: true, query: false }, function () {
-  const options = (this as unknown as { $__?: { options?: Record<string, unknown> } }).$__?.options ?? {};
+  const options =
+    (this as unknown as { $__?: { options?: Record<string, unknown> } }).$__?.options ?? {};
   if (options["__allowTamperingForTesting"]) {
     return;
   }

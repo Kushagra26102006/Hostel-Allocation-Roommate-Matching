@@ -17,7 +17,7 @@ const MAGIC_PATTERNS: Array<{
       buf[0] === 0x25 && // %
       buf[1] === 0x50 && // P
       buf[2] === 0x44 && // D
-      buf[3] === 0x46,   // F
+      buf[3] === 0x46, // F
   },
   {
     mime: "image/png",
@@ -36,11 +36,7 @@ const MAGIC_PATTERNS: Array<{
   {
     mime: "image/jpeg",
     extensions: [".jpg", ".jpeg"],
-    check: (buf) =>
-      buf.length >= 3 &&
-      buf[0] === 0xff &&
-      buf[1] === 0xd8 &&
-      buf[2] === 0xff,
+    check: (buf) => buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff,
   },
 ];
 

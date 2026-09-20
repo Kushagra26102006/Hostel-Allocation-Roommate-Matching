@@ -28,7 +28,7 @@ export const useMotionStore = create<MotionStore>()(
     {
       name: "hostelhub-motion-preference",
       storage: createJSONStorage(() =>
-        typeof window !== "undefined" ? window.localStorage : noopStorage
+        typeof window !== "undefined" ? window.localStorage : noopStorage,
       ),
     },
   ),

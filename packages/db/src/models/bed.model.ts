@@ -1,8 +1,5 @@
 import mongoose, { Schema, model, type Model, type Types } from "mongoose";
-import {
-  baseSchemaPlugin,
-  type BaseTenantDocument,
-} from "../plugins/base-schema.plugin.js";
+import { baseSchemaPlugin, type BaseTenantDocument } from "../plugins/base-schema.plugin.js";
 
 export type BedStatus = "available" | "held" | "out_of_service" | "occupied";
 
@@ -53,11 +50,7 @@ const bedSchema = new Schema<BedDocument>(
 bedSchema.plugin(baseSchemaPlugin);
 
 // Unique bed per room within an institution
-bedSchema.index(
-  { institution_id: 1, room_id: 1, bed_no: 1 },
-  { unique: true },
-);
+bedSchema.index({ institution_id: 1, room_id: 1, bed_no: 1 }, { unique: true });
 
 export const BedModel: Model<BedDocument> =
-  (mongoose.models?.["Bed"] as Model<BedDocument>) ||
-  model<BedDocument>("Bed", bedSchema);
+  (mongoose.models?.["Bed"] as Model<BedDocument>) || model<BedDocument>("Bed", bedSchema);

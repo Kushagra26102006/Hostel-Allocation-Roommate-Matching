@@ -26,7 +26,9 @@ export const Default: Story = {
         <p className="text-sm text-muted">
           Hover over this card to see the radial cursor spotlight effect following the pointer.
         </p>
-        <Button variant="primary" size="sm">Interactive Action</Button>
+        <Button variant="primary" size="sm">
+          Interactive Action
+        </Button>
       </GlassCard>
     </div>
   ),
@@ -38,10 +40,10 @@ export const Dark: Story = {
     <div className="p-12 bg-gradient-to-tr from-brand-900/40 via-surface to-background rounded-hero">
       <GlassCard className="p-6 max-w-md space-y-4" spotlight={true}>
         <h3 className="font-heading font-bold text-lg text-text">Dark GlassCard</h3>
-        <p className="text-sm text-muted">
-          Spotlight tuned with dark mode token opacity.
-        </p>
-        <Button variant="secondary" size="sm">Action</Button>
+        <p className="text-sm text-muted">Spotlight tuned with dark mode token opacity.</p>
+        <Button variant="secondary" size="sm">
+          Action
+        </Button>
       </GlassCard>
     </div>
   ),

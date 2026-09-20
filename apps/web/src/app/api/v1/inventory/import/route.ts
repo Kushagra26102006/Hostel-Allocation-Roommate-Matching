@@ -1,10 +1,6 @@
 import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler.js";
-import {
-  parseCsv,
-  parseXlsx,
-  executeInventoryImport,
-} from "@/lib/inventory/import-engine.js";
+import { parseCsv, parseXlsx, executeInventoryImport } from "@/lib/inventory/import-engine.js";
 import { ApiProblemError } from "@/lib/api/errors.js";
 
 const importQuerySchema = z.object({
@@ -97,11 +93,7 @@ export const POST = apiHandler(
       });
     }
 
-    const result = await executeInventoryImport(
-      institution_id,
-      rawRows,
-      Boolean(query.dry_run),
-    );
+    const result = await executeInventoryImport(institution_id, rawRows, Boolean(query.dry_run));
 
     return result;
   },

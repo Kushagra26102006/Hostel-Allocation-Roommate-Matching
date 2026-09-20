@@ -35,9 +35,7 @@ export function LandingFooter() {
               </span>
             </Link>
 
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
-              {footer.tagline}
-            </p>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">{footer.tagline}</p>
 
             {/* Live Operational Status badge */}
             <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs font-semibold text-success">
@@ -109,9 +107,7 @@ export function LandingFooter() {
 
         {/* Bottom Bar: Copyright, Language, Back to top */}
         <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-8 sm:flex-row">
-          <p className="text-xs text-muted">
-            {footer.copyright}
-          </p>
+          <p className="text-xs text-muted">{footer.copyright}</p>
 
           <div className="flex items-center gap-5 text-xs text-muted">
             {/* Motion toggle option */}

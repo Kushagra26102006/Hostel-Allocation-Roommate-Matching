@@ -1,16 +1,8 @@
 import mongoose, { Schema, model, type Model, type Types } from "mongoose";
-import {
-  baseSchemaPlugin,
-  type BaseTenantDocument,
-} from "../plugins/base-schema.plugin.js";
+import { baseSchemaPlugin, type BaseTenantDocument } from "../plugins/base-schema.plugin.js";
 
 export type ApplicationStatus =
-  | "draft"
-  | "submitted"
-  | "under_review"
-  | "approved"
-  | "rejected"
-  | "waitlisted";
+  "draft" | "submitted" | "under_review" | "approved" | "rejected" | "waitlisted";
 
 export interface EligibilityResult {
   eligible: boolean;
@@ -28,9 +20,7 @@ export interface IApplication {
   submitted_at?: Date | undefined;
 }
 
-export interface ApplicationDocument
-  extends BaseTenantDocument,
-    IApplication {}
+export interface ApplicationDocument extends BaseTenantDocument, IApplication {}
 
 const applicationSchema = new Schema<ApplicationDocument>(
   {
@@ -83,10 +73,7 @@ const applicationSchema = new Schema<ApplicationDocument>(
 applicationSchema.plugin(baseSchemaPlugin);
 
 // Unique application per student per cycle within an institution
-applicationSchema.index(
-  { institution_id: 1, cycle_id: 1, student_id: 1 },
-  { unique: true },
-);
+applicationSchema.index({ institution_id: 1, cycle_id: 1, student_id: 1 }, { unique: true });
 
 export const ApplicationModel: Model<ApplicationDocument> =
   (mongoose.models?.["Application"] as Model<ApplicationDocument>) ||

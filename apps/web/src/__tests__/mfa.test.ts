@@ -53,10 +53,7 @@ describe("TOTP MFA & Backup Codes", () => {
     expect(verifyResult.remainingHashedCodes).toHaveLength(9);
 
     // Attempting to reuse the consumed backup code must fail
-    const reuseResult = verifyAndConsumeBackupCode(
-      firstCode,
-      verifyResult.remainingHashedCodes,
-    );
+    const reuseResult = verifyAndConsumeBackupCode(firstCode, verifyResult.remainingHashedCodes);
     expect(reuseResult.valid).toBe(false);
     expect(reuseResult.remainingHashedCodes).toHaveLength(9);
 

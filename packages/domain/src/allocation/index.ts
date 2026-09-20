@@ -10,3 +10,4 @@ export * from "./scoring.js";
 export * from "./bedIndex.js";
 export * from "./explanation.js";
 export * from "./pipeline.js";
+export * from "./sha256.js";

@@ -8,7 +8,10 @@ import {
 } from "@hostelhub/db";
 import { validateMagicBytes } from "../lib/storage/magic-bytes";
 import { POST as createApplicationRoute } from "../app/api/v1/applications/route";
-import { GET as getApplicationRoute, PATCH as patchApplicationRoute } from "../app/api/v1/applications/[id]/route";
+import {
+  GET as getApplicationRoute,
+  PATCH as patchApplicationRoute,
+} from "../app/api/v1/applications/[id]/route";
 import { POST as submitApplicationRoute } from "../app/api/v1/applications/[id]/submit/route";
 import { POST as verifyUploadRoute } from "../app/api/v1/documents/verify-upload/route";
 import { GET as downloadDocumentRoute } from "../app/api/v1/documents/[id]/download/route";
@@ -105,7 +108,9 @@ describe("Module M2: Application and Cycle Management", () => {
         reference_number: "APP-2026-EXISTS",
         status: "draft",
       };
-      vi.spyOn(ApplicationRepository.prototype, "findByStudentAndCycle").mockResolvedValue(existingApp as never);
+      vi.spyOn(ApplicationRepository.prototype, "findByStudentAndCycle").mockResolvedValue(
+        existingApp as never,
+      );
 
       const req = new Request("http://localhost:3000/api/v1/applications", {
         method: "POST",

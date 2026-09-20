@@ -29,11 +29,7 @@ export function generateTotpSecret(): string {
 /**
  * Creates the otpauth:// URI for authenticator applications.
  */
-export function getTotpKeyUri(
-  email: string,
-  secret: string,
-  issuer = "HostelHub",
-): string {
+export function getTotpKeyUri(email: string, secret: string, issuer = "HostelHub"): string {
   return generateURI({ secret, label: email, issuer });
 }
 
@@ -73,10 +69,9 @@ export function verifyTotpToken(token: string, secret: string): boolean {
  * Hashes a backup code with HMAC-SHA256 using master encryption key.
  */
 export function hashBackupCode(code: string): string {
-  const masterKey = process.env["MASTER_ENCRYPTION_KEY"] ?? "hostelhub_master_secret_encryption_key_32_bytes_long!";
-  return createHmac("sha256", masterKey)
-    .update(code.trim().toUpperCase())
-    .digest("hex");
+  const masterKey =
+    process.env["MASTER_ENCRYPTION_KEY"] ?? "hostelhub_master_secret_encryption_key_32_bytes_long!";
+  return createHmac("sha256", masterKey).update(code.trim().toUpperCase()).digest("hex");
 }
 
 /**

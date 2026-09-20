@@ -9,6 +9,9 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:pbt": "PBT_RUNS=2000 vitest run src/__tests__/allocation/property.test.ts",
+    "test:pbt:ci": "CI=true vitest run src/__tests__/allocation/property.test.ts",
+    "bench:allocation": "tsx ../../scripts/bench-allocation.ts",
     "build": "tsc --project tsconfig.json --outDir dist"
   },
   "devDependencies": {

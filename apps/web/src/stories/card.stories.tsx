@@ -32,8 +32,12 @@ export const Default: Story = {
         </p>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button variant="outline" size="sm">Manage</Button>
-        <Button variant="primary" size="sm">View Details</Button>
+        <Button variant="outline" size="sm">
+          Manage
+        </Button>
+        <Button variant="primary" size="sm">
+          View Details
+        </Button>
       </CardFooter>
     </Card>
   ),
@@ -51,7 +55,9 @@ export const GlassVariant: Story = {
           <p className="text-sm">Tokens: --glass-fill, --glass-border, --glass-blur</p>
         </CardContent>
         <CardFooter>
-          <Button variant="primary" size="sm">Action</Button>
+          <Button variant="primary" size="sm">
+            Action
+          </Button>
         </CardFooter>
       </Card>
     </div>
@@ -70,7 +76,9 @@ export const Dark: Story = {
         <p className="text-sm text-muted">Token-driven background and text.</p>
       </CardContent>
       <CardFooter>
-        <Button variant="primary" size="sm">Confirm</Button>
+        <Button variant="primary" size="sm">
+          Confirm
+        </Button>
       </CardFooter>
     </Card>
   ),

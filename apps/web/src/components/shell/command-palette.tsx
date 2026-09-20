@@ -3,14 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import {
-  Search,
-  Sun,
-  Moon,
-  Laptop,
-  Globe,
-  UserCog,
-} from "lucide-react";
+import { Search, Sun, Moon, Laptop, Globe, UserCog } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -132,7 +125,7 @@ export function CommandPalette() {
 
           {/* Dev Role Switcher Group */}
           <CommandGroup heading={messages.shell.palette.roleGroup}>
-            {(Object.entries(ROLES_METADATA) as [Role, typeof ROLES_METADATA[Role]][]).map(
+            {(Object.entries(ROLES_METADATA) as [Role, (typeof ROLES_METADATA)[Role]][]).map(
               ([rKey, info]) => (
                 <CommandItem
                   key={rKey}

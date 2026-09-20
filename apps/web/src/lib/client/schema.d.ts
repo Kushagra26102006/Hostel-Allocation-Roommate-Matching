@@ -4,203 +4,203 @@
  */
 
 export interface paths {
-    "/api/v1/health": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Liveness Probe
-         * @description Always returns 200 if the web process is running.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Service is healthy and responding. */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["HealthResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  "/api/v1/health": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/ready": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    /**
+     * Liveness Probe
+     * @description Always returns 200 if the web process is running.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Service is healthy and responding. */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["HealthResponse"];
+          };
         };
-        /**
-         * Readiness Probe
-         * @description Checks MongoDB, Redis, and MinIO connectivity.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description All downstream dependencies are ready. */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ReadyResponse"];
-                    };
-                };
-                /** @description One or more downstream dependencies are degraded. */
-                503: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ReadyResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+      };
     };
-    "/api/v1/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Current Authenticated User Profile
-         * @description Returns the authenticated user context, granted roles, capabilities, and institution ID.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Current user context retrieved successfully. */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["MeResponse"];
-                    };
-                };
-                /** @description User is not authenticated. */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/problem+json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/ready": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    /**
+     * Readiness Probe
+     * @description Checks MongoDB, Redis, and MinIO connectivity.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description All downstream dependencies are ready. */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["ReadyResponse"];
+          };
+        };
+        /** @description One or more downstream dependencies are degraded. */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["ReadyResponse"];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/me": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Current Authenticated User Profile
+     * @description Returns the authenticated user context, granted roles, capabilities, and institution ID.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Current user context retrieved successfully. */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["MeResponse"];
+          };
+        };
+        /** @description User is not authenticated. */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/problem+json": components["schemas"]["ProblemDetails"];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        ProblemDetails: {
-            /**
-             * Format: uri
-             * @example https://hostelhub.campus.edu/probs/validation-failed
-             */
-            type: string;
-            /** @example Validation Failed */
-            title: string;
-            /** @example 422 */
-            status: number;
-            /** @example One or more input fields failed schema validation. */
-            detail: string;
-            /** @example /api/v1/applications */
-            instance: string;
-            /** @example VALIDATION_FAILED */
-            code: string;
-            /** @example req_9f8d7c6b5a */
-            requestId: string;
-            invalidParams?: {
-                name: string;
-                reason: string;
-            }[];
-        };
-        HealthResponse: {
-            /** @enum {string} */
-            status: "ok";
-            /** Format: date-time */
-            ts: string;
-        };
-        ReadyResponse: {
-            /** @enum {string} */
-            status: "ok" | "degraded";
-            deps: {
-                mongo: string;
-                redis: string;
-                minio: string;
-            };
-        };
-        MeResponse: {
-            user: {
-                id: string;
-                /** Format: email */
-                email: string;
-                name: string;
-                institution_id: string;
-                roles: string[];
-                hostelAssignments: string[];
-                mfaEnabled: boolean;
-            };
-            capabilities: string[];
-            activeRole: string;
-        };
+  schemas: {
+    ProblemDetails: {
+      /**
+       * Format: uri
+       * @example https://hostelhub.campus.edu/probs/validation-failed
+       */
+      type: string;
+      /** @example Validation Failed */
+      title: string;
+      /** @example 422 */
+      status: number;
+      /** @example One or more input fields failed schema validation. */
+      detail: string;
+      /** @example /api/v1/applications */
+      instance: string;
+      /** @example VALIDATION_FAILED */
+      code: string;
+      /** @example req_9f8d7c6b5a */
+      requestId: string;
+      invalidParams?: {
+        name: string;
+        reason: string;
+      }[];
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    HealthResponse: {
+      /** @enum {string} */
+      status: "ok";
+      /** Format: date-time */
+      ts: string;
+    };
+    ReadyResponse: {
+      /** @enum {string} */
+      status: "ok" | "degraded";
+      deps: {
+        mongo: string;
+        redis: string;
+        minio: string;
+      };
+    };
+    MeResponse: {
+      user: {
+        id: string;
+        /** Format: email */
+        email: string;
+        name: string;
+        institution_id: string;
+        roles: string[];
+        hostelAssignments: string[];
+        mfaEnabled: boolean;
+      };
+      capabilities: string[];
+      activeRole: string;
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

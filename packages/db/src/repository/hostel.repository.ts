@@ -7,10 +7,7 @@ export class HostelRepository extends BaseRepository<HostelDocument> {
     super(HostelModel, institutionId);
   }
 
-  public async findByName(
-    name: string,
-    session?: ClientSession,
-  ): Promise<HostelDocument | null> {
+  public async findByName(name: string, session?: ClientSession): Promise<HostelDocument | null> {
     return this.findOne({ name: name.trim() }, undefined, session);
   }
 }

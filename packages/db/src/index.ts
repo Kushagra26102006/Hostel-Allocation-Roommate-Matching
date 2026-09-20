@@ -177,3 +177,58 @@ export {
   type SyntheticSeedOptions,
   type SyntheticSeedSummary,
 } from "./seed/synthetic.js";
+
+// Prompt 18: Allocation Models
+export {
+  WeightsVersionModel,
+  type IWeightsVersion,
+  type WeightsVersionDocument,
+} from "./models/weights-version.model.js";
+
+export {
+  AllocationRunModel,
+  type IAllocationRun,
+  type AllocationRunDocument,
+  type AllocationRunStatus,
+  type AllocationRunProgress,
+} from "./models/allocation-run.model.js";
+
+export {
+  AllocationDraftModel,
+  type IAllocationDraft,
+  type AllocationDraftDocument,
+  type AllocationDraftStatus,
+} from "./models/allocation-draft.model.js";
+
+export {
+  AllocationAssignmentModel,
+  type IAllocationAssignment,
+  type AllocationAssignmentDocument,
+} from "./models/allocation-assignment.model.js";
+
+export {
+  WaitlistEntryModel,
+  type IWaitlistEntry,
+  type WaitlistEntryDocument,
+} from "./models/waitlist-entry.model.js";
+
+// Prompt 19: Review & Workflow Models
+export {
+  OverrideModel,
+  type IOverride,
+  type IOverrideActor,
+  type OverrideDocument,
+} from "./models/override.model.js";
+
+export {
+  ApprovalRecordModel,
+  type IApprovalRecord,
+  type IApproverInfo,
+  type ApprovalRecordDocument,
+} from "./models/approval-record.model.js";
+
+export {
+  DraftWorkflowService,
+  WorkflowError,
+  type WorkflowActor,
+} from "./services/draft-workflow.service.js";

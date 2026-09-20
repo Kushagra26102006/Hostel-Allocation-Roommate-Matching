@@ -26,12 +26,7 @@ export function HowItWorks() {
   const messages = getMessages();
   const copy = messages.howItWorks;
 
-  const stepIcons = [
-    ClipboardList,
-    SlidersHorizontal,
-    FileCheck2,
-    KeyRound,
-  ];
+  const stepIcons = [ClipboardList, SlidersHorizontal, FileCheck2, KeyRound];
 
   return (
     <section
@@ -52,9 +47,7 @@ export function HowItWorks() {
           >
             {copy.title}
           </h2>
-          <p className="mt-4 text-base text-muted sm:text-lg">
-            {copy.subtitle}
-          </p>
+          <p className="mt-4 text-base text-muted sm:text-lg">{copy.subtitle}</p>
         </div>
 
         {/* 2-Column Storytelling container */}
@@ -118,9 +111,7 @@ export function HowItWorks() {
                       <h3 className="mt-1 font-heading text-lg font-bold text-text">
                         {step.title}
                       </h3>
-                      <p className="text-xs font-semibold text-muted">
-                        {step.tagline}
-                      </p>
+                      <p className="text-xs font-semibold text-muted">{step.tagline}</p>
                       <p className="mt-2 text-xs leading-relaxed text-muted sm:text-sm">
                         {step.description}
                       </p>
@@ -192,12 +183,20 @@ export function HowItWorks() {
                         </span>
                         <div className="mt-2 space-y-2">
                           <div className="flex items-center justify-between rounded-lg bg-surface px-3 py-2 text-xs border border-border">
-                            <span className="font-semibold text-text">1. Aryabhata Hall (Single AC)</span>
-                            <span className="rounded bg-brand-100 dark:bg-brand-900/40 px-1.5 py-0.5 text-[10px] font-bold text-brand-700 dark:text-brand-300">Choice 1</span>
+                            <span className="font-semibold text-text">
+                              1. Aryabhata Hall (Single AC)
+                            </span>
+                            <span className="rounded bg-brand-100 dark:bg-brand-900/40 px-1.5 py-0.5 text-[10px] font-bold text-brand-700 dark:text-brand-300">
+                              Choice 1
+                            </span>
                           </div>
                           <div className="flex items-center justify-between rounded-lg bg-surface px-3 py-2 text-xs border border-border">
-                            <span className="font-semibold text-text">2. Gargi Residence (Double)</span>
-                            <span className="rounded bg-border/50 px-1.5 py-0.5 text-[10px] font-medium text-muted">Choice 2</span>
+                            <span className="font-semibold text-text">
+                              2. Gargi Residence (Double)
+                            </span>
+                            <span className="rounded bg-border/50 px-1.5 py-0.5 text-[10px] font-medium text-muted">
+                              Choice 2
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -228,15 +227,23 @@ export function HowItWorks() {
                         <div className="mt-4 rounded-lg bg-surface p-3 border border-border">
                           <div className="flex items-center justify-between text-xs">
                             <span className="font-semibold text-text">Compatibility Quotient</span>
-                            <span className="font-heading font-extrabold text-gradient text-sm">98.4%</span>
+                            <span className="font-heading font-extrabold text-gradient text-sm">
+                              98.4%
+                            </span>
                           </div>
                           <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-border">
                             <div className="h-full w-[98.4%] rounded-full bg-gradient-brand" />
                           </div>
                           <div className="mt-3 grid grid-cols-3 gap-2 text-center text-[10px] text-muted">
-                            <div className="rounded bg-brand-50 dark:bg-brand-900/30 p-1 font-medium text-text">Chronotype: 99%</div>
-                            <div className="rounded bg-brand-50 dark:bg-brand-900/30 p-1 font-medium text-text">Cleanliness: 97%</div>
-                            <div className="rounded bg-brand-50 dark:bg-brand-900/30 p-1 font-medium text-text">Academics: 99%</div>
+                            <div className="rounded bg-brand-50 dark:bg-brand-900/30 p-1 font-medium text-text">
+                              Chronotype: 99%
+                            </div>
+                            <div className="rounded bg-brand-50 dark:bg-brand-900/30 p-1 font-medium text-text">
+                              Cleanliness: 97%
+                            </div>
+                            <div className="rounded bg-brand-50 dark:bg-brand-900/30 p-1 font-medium text-text">
+                              Academics: 99%
+                            </div>
                           </div>
                         </div>
 
@@ -273,8 +280,12 @@ export function HowItWorks() {
                             <div className="flex items-center gap-2.5">
                               <Check className="h-4 w-4 text-success" />
                               <div>
-                                <span className="font-bold text-text">Medical Ground Allocation Approved</span>
-                                <span className="block text-[10px] text-muted">Ground floor room assigned (Block B, 104)</span>
+                                <span className="font-bold text-text">
+                                  Medical Ground Allocation Approved
+                                </span>
+                                <span className="block text-[10px] text-muted">
+                                  Ground floor room assigned (Block B, 104)
+                                </span>
                               </div>
                             </div>
                             <span className="font-mono text-[10px] text-muted">14:32 IST</span>
@@ -284,8 +295,12 @@ export function HowItWorks() {
                             <div className="flex items-center gap-2.5">
                               <FileCheck2 className="h-4 w-4 text-brand-500" />
                               <div>
-                                <span className="font-bold text-text">Provisional Roster Sign-Off</span>
-                                <span className="block text-[10px] text-muted">Cryptographic hash appended to audit ledger</span>
+                                <span className="font-bold text-text">
+                                  Provisional Roster Sign-Off
+                                </span>
+                                <span className="block text-[10px] text-muted">
+                                  Cryptographic hash appended to audit ledger
+                                </span>
                               </div>
                             </div>
                             <span className="font-mono text-[10px] text-muted">15:10 IST</span>
@@ -324,7 +339,9 @@ export function HowItWorks() {
                             <div className="font-heading text-base font-bold text-text">
                               Aryabhata Hall • Room 304
                             </div>
-                            <div className="text-[11px] text-muted">Roommate: Advait K. (CS '28)</div>
+                            <div className="text-[11px] text-muted">
+                              Roommate: Advait K. (CS '28)
+                            </div>
                             <div className="inline-flex items-center gap-1 rounded bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">
                               <Check className="h-3 w-3" />
                               Verified Digital Allotment

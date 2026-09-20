@@ -3,11 +3,7 @@ import { StaffSidebar } from "@/components/shell/staff-sidebar";
 import { ShellHeader } from "@/components/shell/shell-header";
 import { PageTransition } from "@/components/shell/page-transition";
 
-export default function StaffLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function StaffLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background text-text">
       {/* Collapsible Glass Sidebar */}

@@ -10,9 +10,7 @@ export class AllocationCycleRepository extends BaseRepository<AllocationCycleDoc
     super(AllocationCycleModel, institutionId);
   }
 
-  public async findActiveCycle(
-    session?: ClientSession,
-  ): Promise<AllocationCycleDocument | null> {
+  public async findActiveCycle(session?: ClientSession): Promise<AllocationCycleDocument | null> {
     const filter: FilterQuery<AllocationCycleDocument> = {
       status: "open",
       institution_id: this.getInstitutionId(),

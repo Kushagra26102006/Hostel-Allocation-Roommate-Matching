@@ -2,14 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
-import {
-  LogOut,
-  User,
-  Shield,
-  ChevronDown,
-  Building,
-  Check,
-} from "lucide-react";
+import { LogOut, User, Shield, ChevronDown, Building, Check } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import type { UserRole } from "@hostelhub/shared";
 import { ROLES_METADATA } from "@/stores/role-store";
@@ -30,9 +23,7 @@ export function UserNav() {
   }, []);
 
   if (status === "loading") {
-    return (
-      <div className="h-9 w-28 animate-pulse rounded-xl bg-white/5" />
-    );
+    return <div className="h-9 w-28 animate-pulse rounded-xl bg-white/5" />;
   }
 
   if (!session?.user) {
@@ -76,9 +67,7 @@ export function UserNav() {
           {initials}
         </div>
         <div className="flex flex-col text-left">
-          <span className="text-xs font-semibold text-white leading-tight">
-            {user.name}
-          </span>
+          <span className="text-xs font-semibold text-white leading-tight">{user.name}</span>
           <span className="text-[10px] text-primary font-medium leading-none mt-0.5">
             {roleMeta?.name ?? activeRole}
           </span>

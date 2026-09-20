@@ -47,11 +47,7 @@ const SAMPLE_HOSTELS: HostelCardData[] = [
   },
 ];
 
-export default async function PreferencesPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function PreferencesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   return (

@@ -32,10 +32,7 @@ const buttonVariants = cva(
           "border border-brand-200 dark:border-brand-700",
         ],
         /** Ghost: transparent, shows on hover */
-        ghost: [
-          "text-text hover:bg-surface/80 hover:text-text",
-          "dark:hover:bg-surface/20",
-        ],
+        ghost: ["text-text hover:bg-surface/80 hover:text-text", "dark:hover:bg-surface/20"],
         /** Destructive: danger semantic colour */
         destructive: [
           "bg-danger text-white shadow-md",
@@ -47,17 +44,14 @@ const buttonVariants = cva(
           "hover:bg-surface/60 hover:border-brand-400",
         ],
         /** Link: inline text button */
-        link: [
-          "text-brand-600 dark:text-brand-400 underline-offset-4",
-          "hover:underline",
-        ],
+        link: ["text-brand-600 dark:text-brand-400 underline-offset-4", "hover:underline"],
       },
       size: {
-        sm:      "h-9  px-3 text-xs",
+        sm: "h-9  px-3 text-xs",
         default: "h-10 px-4 py-2",
-        lg:      "h-11 px-8 text-base",
-        xl:      "h-12 px-10 text-base",
-        icon:    "h-10 w-10",
+        lg: "h-11 px-8 text-base",
+        xl: "h-12 px-10 text-base",
+        icon: "h-10 w-10",
       },
     },
     defaultVariants: {
@@ -68,8 +62,7 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
 
@@ -77,11 +70,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
     return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      />
+      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
     );
   },
 );

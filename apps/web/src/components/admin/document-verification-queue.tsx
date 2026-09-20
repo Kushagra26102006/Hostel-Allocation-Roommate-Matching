@@ -5,7 +5,13 @@ import { CheckCircle, XCircle, Eye, ShieldCheck, AlertTriangle, Loader2 } from "
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface ApplicationDocumentItem {
   _id: string;
@@ -82,7 +88,11 @@ export function DocumentVerificationQueue() {
 
       if (res.ok) {
         setDocuments((prev) =>
-          prev.map((d) => (d._id === docId ? ({ ...d, status, rejection_reason: reason } as ApplicationDocumentItem) : d)),
+          prev.map((d) =>
+            d._id === docId
+              ? ({ ...d, status, rejection_reason: reason } as ApplicationDocumentItem)
+              : d,
+          ),
         );
         setSelectedDoc(null);
         setRejectionReason("");
@@ -125,7 +135,9 @@ export function DocumentVerificationQueue() {
             <Loader2 className="w-6 h-6 animate-spin mr-2" /> Loading verification queue...
           </div>
         ) : documents.length === 0 ? (
-          <div className="py-12 text-center text-muted text-sm">No documents pending verification.</div>
+          <div className="py-12 text-center text-muted text-sm">
+            No documents pending verification.
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
@@ -142,8 +154,12 @@ export function DocumentVerificationQueue() {
                 {documents.map((doc) => (
                   <tr key={doc._id} className="hover:bg-surface/50 transition-colors">
                     <td className="py-3 px-4 font-medium">{doc.original_name}</td>
-                    <td className="py-3 px-4 capitalize text-muted">{doc.type.replace("_", " ")}</td>
-                    <td className="py-3 px-4 font-mono text-xs">{(doc.size_bytes / 1024).toFixed(0)} KB</td>
+                    <td className="py-3 px-4 capitalize text-muted">
+                      {doc.type.replace("_", " ")}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-xs">
+                      {(doc.size_bytes / 1024).toFixed(0)} KB
+                    </td>
                     <td className="py-3 px-4">
                       {doc.status === "clean" && (
                         <span className="px-2 py-0.5 rounded text-xs bg-emerald-500/20 text-emerald-400 font-semibold">
@@ -167,7 +183,11 @@ export function DocumentVerificationQueue() {
                       )}
                     </td>
                     <td className="py-3 px-4 text-right space-x-2">
-                      <Button variant="ghost" size="sm" onClick={() => void handleDownload(doc._id)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => void handleDownload(doc._id)}
+                      >
                         <Eye className="w-4 h-4 mr-1" /> View
                       </Button>
                       <Button
@@ -205,7 +225,10 @@ export function DocumentVerificationQueue() {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-3 py-2">
-              <p className="text-xs text-muted">Provide a reason for rejecting student document ({selectedDoc?.original_name}). This action will be audited.</p>
+              <p className="text-xs text-muted">
+                Provide a reason for rejecting student document ({selectedDoc?.original_name}). This
+                action will be audited.
+              </p>
               <Input
                 placeholder="e.g. Image blurry or document expired"
                 value={rejectionReason}
@@ -213,11 +236,15 @@ export function DocumentVerificationQueue() {
               />
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setSelectedDoc(null)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setSelectedDoc(null)}>
+                Cancel
+              </Button>
               <Button
                 className="bg-rose-600 hover:bg-rose-700 text-white"
                 disabled={!rejectionReason.trim()}
-                onClick={() => selectedDoc && void handleVerify(selectedDoc._id, "rejected", rejectionReason)}
+                onClick={() =>
+                  selectedDoc && void handleVerify(selectedDoc._id, "rejected", rejectionReason)
+                }
               >
                 Confirm Rejection
               </Button>

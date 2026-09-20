@@ -1,10 +1,7 @@
 import { toast } from "sonner";
 import type { ProblemDetails, ProblemCode } from "../api/errors.js";
 
-const PROBLEM_CODE_MESSAGES: Record<
-  ProblemCode,
-  { title: string; defaultDetail: string }
-> = {
+const PROBLEM_CODE_MESSAGES: Record<ProblemCode, { title: string; defaultDetail: string }> = {
   VALIDATION_FAILED: {
     title: "Validation Error",
     defaultDetail: "Please check your inputs and try again.",
@@ -23,8 +20,7 @@ const PROBLEM_CODE_MESSAGES: Record<
   },
   VERSION_CONFLICT: {
     title: "Version Conflict",
-    defaultDetail:
-      "This record was updated by another user. Please refresh and try again.",
+    defaultDetail: "This record was updated by another user. Please refresh and try again.",
   },
   PRECONDITION_FAILED: {
     title: "Precondition Failed",

@@ -96,7 +96,10 @@ export function LandingHero() {
             {/* Campus open badge */}
             <motion.div variants={itemVariants} className="mb-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-brand-200/80 bg-brand-50/90 px-3.5 py-1.5 text-xs font-semibold text-brand-700 shadow-sm backdrop-blur-md dark:border-brand-800/60 dark:bg-brand-900/40 dark:text-brand-300">
-                <Sparkles className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400" aria-hidden="true" />
+                <Sparkles
+                  className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400"
+                  aria-hidden="true"
+                />
                 <span>{hero.badge}</span>
               </div>
             </motion.div>
@@ -107,8 +110,7 @@ export function LandingHero() {
               variants={itemVariants}
               className="font-heading text-4xl font-extrabold tracking-tight text-text sm:text-5xl lg:text-6xl"
             >
-              Find your place on{" "}
-              <span className="text-gradient">campus.</span>
+              Find your place on <span className="text-gradient">campus.</span>
             </motion.h1>
 
             {/* Supporting Copy */}
@@ -207,13 +209,9 @@ export function LandingHero() {
                   <span className="font-heading text-3xl font-extrabold text-text">
                     {hero.stats.occupancy.value}
                   </span>
-                  <span className="text-xs font-semibold text-success">
-                    Active semester
-                  </span>
+                  <span className="text-xs font-semibold text-success">Active semester</span>
                 </div>
-                <p className="mt-1 text-xs text-muted">
-                  {hero.stats.occupancy.detail}
-                </p>
+                <p className="mt-1 text-xs text-muted">{hero.stats.occupancy.detail}</p>
                 {/* Mini progress bar */}
                 <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-border/60">
                   <div className="h-full w-[92%] rounded-full bg-gradient-brand" />
@@ -263,9 +261,7 @@ export function LandingHero() {
                     Gale-Shapley
                   </span>
                 </div>
-                <p className="mt-1 text-xs text-muted">
-                  {hero.stats.matchScore.detail}
-                </p>
+                <p className="mt-1 text-xs text-muted">{hero.stats.matchScore.detail}</p>
                 <div className="mt-3 flex items-center gap-1.5 text-[11px] text-text">
                   <div className="h-2 w-2 rounded-full bg-success" />
                   <span>Sleep & study schedules aligned</span>
@@ -311,9 +307,7 @@ export function LandingHero() {
                   </span>
                   <StatusChip status="pending" label="Pending review" />
                 </div>
-                <p className="mt-1 text-xs font-medium text-muted">
-                  {hero.stats.status.detail}
-                </p>
+                <p className="mt-1 text-xs font-medium text-muted">{hero.stats.status.detail}</p>
                 <div className="mt-3 flex items-center justify-between border-t border-border/60 pt-2 text-[11px] text-muted">
                   <span>Warden sign-off</span>
                   <span className="font-semibold text-warning">24h remaining</span>

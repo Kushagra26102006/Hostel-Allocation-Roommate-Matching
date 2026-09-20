@@ -64,33 +64,21 @@ describe("Authorisation Policies & Cross-Tenant Isolation", () => {
 
   describe("requirePermission Wrapper", () => {
     it("allows execution when user has capability", () => {
-      expect(() =>
-        requirePermission(studentA, "application:own"),
-      ).not.toThrow();
+      expect(() => requirePermission(studentA, "application:own")).not.toThrow();
 
-      expect(() =>
-        requirePermission(wardenA, "allocation:override_own"),
-      ).not.toThrow();
+      expect(() => requirePermission(wardenA, "allocation:override_own")).not.toThrow();
 
-      expect(() =>
-        requirePermission(chiefWardenA, "allocation:escalated_approval"),
-      ).not.toThrow();
+      expect(() => requirePermission(chiefWardenA, "allocation:escalated_approval")).not.toThrow();
     });
 
     it("throws ForbiddenError when user lacks capability", () => {
-      expect(() =>
-        requirePermission(studentA, "weights:configure"),
-      ).toThrow(ForbiddenError);
+      expect(() => requirePermission(studentA, "weights:configure")).toThrow(ForbiddenError);
 
-      expect(() =>
-        requirePermission(wardenA, "weights:configure"),
-      ).toThrow(ForbiddenError);
+      expect(() => requirePermission(wardenA, "weights:configure")).toThrow(ForbiddenError);
     });
 
     it("throws UnauthorizedError when user is null or undefined", () => {
-      expect(() => requirePermission(null, "application:own")).toThrow(
-        UnauthorizedError,
-      );
+      expect(() => requirePermission(null, "application:own")).toThrow(UnauthorizedError);
     });
   });
 

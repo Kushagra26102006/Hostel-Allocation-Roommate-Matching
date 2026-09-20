@@ -86,11 +86,7 @@ describe("Permissions Matrix (Table-driven Authorization)", () => {
     ]);
 
     // 5. Dean has read-only analytics, audit and drafts
-    expect(ROLE_PERMISSIONS.dean).toEqual([
-      "analytics:read",
-      "audit:read",
-      "drafts:read",
-    ]);
+    expect(ROLE_PERMISSIONS.dean).toEqual(["analytics:read", "audit:read", "drafts:read"]);
 
     // 6. Sys Admin
     expect(ROLE_PERMISSIONS.sys_admin).toEqual([

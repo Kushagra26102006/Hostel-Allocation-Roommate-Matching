@@ -34,7 +34,7 @@ import type {
   RunMetrics,
 } from "./types.js";
 import { DEFAULT_WEIGHTS, InvariantError } from "./types.js";
-import { createHash } from "node:crypto";
+import { sha256 } from "./sha256.js";
 import { key } from "./prng.js";
 import { buildBedIndex } from "./bedIndex.js";
 import { allHardPass, hc9Hold } from "./constraints.js";
@@ -63,7 +63,7 @@ function canonicalHash(snapshot: Snapshot): string {
     return value;
   }
   const json = JSON.stringify(snapshot, sortedReplacer);
-  return createHash("sha256").update(json).digest("hex");
+  return sha256(json);
 }
 
 // ─── Mutable shadow state ──────────────────────────────────────────────────────

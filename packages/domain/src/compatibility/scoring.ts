@@ -1,8 +1,4 @@
-import {
-  ITEM_WEIGHTS,
-  type QuestionnaireAnswers,
-  type QuestionnaireItemKey,
-} from "./types.js";
+import { ITEM_WEIGHTS, type QuestionnaireAnswers, type QuestionnaireItemKey } from "./types.js";
 
 /**
  * Ordinal similarity calculation on a 1-5 scale.
@@ -17,13 +13,8 @@ export function calculateOrdinalSimilarity(a: number, b: number): number {
  * Categorical similarity calculation.
  * 1 if equal, 0 if different.
  */
-export function calculateCategoricalSimilarity(
-  a: string | number,
-  b: string | number,
-): number {
-  return String(a).trim().toLowerCase() === String(b).trim().toLowerCase()
-    ? 1
-    : 0;
+export function calculateCategoricalSimilarity(a: string | number, b: string | number): number {
+  return String(a).trim().toLowerCase() === String(b).trim().toLowerCase() ? 1 : 0;
 }
 
 /**
@@ -41,10 +32,7 @@ export function calculatePairImportance(impA = 2, impB = 2): number {
  * Missing items for either student are left out of both sums.
  * Returns neutral value 50 if no shared items exist.
  */
-export function pairScore(
-  a: QuestionnaireAnswers,
-  b: QuestionnaireAnswers,
-): number {
+export function pairScore(a: QuestionnaireAnswers, b: QuestionnaireAnswers): number {
   if (!a || !b) return 50;
 
   let weightedSimilaritySum = 0;
@@ -119,10 +107,7 @@ export function roomScore(occupants: QuestionnaireAnswers[]): number {
  * Checks for deal-breaker conflicts between two students.
  * Only triggers when both students opted into dealBreaker === true for an item.
  */
-export function dealBreakerConflict(
-  a: QuestionnaireAnswers,
-  b: QuestionnaireAnswers,
-): boolean {
+export function dealBreakerConflict(a: QuestionnaireAnswers, b: QuestionnaireAnswers): boolean {
   if (!a || !b) return false;
 
   const keys = Object.keys(ITEM_WEIGHTS) as QuestionnaireItemKey[];

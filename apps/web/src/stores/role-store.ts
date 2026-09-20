@@ -3,13 +3,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 
-export type Role =
-  | "student"
-  | "warden"
-  | "chief_warden"
-  | "hostel_admin"
-  | "dean"
-  | "sys_admin";
+export type Role = "student" | "warden" | "chief_warden" | "hostel_admin" | "dean" | "sys_admin";
 
 export interface RoleInfo {
   id: Role;

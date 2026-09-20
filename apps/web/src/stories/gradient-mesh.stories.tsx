@@ -45,7 +45,9 @@ export const ReducedMotion: Story = {
     <div className="relative h-[300px] w-full overflow-hidden rounded-hero border border-border">
       <GradientMesh blobCount={4} />
       <div className="relative z-10 flex h-full items-center justify-center">
-        <p className="font-heading font-bold text-2xl text-text">Static Radial Gradient (Reduced Motion)</p>
+        <p className="font-heading font-bold text-2xl text-text">
+          Static Radial Gradient (Reduced Motion)
+        </p>
       </div>
     </div>
   ),

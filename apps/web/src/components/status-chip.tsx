@@ -1,23 +1,10 @@
 "use client";
 
 import * as React from "react";
-import {
-  CheckCircle2,
-  XCircle,
-  Clock,
-  AlertTriangle,
-  Wifi,
-  WifiOff,
-} from "lucide-react";
+import { CheckCircle2, XCircle, Clock, AlertTriangle, Wifi, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type StatusType =
-  | "online"
-  | "offline"
-  | "pending"
-  | "warning"
-  | "error"
-  | "success";
+export type StatusType = "online" | "offline" | "pending" | "warning" | "error" | "success";
 
 const STATUS_CONFIG: Record<
   StatusType,

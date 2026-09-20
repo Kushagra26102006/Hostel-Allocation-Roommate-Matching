@@ -1,11 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  Building2,
-  Layers,
-  BarChart3,
-} from "lucide-react";
+import { Building2, Layers, BarChart3 } from "lucide-react";
 import { InventoryManager } from "@/components/inventory/inventory-manager";
 import { ImportWizard } from "@/components/inventory/import-wizard";
 import { OccupancyHeatMap } from "@/components/inventory/occupancy-heatmap";
@@ -27,7 +23,8 @@ export default function AdminInventoryPage() {
             Hostel & Room Inventory
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Manage hostels, blocks, floors, rooms, and individual bed inventory with real-time occupancy.
+            Manage hostels, blocks, floors, rooms, and individual bed inventory with real-time
+            occupancy.
           </p>
         </div>
 
@@ -60,9 +57,7 @@ export default function AdminInventoryPage() {
 
       {/* Main Content Area */}
       {activeTab === "tree" ? (
-        <InventoryManager
-          onOpenImportWizard={() => setIsWizardOpen(true)}
-        />
+        <InventoryManager onOpenImportWizard={() => setIsWizardOpen(true)} />
       ) : (
         <OccupancyHeatMap />
       )}

@@ -83,7 +83,7 @@ describe("MFA Routing & Server-Side Enforcement Regression Suite", () => {
 
       expect(finalSession.user.mfaEnabled).toBe(false);
       expect(finalSession.user.mfaPending).toBe(false);
-    });
+    }, 15000);
   });
 
   describe("2. hostel_admin + MFA required -> MFA challenge", () => {

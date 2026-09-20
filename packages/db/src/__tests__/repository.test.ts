@@ -1,10 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { Types } from "mongoose";
-import {
-  UserRepository,
-  VersionConflictError,
-  InstitutionModel,
-} from "../index.js";
+import { UserRepository, VersionConflictError, InstitutionModel } from "../index.js";
 import { setupTestDatabase, teardownTestDatabase } from "./test-helper.js";
 
 describe("BaseRepository & Multi-Tenancy", () => {
@@ -76,13 +72,9 @@ describe("BaseRepository & Multi-Tenancy", () => {
     expect(user.version).toBe(1);
 
     // First update with matching version 1 succeeds and bumps version to 2
-    const updatedUser = await repo.updateWithVersion(
-      user._id as Types.ObjectId,
-      1,
-      {
-        $set: { name: "Updated Name 1" },
-      },
-    );
+    const updatedUser = await repo.updateWithVersion(user._id as Types.ObjectId, 1, {
+      $set: { name: "Updated Name 1" },
+    });
 
     expect(updatedUser.version).toBe(2);
     expect(updatedUser.name).toBe("Updated Name 1");

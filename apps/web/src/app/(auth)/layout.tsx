@@ -30,9 +30,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
       {/* Main Card Content */}
       <main className="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-md">
-          {children}
-        </div>
+        <div className="w-full max-w-md">{children}</div>
       </main>
 
       {/* Footer */}

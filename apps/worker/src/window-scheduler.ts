@@ -1,10 +1,6 @@
 import { Queue, Worker, type Job } from "bullmq";
 import type { Redis } from "ioredis";
-import {
-  AllocationCycleModel,
-  AuditService,
-  type AllocationCycleDocument,
-} from "@hostelhub/db";
+import { AllocationCycleModel, AuditService, type AllocationCycleDocument } from "@hostelhub/db";
 import { createLogger } from "@hostelhub/shared";
 
 const log = createLogger("window-scheduler");

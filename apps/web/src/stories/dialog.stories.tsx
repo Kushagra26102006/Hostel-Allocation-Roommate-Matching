@@ -54,9 +54,7 @@ export const Dark: Story = {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Dark Mode Modal</DialogTitle>
-          <DialogDescription>
-            Surface #0B1026 modal with backdrop blur overlay.
-          </DialogDescription>
+          <DialogDescription>Surface #0B1026 modal with backdrop blur overlay.</DialogDescription>
         </DialogHeader>
       </DialogContent>
     </Dialog>
@@ -72,9 +70,7 @@ export const ReducedMotion: Story = {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Fade-in Dialog</DialogTitle>
-          <DialogDescription>
-            Dialog opening with instant/fade transition.
-          </DialogDescription>
+          <DialogDescription>Dialog opening with instant/fade transition.</DialogDescription>
         </DialogHeader>
       </DialogContent>
     </Dialog>

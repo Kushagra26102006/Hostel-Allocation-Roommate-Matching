@@ -1,14 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  Bed,
-  CheckCircle2,
-  AlertCircle,
-  Building,
-  RefreshCw,
-  TrendingUp,
-} from "lucide-react";
+import { Bed, CheckCircle2, AlertCircle, Building, RefreshCw, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatedNumber } from "@/components/animated-number";
 import { GlassCard } from "@/components/glass-card";
@@ -94,8 +87,7 @@ export function LiveOccupancyStrip() {
   // Progress ring math
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset =
-    circumference - (data.occupancyRate / 100) * circumference;
+  const strokeDashoffset = circumference - (data.occupancyRate / 100) * circumference;
 
   return (
     <section
@@ -126,9 +118,7 @@ export function LiveOccupancyStrip() {
               >
                 {copy.title}
               </h2>
-              <p className="mt-0.5 text-xs text-muted sm:text-sm">
-                {copy.subtitle}
-              </p>
+              <p className="mt-0.5 text-xs text-muted sm:text-sm">{copy.subtitle}</p>
             </div>
 
             <button
@@ -177,13 +167,7 @@ export function LiveOccupancyStrip() {
                     className="transition-all duration-1000 ease-out"
                   />
                   <defs>
-                    <linearGradient
-                      id="occupancy-gradient"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
-                    >
+                    <linearGradient id="occupancy-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="hsl(var(--brand-600))" />
                       <stop offset="100%" stopColor="hsl(var(--accent))" />
                     </linearGradient>
@@ -194,9 +178,7 @@ export function LiveOccupancyStrip() {
                   <div className="font-heading text-2xl font-black text-text">
                     <AnimatedNumber to={data.occupancyRate} />%
                   </div>
-                  <span className="text-[10px] font-semibold text-muted uppercase">
-                    Occupied
-                  </span>
+                  <span className="text-[10px] font-semibold text-muted uppercase">Occupied</span>
                 </div>
               </div>
 
@@ -274,9 +256,7 @@ export function LiveOccupancyStrip() {
                       </span>
                     </div>
                   </div>
-                  <span className="font-heading font-bold text-text">
-                    {h.rate}%
-                  </span>
+                  <span className="font-heading font-bold text-text">{h.rate}%</span>
                 </div>
               ))}
             </div>

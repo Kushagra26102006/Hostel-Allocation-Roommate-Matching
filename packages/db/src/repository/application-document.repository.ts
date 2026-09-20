@@ -16,7 +16,8 @@ export class ApplicationDocumentRepository extends BaseRepository<ApplicationDoc
     session?: ClientSession,
   ): Promise<ApplicationDocumentDocument[]> {
     const filter: FilterQuery<ApplicationDocumentDocument> = {
-      application_id: typeof applicationId === "string" ? new Types.ObjectId(applicationId) : applicationId,
+      application_id:
+        typeof applicationId === "string" ? new Types.ObjectId(applicationId) : applicationId,
       institution_id: this.getInstitutionId(),
     };
 

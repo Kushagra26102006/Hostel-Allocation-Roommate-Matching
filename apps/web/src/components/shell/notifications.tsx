@@ -93,8 +93,8 @@ export function NotificationBell() {
                         n.type === "success"
                           ? "bg-success/15 text-success"
                           : n.type === "warning"
-                          ? "bg-warning/15 text-warning"
-                          : "bg-brand-100 text-brand-600 dark:bg-brand-900/40 dark:text-brand-400"
+                            ? "bg-warning/15 text-warning"
+                            : "bg-brand-100 text-brand-600 dark:bg-brand-900/40 dark:text-brand-400"
                       }`}
                     >
                       <Icon className="h-3.5 w-3.5" />

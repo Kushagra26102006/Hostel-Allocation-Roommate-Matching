@@ -1,7 +1,7 @@
 import { apiHandler } from "@/lib/api/handler.js";
 import type { QuestionnaireDefinition } from "@hostelhub/domain";
 
-export const QUESTIONNAIRE_DEFINITION: QuestionnaireDefinition = {
+const QUESTIONNAIRE_DEFINITION: QuestionnaireDefinition = {
   version: 1,
   title: "Hostel Roommate Compatibility Questionnaire",
   items: [

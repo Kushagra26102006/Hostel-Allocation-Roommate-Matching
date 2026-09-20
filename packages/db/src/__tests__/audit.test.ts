@@ -1,10 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { Types } from "mongoose";
-import {
-  AuditService,
-  AuditEntryModel,
-  ImmutableAuditError,
-} from "../index.js";
+import { AuditService, AuditEntryModel, ImmutableAuditError } from "../index.js";
 import { setupTestDatabase, teardownTestDatabase } from "./test-helper.js";
 
 describe("AuditService & Cryptographic Hash Chain", () => {
@@ -91,16 +87,13 @@ describe("AuditService & Cryptographic Hash Chain", () => {
 
     // Attempting updateOne via model must throw ImmutableAuditError
     await expect(
-      AuditEntryModel.updateOne(
-        { _id: entry._id },
-        { $set: { action: "MODIFIED" } },
-      ),
+      AuditEntryModel.updateOne({ _id: entry._id }, { $set: { action: "MODIFIED" } }),
     ).rejects.toThrow(ImmutableAuditError);
 
     // Attempting deleteOne via model must throw ImmutableAuditError
-    await expect(
-      AuditEntryModel.deleteOne({ _id: entry._id }),
-    ).rejects.toThrow(ImmutableAuditError);
+    await expect(AuditEntryModel.deleteOne({ _id: entry._id })).rejects.toThrow(
+      ImmutableAuditError,
+    );
   });
 
   it("50 concurrent appends still form a valid chain", async () => {

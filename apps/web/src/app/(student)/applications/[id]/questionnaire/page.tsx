@@ -90,14 +90,11 @@ export default function QuestionnairePage() {
           </div>
           <h2 className="text-xl font-bold text-text">Questionnaire Completed</h2>
           <p className="text-xs text-muted">
-            Your preferences have been encrypted and stored securely. Roommate compatibility scoring is active for your application.
+            Your preferences have been encrypted and stored securely. Roommate compatibility scoring
+            is active for your application.
           </p>
           <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
-            <Button
-              variant="outline"
-              onClick={() => setCompleted(false)}
-              className="text-xs"
-            >
+            <Button variant="outline" onClick={() => setCompleted(false)} className="text-xs">
               Retake Questionnaire
             </Button>
             <Button
@@ -109,10 +106,7 @@ export default function QuestionnairePage() {
           </div>
         </div>
       ) : definition ? (
-        <QuestionnaireCards
-          definition={definition}
-          onCompleted={() => setCompleted(true)}
-        />
+        <QuestionnaireCards definition={definition} onCompleted={() => setCompleted(true)} />
       ) : (
         <div className="text-center py-12 text-muted text-xs">
           Questionnaire definition could not be loaded.

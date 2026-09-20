@@ -1,8 +1,5 @@
 import mongoose, { Schema, model, type Model, type Types } from "mongoose";
-import {
-  baseSchemaPlugin,
-  type BaseTenantDocument,
-} from "../plugins/base-schema.plugin.js";
+import { baseSchemaPlugin, type BaseTenantDocument } from "../plugins/base-schema.plugin.js";
 
 export type GroupMemberStatus = "pending" | "accepted" | "declined";
 export type GroupStatus = "draft" | "confirmed" | "disbanded";
@@ -22,9 +19,7 @@ export interface IGroup {
   status: GroupStatus;
 }
 
-export interface GroupDocument
-  extends BaseTenantDocument,
-    IGroup {}
+export interface GroupDocument extends BaseTenantDocument, IGroup {}
 
 const groupMemberSchema = new Schema<IGroupMember>(
   {
@@ -80,10 +75,7 @@ const groupSchema = new Schema<GroupDocument>(
 
 groupSchema.plugin(baseSchemaPlugin);
 
-groupSchema.index(
-  { institution_id: 1, cycle_id: 1, invite_code: 1 },
-  { unique: true },
-);
+groupSchema.index({ institution_id: 1, cycle_id: 1, invite_code: 1 }, { unique: true });
 
 export const GroupModel: Model<GroupDocument> =
   (mongoose.models?.["Group"] as Model<GroupDocument>) ||

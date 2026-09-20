@@ -1,13 +1,7 @@
 import { type ClientSession, Types } from "mongoose";
 import { runInTransaction } from "../connection.js";
-import {
-  AuditEntryModel,
-  type AuditEntryDocument,
-} from "../models/audit-entry.model.js";
-import {
-  AuditChainHeadModel,
-  GENESIS_HASH,
-} from "../models/audit-head.model.js";
+import { AuditEntryModel, type AuditEntryDocument } from "../models/audit-entry.model.js";
+import { AuditChainHeadModel, GENESIS_HASH } from "../models/audit-head.model.js";
 import { computeAuditHash, computeLegacyAuditHash } from "./canonical-json.js";
 
 export interface AuditActor {
@@ -35,9 +29,7 @@ export class AuditService {
 
   public static withTenant(institutionId: string | Types.ObjectId): AuditService {
     const objectId =
-      typeof institutionId === "string"
-        ? new Types.ObjectId(institutionId)
-        : institutionId;
+      typeof institutionId === "string" ? new Types.ObjectId(institutionId) : institutionId;
     return new AuditService(objectId);
   }
 
@@ -72,18 +64,16 @@ export class AuditService {
   /**
    * Normalizes actor input to consistent shape { user_id, email, roles }.
    */
-  private static normalizeActor(actor: AuditActor | Record<string, unknown> | string): Record<string, unknown> {
+  private static normalizeActor(
+    actor: AuditActor | Record<string, unknown> | string,
+  ): Record<string, unknown> {
     if (typeof actor === "string") {
       return { user_id: actor, email: "unknown@campus.edu", roles: [] };
     }
     const rec = actor as Record<string, unknown>;
     const userId = (rec["user_id"] ?? rec["userId"] ?? rec["id"] ?? "anonymous") as string;
     const email = (rec["email"] ?? "unknown@campus.edu") as string;
-    const roles = Array.isArray(rec["roles"])
-      ? rec["roles"]
-      : rec["role"]
-        ? [rec["role"]]
-        : [];
+    const roles = Array.isArray(rec["roles"]) ? rec["roles"] : rec["role"] ? [rec["role"]] : [];
     return { user_id: String(userId), email: String(email), roles };
   }
 
@@ -99,14 +89,9 @@ export class AuditService {
     let institutionId: Types.ObjectId;
     let input: AppendAuditInput;
 
-    if (
-      typeof inputOrTenant === "string" ||
-      inputOrTenant instanceof Types.ObjectId
-    ) {
+    if (typeof inputOrTenant === "string" || inputOrTenant instanceof Types.ObjectId) {
       institutionId =
-        typeof inputOrTenant === "string"
-          ? new Types.ObjectId(inputOrTenant)
-          : inputOrTenant;
+        typeof inputOrTenant === "string" ? new Types.ObjectId(inputOrTenant) : inputOrTenant;
       if (!maybeInput) {
         throw new Error("Audit input must be provided.");
       }
@@ -117,8 +102,7 @@ export class AuditService {
       if (!rawInst) {
         throw new Error("Institution ID is required for audit append.");
       }
-      institutionId =
-        typeof rawInst === "string" ? new Types.ObjectId(rawInst) : rawInst;
+      institutionId = typeof rawInst === "string" ? new Types.ObjectId(rawInst) : rawInst;
     }
 
     const instIdStr = institutionId.toString();
@@ -126,76 +110,73 @@ export class AuditService {
 
     // Serialize appends per institution to avoid transaction write conflicts
     return AuditService.acquireLock(instIdStr, async () => {
-      return runInTransaction(
-        async (txSession) => {
-          let head = await AuditChainHeadModel.findOne({
+      return runInTransaction(async (txSession) => {
+        let head = await AuditChainHeadModel.findOne({
+          institution_id: institutionId,
+        }).session(txSession);
+
+        if (!head) {
+          const lastEntry = await AuditEntryModel.findOne({
             institution_id: institutionId,
-          }).session(txSession);
+          })
+            .sort({ sequence: -1 })
+            .session(txSession);
 
-          if (!head) {
-            const lastEntry = await AuditEntryModel.findOne({
-              institution_id: institutionId,
-            })
-              .sort({ sequence: -1 })
-              .session(txSession);
-
-            head = new AuditChainHeadModel({
-              institution_id: institutionId,
-              last_sequence: lastEntry ? lastEntry.sequence : 0,
-              last_hash: lastEntry ? lastEntry.hash : GENESIS_HASH,
-            });
-            await head.save({ session: txSession });
-          }
-
-          const nextSequence = head.last_sequence + 1;
-          const prevHash = head.last_hash;
-          const timestamp = input.timestamp ?? new Date();
-
-          const canonicalPayload = {
-            institution_id: instIdStr,
-            sequence: nextSequence,
-            actor: normalizedActor,
-            action: input.action,
-            target: input.target ?? null,
-            before: input.before ?? null,
-            after: input.after ?? null,
-            ip: input.ip ?? null,
-            timestamp: timestamp.toISOString(),
-          };
-
-          const hash = computeAuditHash(prevHash, canonicalPayload);
-
-          head.last_sequence = nextSequence;
-          head.last_hash = hash;
+          head = new AuditChainHeadModel({
+            institution_id: institutionId,
+            last_sequence: lastEntry ? lastEntry.sequence : 0,
+            last_hash: lastEntry ? lastEntry.hash : GENESIS_HASH,
+          });
           await head.save({ session: txSession });
+        }
 
-          const [entry] = await AuditEntryModel.create(
-            [
-              {
-                institution_id: institutionId,
-                sequence: nextSequence,
-                actor: normalizedActor,
-                action: input.action,
-                target: input.target ?? null,
-                before: input.before ?? null,
-                after: input.after ?? null,
-                ip: input.ip ?? null,
-                timestamp,
-                prev_hash: prevHash,
-                hash,
-              },
-            ],
-            { session: txSession },
-          );
+        const nextSequence = head.last_sequence + 1;
+        const prevHash = head.last_hash;
+        const timestamp = input.timestamp ?? new Date();
 
-          if (!entry) {
-            throw new Error("Failed to insert audit entry into chain.");
-          }
+        const canonicalPayload = {
+          institution_id: instIdStr,
+          sequence: nextSequence,
+          actor: normalizedActor,
+          action: input.action,
+          target: input.target ?? null,
+          before: input.before ?? null,
+          after: input.after ?? null,
+          ip: input.ip ?? null,
+          timestamp: timestamp.toISOString(),
+        };
 
-          return entry;
-        },
-        session,
-      );
+        const hash = computeAuditHash(prevHash, canonicalPayload);
+
+        head.last_sequence = nextSequence;
+        head.last_hash = hash;
+        await head.save({ session: txSession });
+
+        const [entry] = await AuditEntryModel.create(
+          [
+            {
+              institution_id: institutionId,
+              sequence: nextSequence,
+              actor: normalizedActor,
+              action: input.action,
+              target: input.target ?? null,
+              before: input.before ?? null,
+              after: input.after ?? null,
+              ip: input.ip ?? null,
+              timestamp,
+              prev_hash: prevHash,
+              hash,
+            },
+          ],
+          { session: txSession },
+        );
+
+        if (!entry) {
+          throw new Error("Failed to insert audit entry into chain.");
+        }
+
+        return entry;
+      }, session);
     });
   }
 
@@ -225,9 +206,7 @@ export class AuditService {
     session?: ClientSession,
   ): Promise<AuditEntryDocument | null> {
     const objectId =
-      typeof institutionId === "string"
-        ? new Types.ObjectId(institutionId)
-        : institutionId;
+      typeof institutionId === "string" ? new Types.ObjectId(institutionId) : institutionId;
 
     const head = await AuditChainHeadModel.findOne({
       institution_id: objectId,
@@ -283,10 +262,7 @@ export class AuditService {
         return entry;
       }
 
-      const ts =
-        entry.timestamp instanceof Date
-          ? entry.timestamp
-          : new Date(entry.timestamp);
+      const ts = entry.timestamp instanceof Date ? entry.timestamp : new Date(entry.timestamp);
 
       const canonicalPayload = {
         institution_id: entry.institution_id.toString(),
@@ -313,9 +289,7 @@ export class AuditService {
     return null;
   }
 
-  public async verifyChain(
-    session?: ClientSession,
-  ): Promise<AuditEntryDocument | null> {
+  public async verifyChain(session?: ClientSession): Promise<AuditEntryDocument | null> {
     if (!this.defaultInstitutionId) {
       throw new Error("Default institutionId not set on AuditService instance.");
     }

@@ -1,10 +1,7 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/api/handler.js";
-import {
-  exportInventoryCsv,
-  exportInventoryXlsx,
-} from "@/lib/inventory/export-engine.js";
+import { exportInventoryCsv, exportInventoryXlsx } from "@/lib/inventory/export-engine.js";
 
 const exportQuerySchema = z.object({
   format: z.enum(["csv", "xlsx"]).default("csv"),
@@ -25,8 +22,7 @@ export const GET = apiHandler(
       return new NextResponse(new Uint8Array(buffer), {
         status: 200,
         headers: {
-          "Content-Type":
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           "Content-Disposition": `attachment; filename="inventory-${timestamp}.xlsx"`,
         },
       });

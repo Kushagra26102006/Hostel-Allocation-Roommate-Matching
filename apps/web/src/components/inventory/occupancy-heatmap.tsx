@@ -29,11 +29,19 @@ interface OccupancyHeatMapProps {
   className?: string;
 }
 
-export function OccupancyHeatMap({ blocks = getSampleHeatMapBlocks(), className }: OccupancyHeatMapProps) {
+export function OccupancyHeatMap({
+  blocks = getSampleHeatMapBlocks(),
+  className,
+}: OccupancyHeatMapProps) {
   const [selectedRoom, setSelectedRoom] = React.useState<HeatMapRoom | null>(null);
 
   return (
-    <div className={cn("flex flex-col gap-5 rounded-2xl border border-border/70 bg-card/60 p-5 shadow-sm backdrop-blur-md", className)}>
+    <div
+      className={cn(
+        "flex flex-col gap-5 rounded-2xl border border-border/70 bg-card/60 p-5 shadow-sm backdrop-blur-md",
+        className,
+      )}
+    >
       {/* Header & Legend */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/50 pb-4">
         <div>
@@ -83,8 +91,7 @@ export function OccupancyHeatMap({ blocks = getSampleHeatMapBlocks(), className 
 
             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2">
               {block.rooms.map((room) => {
-                const fillRatio =
-                  room.capacity > 0 ? room.occupiedBeds / room.capacity : 0;
+                const fillRatio = room.capacity > 0 ? room.occupiedBeds / room.capacity : 0;
                 const fillPercent = Math.round(fillRatio * 100);
                 const isFull = fillPercent >= 100;
                 const isEmpty = room.occupiedBeds === 0;
@@ -96,9 +103,15 @@ export function OccupancyHeatMap({ blocks = getSampleHeatMapBlocks(), className 
                     onClick={() => setSelectedRoom(room)}
                     className={cn(
                       "group relative flex flex-col items-center justify-center rounded-lg border p-2 text-center transition-all hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary",
-                      isEmpty && "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-                      !isEmpty && !isFull && !isMaintenance && "border-amber-500/40 bg-amber-500/20 text-amber-700 dark:text-amber-300",
-                      isFull && !isMaintenance && "border-sky-500/40 bg-sky-500/30 text-sky-700 dark:text-sky-300",
+                      isEmpty &&
+                        "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+                      !isEmpty &&
+                        !isFull &&
+                        !isMaintenance &&
+                        "border-amber-500/40 bg-amber-500/20 text-amber-700 dark:text-amber-300",
+                      isFull &&
+                        !isMaintenance &&
+                        "border-sky-500/40 bg-sky-500/30 text-sky-700 dark:text-sky-300",
                       isMaintenance && "border-rose-500/40 text-rose-700 dark:text-rose-300",
                     )}
                     style={
@@ -110,9 +123,7 @@ export function OccupancyHeatMap({ blocks = getSampleHeatMapBlocks(), className 
                         : undefined
                     }
                   >
-                    <span className="text-xs font-bold leading-none">
-                      {room.room_number}
-                    </span>
+                    <span className="text-xs font-bold leading-none">{room.room_number}</span>
                     <span className="mt-1 text-[10px] opacity-75 leading-none">
                       {room.occupiedBeds}/{room.capacity}
                     </span>
@@ -149,7 +160,8 @@ export function OccupancyHeatMap({ blocks = getSampleHeatMapBlocks(), className 
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Occupancy Fill:</span>
                 <span className="font-bold text-foreground">
-                  {Math.round((selectedRoom.occupiedBeds / selectedRoom.capacity) * 100)}% ({selectedRoom.occupiedBeds}/{selectedRoom.capacity})
+                  {Math.round((selectedRoom.occupiedBeds / selectedRoom.capacity) * 100)}% (
+                  {selectedRoom.occupiedBeds}/{selectedRoom.capacity})
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -194,14 +206,102 @@ function getSampleHeatMapBlocks(): HeatMapBlock[] {
       name: "Block A (Aryabhata)",
       floor_no: 1,
       rooms: [
-        { id: "r101", room_number: "101", room_type: "double", capacity: 2, ac: true, accessible: true, status: "available", totalBeds: 2, occupiedBeds: 1, heldBeds: 0 },
-        { id: "r102", room_number: "102", room_type: "single", capacity: 1, ac: false, accessible: false, status: "available", totalBeds: 1, occupiedBeds: 1, heldBeds: 0 },
-        { id: "r103", room_number: "103", room_type: "double", capacity: 2, ac: true, accessible: false, status: "available", totalBeds: 2, occupiedBeds: 0, heldBeds: 0 },
-        { id: "r104", room_number: "104", room_type: "triple", capacity: 3, ac: false, accessible: false, status: "available", totalBeds: 3, occupiedBeds: 2, heldBeds: 0 },
-        { id: "r105", room_number: "105", room_type: "double", capacity: 2, ac: true, accessible: false, status: "maintenance", totalBeds: 2, occupiedBeds: 0, heldBeds: 0 },
-        { id: "r106", room_number: "106", room_type: "single", capacity: 1, ac: false, accessible: false, status: "available", totalBeds: 1, occupiedBeds: 0, heldBeds: 0 },
-        { id: "r107", room_number: "107", room_type: "double", capacity: 2, ac: false, accessible: false, status: "available", totalBeds: 2, occupiedBeds: 2, heldBeds: 0 },
-        { id: "r108", room_number: "108", room_type: "double", capacity: 2, ac: true, accessible: false, status: "available", totalBeds: 2, occupiedBeds: 1, heldBeds: 1 },
+        {
+          id: "r101",
+          room_number: "101",
+          room_type: "double",
+          capacity: 2,
+          ac: true,
+          accessible: true,
+          status: "available",
+          totalBeds: 2,
+          occupiedBeds: 1,
+          heldBeds: 0,
+        },
+        {
+          id: "r102",
+          room_number: "102",
+          room_type: "single",
+          capacity: 1,
+          ac: false,
+          accessible: false,
+          status: "available",
+          totalBeds: 1,
+          occupiedBeds: 1,
+          heldBeds: 0,
+        },
+        {
+          id: "r103",
+          room_number: "103",
+          room_type: "double",
+          capacity: 2,
+          ac: true,
+          accessible: false,
+          status: "available",
+          totalBeds: 2,
+          occupiedBeds: 0,
+          heldBeds: 0,
+        },
+        {
+          id: "r104",
+          room_number: "104",
+          room_type: "triple",
+          capacity: 3,
+          ac: false,
+          accessible: false,
+          status: "available",
+          totalBeds: 3,
+          occupiedBeds: 2,
+          heldBeds: 0,
+        },
+        {
+          id: "r105",
+          room_number: "105",
+          room_type: "double",
+          capacity: 2,
+          ac: true,
+          accessible: false,
+          status: "maintenance",
+          totalBeds: 2,
+          occupiedBeds: 0,
+          heldBeds: 0,
+        },
+        {
+          id: "r106",
+          room_number: "106",
+          room_type: "single",
+          capacity: 1,
+          ac: false,
+          accessible: false,
+          status: "available",
+          totalBeds: 1,
+          occupiedBeds: 0,
+          heldBeds: 0,
+        },
+        {
+          id: "r107",
+          room_number: "107",
+          room_type: "double",
+          capacity: 2,
+          ac: false,
+          accessible: false,
+          status: "available",
+          totalBeds: 2,
+          occupiedBeds: 2,
+          heldBeds: 0,
+        },
+        {
+          id: "r108",
+          room_number: "108",
+          room_type: "double",
+          capacity: 2,
+          ac: true,
+          accessible: false,
+          status: "available",
+          totalBeds: 2,
+          occupiedBeds: 1,
+          heldBeds: 1,
+        },
       ],
     },
     {
@@ -209,11 +309,66 @@ function getSampleHeatMapBlocks(): HeatMapBlock[] {
       name: "Block A (Aryabhata)",
       floor_no: 2,
       rooms: [
-        { id: "r201", room_number: "201", room_type: "double", capacity: 2, ac: true, accessible: false, status: "available", totalBeds: 2, occupiedBeds: 2, heldBeds: 0 },
-        { id: "r202", room_number: "202", room_type: "single", capacity: 1, ac: false, accessible: false, status: "available", totalBeds: 1, occupiedBeds: 0, heldBeds: 0 },
-        { id: "r203", room_number: "203", room_type: "double", capacity: 2, ac: false, accessible: false, status: "available", totalBeds: 2, occupiedBeds: 1, heldBeds: 0 },
-        { id: "r204", room_number: "204", room_type: "double", capacity: 2, ac: true, accessible: false, status: "maintenance", totalBeds: 2, occupiedBeds: 0, heldBeds: 0 },
-        { id: "r205", room_number: "205", room_type: "triple", capacity: 3, ac: false, accessible: false, status: "available", totalBeds: 3, occupiedBeds: 3, heldBeds: 0 },
+        {
+          id: "r201",
+          room_number: "201",
+          room_type: "double",
+          capacity: 2,
+          ac: true,
+          accessible: false,
+          status: "available",
+          totalBeds: 2,
+          occupiedBeds: 2,
+          heldBeds: 0,
+        },
+        {
+          id: "r202",
+          room_number: "202",
+          room_type: "single",
+          capacity: 1,
+          ac: false,
+          accessible: false,
+          status: "available",
+          totalBeds: 1,
+          occupiedBeds: 0,
+          heldBeds: 0,
+        },
+        {
+          id: "r203",
+          room_number: "203",
+          room_type: "double",
+          capacity: 2,
+          ac: false,
+          accessible: false,
+          status: "available",
+          totalBeds: 2,
+          occupiedBeds: 1,
+          heldBeds: 0,
+        },
+        {
+          id: "r204",
+          room_number: "204",
+          room_type: "double",
+          capacity: 2,
+          ac: true,
+          accessible: false,
+          status: "maintenance",
+          totalBeds: 2,
+          occupiedBeds: 0,
+          heldBeds: 0,
+        },
+        {
+          id: "r205",
+          room_number: "205",
+          room_type: "triple",
+          capacity: 3,
+          ac: false,
+          accessible: false,
+          status: "available",
+          totalBeds: 3,
+          occupiedBeds: 3,
+          heldBeds: 0,
+        },
       ],
     },
   ];

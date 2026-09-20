@@ -20,13 +20,7 @@ interface EmptyStateProps {
  * EmptyState — composable empty state with illustration slot,
  * heading, description, and optional CTA.
  */
-export function EmptyState({
-  icon,
-  title,
-  description,
-  action,
-  className,
-}: EmptyStateProps) {
+export function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
   return (
     <div
       className={cn(
@@ -41,16 +35,10 @@ export function EmptyState({
       )}
       <div className="space-y-1.5">
         <h3 className="font-heading text-lg font-semibold text-text">{title}</h3>
-        {description && (
-          <p className="text-sm text-muted max-w-sm">{description}</p>
-        )}
+        {description && <p className="text-sm text-muted max-w-sm">{description}</p>}
       </div>
       {action && (
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={action.onClick}
-        >
+        <Button variant="primary" size="sm" onClick={action.onClick}>
           {action.label}
         </Button>
       )}

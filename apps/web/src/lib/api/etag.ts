@@ -23,10 +23,7 @@ export function parseETag(etag: string | null | undefined): number | null {
  * Requires an If-Match header and validates it against the current document version.
  * Throws PreconditionFailedError (status 412) if missing or mismatched.
  */
-export function requireIfMatch(
-  req: Request,
-  currentVersion: number,
-): number {
+export function requireIfMatch(req: Request, currentVersion: number): number {
   const ifMatch = req.headers.get("if-match");
   if (!ifMatch) {
     throw new PreconditionFailedError(
@@ -58,10 +55,7 @@ export function requireIfMatch(
 /**
  * Attaches ETag and Vary headers to an outgoing response.
  */
-export function attachETag(
-  response: NextResponse,
-  version: number,
-): NextResponse {
+export function attachETag(response: NextResponse, version: number): NextResponse {
   response.headers.set("ETag", formatETag(version));
   response.headers.set("Vary", "If-Match");
   return response;

@@ -80,12 +80,13 @@ interface InventoryManagerProps {
   onOpenImportWizard: () => void;
 }
 
-export function InventoryManager({
-  initialData,
-  onOpenImportWizard,
-}: InventoryManagerProps) {
-  const [data, setData] = React.useState<TreeHostelItem[]>(() => initialData ?? getSampleInventoryData());
-  const [expandedIds, setExpandedIds] = React.useState<Set<string>>(() => new Set(["hostel-1", "block-1", "floor-1"]));
+export function InventoryManager({ initialData, onOpenImportWizard }: InventoryManagerProps) {
+  const [data, setData] = React.useState<TreeHostelItem[]>(
+    () => initialData ?? getSampleInventoryData(),
+  );
+  const [expandedIds, setExpandedIds] = React.useState<Set<string>>(
+    () => new Set(["hostel-1", "block-1", "floor-1"]),
+  );
   const [selectedBedIds, setSelectedBedIds] = React.useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
@@ -173,9 +174,7 @@ export function InventoryManager({
 
             if (query && !room.room_number.toLowerCase().includes(query)) {
               // check if any bed matches
-              const hasMatchingBed = room.beds.some((b) =>
-                b.bed_no.toLowerCase().includes(query),
-              );
+              const hasMatchingBed = room.beds.some((b) => b.bed_no.toLowerCase().includes(query));
               if (!hasMatchingBed) continue;
             }
 
@@ -368,10 +367,7 @@ export function InventoryManager({
           Hierarchy: Hostel → Block → Floor → Room → Bed ({flatNodes.length} Visible Nodes)
         </div>
 
-        <div
-          ref={parentRef}
-          className="h-[560px] overflow-auto divide-y divide-border/30 p-1"
-        >
+        <div ref={parentRef} className="h-[560px] overflow-auto divide-y divide-border/30 p-1">
           <div
             style={{
               height: `${rowVirtualizer.getTotalSize()}px`,
@@ -423,23 +419,15 @@ export function InventoryManager({
                     )}
 
                     {/* Node Type Icon */}
-                    {node.type === "hostel" && (
-                      <Building2 className="h-4 w-4 text-primary" />
-                    )}
-                    {node.type === "block" && (
-                      <Layers className="h-4 w-4 text-indigo-500" />
-                    )}
+                    {node.type === "hostel" && <Building2 className="h-4 w-4 text-primary" />}
+                    {node.type === "block" && <Layers className="h-4 w-4 text-indigo-500" />}
                     {node.type === "floor" && (
                       <div className="flex h-4 w-4 items-center justify-center rounded bg-secondary text-[10px] font-bold">
                         F
                       </div>
                     )}
-                    {node.type === "room" && (
-                      <DoorClosed className="h-4 w-4 text-emerald-500" />
-                    )}
-                    {node.type === "bed" && (
-                      <BedDouble className="h-4 w-4 text-sky-500" />
-                    )}
+                    {node.type === "room" && <DoorClosed className="h-4 w-4 text-emerald-500" />}
+                    {node.type === "bed" && <BedDouble className="h-4 w-4 text-sky-500" />}
 
                     {/* Checkbox for beds */}
                     {isBed && node.bedId && (
@@ -458,9 +446,7 @@ export function InventoryManager({
                     {/* Label & SubLabel */}
                     <span className="font-medium text-foreground">{node.label}</span>
                     {node.subLabel && (
-                      <span className="text-xs text-muted-foreground">
-                        ({node.subLabel})
-                      </span>
+                      <span className="text-xs text-muted-foreground">({node.subLabel})</span>
                     )}
                   </div>
 
@@ -489,9 +475,7 @@ export function InventoryManager({
             </p>
 
             <div className="mt-4 flex flex-col gap-2">
-              <label className="text-xs font-medium text-muted-foreground">
-                Set Bed Status
-              </label>
+              <label className="text-xs font-medium text-muted-foreground">Set Bed Status</label>
               <select
                 value={bulkStatus}
                 onChange={(e) => setBulkStatus(e.target.value as InventoryStatus)}
@@ -552,7 +536,13 @@ function getSampleInventoryData(): TreeHostelItem[] {
                   ac: true,
                   status: "available",
                   beds: [
-                    { id: "b1", bed_no: "A", status: "available", version: 1, attributes: { window: true } },
+                    {
+                      id: "b1",
+                      bed_no: "A",
+                      status: "available",
+                      version: 1,
+                      attributes: { window: true },
+                    },
                     { id: "b2", bed_no: "B", status: "occupied", version: 1 },
                   ],
                 },

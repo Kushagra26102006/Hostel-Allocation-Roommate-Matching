@@ -9,9 +9,7 @@ describe("@hostelhub/shared", () => {
   });
 
   it("assertDefined throws for null", () => {
-    expect(() => assertDefined(null, "must be defined")).toThrow(
-      "must be defined",
-    );
+    expect(() => assertDefined(null, "must be defined")).toThrow("must be defined");
   });
 
   it("assertDefined does not throw for a defined value", () => {

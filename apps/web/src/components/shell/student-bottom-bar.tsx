@@ -26,7 +26,9 @@ export function StudentBottomBar() {
               href={tab.href}
               className={cn(
                 "relative flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
-                isActive ? "text-brand-600 dark:text-brand-400 font-bold" : "text-muted hover:text-text",
+                isActive
+                  ? "text-brand-600 dark:text-brand-400 font-bold"
+                  : "text-muted hover:text-text",
               )}
             >
               <div className="relative">

@@ -18,11 +18,7 @@ export function FaqAccordion() {
   const copy = messages.faq;
 
   return (
-    <section
-      id="faq"
-      aria-labelledby="faq-heading"
-      className="relative px-4 py-24 sm:px-6 lg:px-8"
-    >
+    <section id="faq" aria-labelledby="faq-heading" className="relative px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
         {/* Section Header */}
         <div className="text-center">
@@ -36,9 +32,7 @@ export function FaqAccordion() {
           >
             {copy.title}
           </h2>
-          <p className="mt-3 text-base text-muted">
-            {copy.subtitle}
-          </p>
+          <p className="mt-3 text-base text-muted">{copy.subtitle}</p>
         </div>
 
         {/* Accordion Container */}
@@ -56,7 +50,10 @@ export function FaqAccordion() {
                 >
                   <AccordionTrigger className="text-left font-heading text-base font-semibold text-text hover:text-brand-600 dark:hover:text-brand-400 sm:text-lg">
                     <span className="flex items-center gap-3">
-                      <MessageCircleQuestion className="h-5 w-5 text-brand-500 shrink-0" aria-hidden="true" />
+                      <MessageCircleQuestion
+                        className="h-5 w-5 text-brand-500 shrink-0"
+                        aria-hidden="true"
+                      />
                       <span>{item.question}</span>
                     </span>
                   </AccordionTrigger>

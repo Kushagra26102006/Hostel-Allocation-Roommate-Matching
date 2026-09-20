@@ -1,6 +1,41 @@
 import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { Types } from "mongoose";
 import { Faker, en } from "@faker-js/faker";
+
+// Auto-load root .env if environment variables are not pre-set in shell
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+for (const candidate of [
+  path.resolve(process.cwd(), ".env"),
+  path.resolve(__dirname, "../../../.env"),
+  path.resolve(__dirname, "../../.env"),
+]) {
+  if (fs.existsSync(candidate)) {
+    const lines = fs.readFileSync(candidate, "utf-8").split("\n");
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const eq = trimmed.indexOf("=");
+      if (eq !== -1) {
+        const key = trimmed.slice(0, eq).trim();
+        let val = trimmed.slice(eq + 1).trim();
+        if (
+          (val.startsWith('"') && val.endsWith('"')) ||
+          (val.startsWith("'") && val.endsWith("'"))
+        ) {
+          val = val.slice(1, -1);
+        }
+        if (process.env[key] === undefined) {
+          process.env[key] = val;
+        }
+      }
+    }
+    break;
+  }
+}
 import { connectDb } from "../connection.js";
 import { InstitutionModel } from "../models/institution.model.js";
 import { UserModel } from "../models/user.model.js";

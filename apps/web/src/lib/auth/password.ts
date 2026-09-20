@@ -44,16 +44,13 @@ export async function checkPasswordBreached(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-    const response = await fetch(
-      `https://api.pwnedpasswords.com/range/${prefix}`,
-      {
-        headers: {
-          "User-Agent": "HostelHub-Auth-Service",
-          "Add-Padding": "true",
-        },
-        signal: controller.signal,
+    const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`, {
+      headers: {
+        "User-Agent": "HostelHub-Auth-Service",
+        "Add-Padding": "true",
       },
-    );
+      signal: controller.signal,
+    });
 
     clearTimeout(timeoutId);
 
@@ -101,10 +98,7 @@ export async function hashPassword(password: string): Promise<string> {
 /**
  * Verify password against Argon2 hash.
  */
-export async function verifyPassword(
-  hash: string,
-  plainText: string,
-): Promise<boolean> {
+export async function verifyPassword(hash: string, plainText: string): Promise<boolean> {
   try {
     return await argon2.verify(hash, plainText);
   } catch {

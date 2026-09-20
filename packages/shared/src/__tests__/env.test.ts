@@ -49,21 +49,19 @@ describe("webEnvSchema", () => {
   });
 
   it("rejects when AUTH_SECRET is too short", () => {
-    expect(() =>
-      parseEnv(webEnvSchema, { ...validWebEnv, AUTH_SECRET: "short" }),
-    ).toThrow("AUTH_SECRET");
+    expect(() => parseEnv(webEnvSchema, { ...validWebEnv, AUTH_SECRET: "short" })).toThrow(
+      "AUTH_SECRET",
+    );
   });
 
   it("rejects when APP_URL is not a valid URL", () => {
-    expect(() =>
-      parseEnv(webEnvSchema, { ...validWebEnv, APP_URL: "not-a-url" }),
-    ).toThrow("APP_URL");
+    expect(() => parseEnv(webEnvSchema, { ...validWebEnv, APP_URL: "not-a-url" })).toThrow(
+      "APP_URL",
+    );
   });
 
   it("defaults SMTP_PORT to 1025 when omitted", () => {
-    const rest = Object.fromEntries(
-      Object.entries(validWebEnv).filter(([k]) => k !== "SMTP_PORT"),
-    );
+    const rest = Object.fromEntries(Object.entries(validWebEnv).filter(([k]) => k !== "SMTP_PORT"));
     const env = parseEnv(webEnvSchema, rest);
     expect(env.SMTP_PORT).toBe(1025);
   });
@@ -85,9 +83,9 @@ describe("workerEnvSchema", () => {
   });
 
   it("rejects when REDIS_URL is not a valid URL", () => {
-    expect(() =>
-      parseEnv(workerEnvSchema, { ...validWorkerEnv, REDIS_URL: "bad-url" }),
-    ).toThrow("REDIS_URL");
+    expect(() => parseEnv(workerEnvSchema, { ...validWorkerEnv, REDIS_URL: "bad-url" })).toThrow(
+      "REDIS_URL",
+    );
   });
 
   it("rejects when MASTER_ENCRYPTION_KEY is too short", () => {

@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import { Redis } from "ioredis";
 import { parseEnv, workerEnvSchema, createLogger } from "@hostelhub/shared";
 import { setupWindowScheduler } from "./window-scheduler.js";
+import { setupAllocationWorker } from "./allocation-processor.js";
 
 // ── 1. Validate environment (fail fast) ───────────────────────────────────────
 const env = parseEnv(workerEnvSchema, process.env);
@@ -31,9 +32,12 @@ const redis = new Redis(env.REDIS_URL, {
 await redis.connect();
 log.info("Redis connected");
 
-// ── 4. Setup BullMQ Window Scheduler ──────────────────────────────────────────
+// ── 4. Setup BullMQ Window Scheduler & Allocation Worker ───────────────────
 const { queue, worker } = await setupWindowScheduler(redis);
 log.info("Window scheduler registered and running");
+
+const allocationWorker = setupAllocationWorker(redis);
+log.info("Allocation background worker registered and listening for jobs");
 
 // ── 5. Signal readiness ───────────────────────────────────────────────────────
 log.info({ pid: process.pid }, "worker ready");
@@ -42,6 +46,7 @@ log.info({ pid: process.pid }, "worker ready");
 async function shutdown(signal: string): Promise<void> {
   log.info({ signal }, "Shutting down worker...");
   try {
+    await allocationWorker.close();
     await worker.close();
     await queue.close();
     await redis.quit();

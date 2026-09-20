@@ -1,8 +1,5 @@
 import { Types, type ClientSession, type FilterQuery } from "mongoose";
-import {
-  GroupModel,
-  type GroupDocument,
-} from "../models/group.model.js";
+import { GroupModel, type GroupDocument } from "../models/group.model.js";
 import { BaseRepository } from "./base.repository.js";
 
 export class GroupRepository extends BaseRepository<GroupDocument> {

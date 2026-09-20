@@ -93,7 +93,8 @@ export default function HomePage() {
                 Explore residential towers
               </h2>
               <p className="mt-3 text-base text-muted sm:text-lg">
-                Four modern hostel complexes configured for focused learning, community living, and security.
+                Four modern hostel complexes configured for focused learning, community living, and
+                security.
               </p>
             </div>
 
@@ -108,17 +109,11 @@ export default function HomePage() {
                       <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-[11px] font-bold text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
                         {tower.gender}
                       </span>
-                      <span className="text-xs font-semibold text-success">
-                        {tower.tag}
-                      </span>
+                      <span className="text-xs font-semibold text-success">{tower.tag}</span>
                     </div>
 
-                    <h3 className="mt-4 font-heading text-lg font-bold text-text">
-                      {tower.name}
-                    </h3>
-                    <p className="text-xs font-medium text-muted">
-                      {tower.subtitle}
-                    </p>
+                    <h3 className="mt-4 font-heading text-lg font-bold text-text">{tower.name}</h3>
+                    <p className="text-xs font-medium text-muted">{tower.subtitle}</p>
 
                     <div className="mt-4 space-y-1.5 border-t border-border/50 pt-4 text-xs">
                       <div className="font-semibold text-text">{tower.type}</div>

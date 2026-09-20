@@ -59,12 +59,7 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -97,16 +92,86 @@ import { PageHeader } from "@/components/page-header";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const COLOR_TOKENS = [
-  { name: "Brand 600", token: "--brand-600", light: "#4338CA", dark: "#818CF8", bgClass: "bg-brand-600", textClass: "text-brand-600" },
-  { name: "Accent", token: "--accent", light: "#7C3AED", dark: "#A78BFA", bgClass: "bg-accent", textClass: "text-accent" },
-  { name: "Info", token: "--info", light: "#0891B2", dark: "#22D3EE", bgClass: "bg-info", textClass: "text-info" },
-  { name: "Success", token: "--success", light: "#059669", dark: "#34D399", bgClass: "bg-success", textClass: "text-success" },
-  { name: "Warning", token: "--warning", light: "#D97706", dark: "#FBBF24", bgClass: "bg-warning", textClass: "text-warning" },
-  { name: "Danger", token: "--danger", light: "#E11D48", dark: "#FB7185", bgClass: "bg-danger", textClass: "text-danger" },
-  { name: "Surface", token: "--surface", light: "#FFFFFF", dark: "#0B1026", bgClass: "bg-surface border border-border", textClass: "text-text" },
-  { name: "Background", token: "--background", light: "#F8FAFC", dark: "#070B1F", bgClass: "bg-background border border-border", textClass: "text-text" },
-  { name: "Text", token: "--text", light: "#0F172A", dark: "#E2E8F0", bgClass: "bg-text", textClass: "text-text" },
-  { name: "Muted", token: "--muted", light: "#475569", dark: "#94A3B8", bgClass: "bg-muted", textClass: "text-muted" },
+  {
+    name: "Brand 600",
+    token: "--brand-600",
+    light: "#4338CA",
+    dark: "#818CF8",
+    bgClass: "bg-brand-600",
+    textClass: "text-brand-600",
+  },
+  {
+    name: "Accent",
+    token: "--accent",
+    light: "#7C3AED",
+    dark: "#A78BFA",
+    bgClass: "bg-accent",
+    textClass: "text-accent",
+  },
+  {
+    name: "Info",
+    token: "--info",
+    light: "#0891B2",
+    dark: "#22D3EE",
+    bgClass: "bg-info",
+    textClass: "text-info",
+  },
+  {
+    name: "Success",
+    token: "--success",
+    light: "#059669",
+    dark: "#34D399",
+    bgClass: "bg-success",
+    textClass: "text-success",
+  },
+  {
+    name: "Warning",
+    token: "--warning",
+    light: "#D97706",
+    dark: "#FBBF24",
+    bgClass: "bg-warning",
+    textClass: "text-warning",
+  },
+  {
+    name: "Danger",
+    token: "--danger",
+    light: "#E11D48",
+    dark: "#FB7185",
+    bgClass: "bg-danger",
+    textClass: "text-danger",
+  },
+  {
+    name: "Surface",
+    token: "--surface",
+    light: "#FFFFFF",
+    dark: "#0B1026",
+    bgClass: "bg-surface border border-border",
+    textClass: "text-text",
+  },
+  {
+    name: "Background",
+    token: "--background",
+    light: "#F8FAFC",
+    dark: "#070B1F",
+    bgClass: "bg-background border border-border",
+    textClass: "text-text",
+  },
+  {
+    name: "Text",
+    token: "--text",
+    light: "#0F172A",
+    dark: "#E2E8F0",
+    bgClass: "bg-text",
+    textClass: "text-text",
+  },
+  {
+    name: "Muted",
+    token: "--muted",
+    light: "#475569",
+    dark: "#94A3B8",
+    bgClass: "bg-muted",
+    textClass: "text-muted",
+  },
 ];
 
 export function DesignShowcaseClient() {
@@ -179,7 +244,9 @@ export function DesignShowcaseClient() {
                   Design System & Component Library
                 </h2>
                 <p className="text-muted text-sm md:text-base leading-relaxed">
-                  Unified visual language with WCAG 2.1 AA compliance (contrast &gt; 4.5:1 text, &gt; 3:1 UI), fluid clamp() typography, dark mode via next-themes, accessible motion reduction, and token-driven styles.
+                  Unified visual language with WCAG 2.1 AA compliance (contrast &gt; 4.5:1 text,
+                  &gt; 3:1 UI), fluid clamp() typography, dark mode via next-themes, accessible
+                  motion reduction, and token-driven styles.
                 </p>
               </div>
 
@@ -192,12 +259,18 @@ export function DesignShowcaseClient() {
                       Motion Preference
                     </span>
                   </div>
-                  <Badge variant={prefersReducedMotion ? "warning" : "success"} className="text-[10px]">
+                  <Badge
+                    variant={prefersReducedMotion ? "warning" : "success"}
+                    className="text-[10px]"
+                  >
                     {prefersReducedMotion ? "Reduced Active" : "Full Motion"}
                   </Badge>
                 </div>
                 <p className="text-xs text-muted">
-                  Current state: <strong className="text-text">{prefersReducedMotion ? "Reduced Motion" : "Normal Motion"}</strong>
+                  Current state:{" "}
+                  <strong className="text-text">
+                    {prefersReducedMotion ? "Reduced Motion" : "Normal Motion"}
+                  </strong>
                   {reduceMotion === null ? " (Following OS)" : " (In-App Override)"}
                 </p>
                 <div className="flex gap-1.5 pt-1">
@@ -239,7 +312,9 @@ export function DesignShowcaseClient() {
 
             {/* Colors */}
             <div className="space-y-3">
-              <h3 className="text-base font-semibold font-heading text-text">Color Palette (HSL Custom Properties)</h3>
+              <h3 className="text-base font-semibold font-heading text-text">
+                Color Palette (HSL Custom Properties)
+              </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                 {COLOR_TOKENS.map((col) => (
                   <div
@@ -251,8 +326,12 @@ export function DesignShowcaseClient() {
                       <p className="font-semibold text-sm">{col.name}</p>
                       <p className="font-mono text-xs text-muted">{col.token}</p>
                       <div className="flex justify-between text-[11px] text-muted pt-1 mt-1 border-t border-border">
-                        <span>L: <span className="font-mono">{col.light}</span></span>
-                        <span>D: <span className="font-mono">{col.dark}</span></span>
+                        <span>
+                          L: <span className="font-mono">{col.light}</span>
+                        </span>
+                        <span>
+                          D: <span className="font-mono">{col.dark}</span>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -262,12 +341,16 @@ export function DesignShowcaseClient() {
 
             {/* Typography Scale */}
             <div className="space-y-3 pt-4">
-              <h3 className="text-base font-semibold font-heading text-text">Typography (Fluid clamp scale & families)</h3>
+              <h3 className="text-base font-semibold font-heading text-text">
+                Typography (Fluid clamp scale & families)
+              </h3>
               <div className="rounded-card border border-border bg-surface p-6 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 border-b border-border">
                   <div>
                     <p className="text-xs font-semibold text-muted uppercase">Headings</p>
-                    <p className="font-heading text-xl font-bold text-brand-600 dark:text-brand-400">Plus Jakarta Sans</p>
+                    <p className="font-heading text-xl font-bold text-brand-600 dark:text-brand-400">
+                      Plus Jakarta Sans
+                    </p>
                     <p className="text-xs text-muted mt-1">Self-hosted with next/font/google</p>
                   </div>
                   <div>
@@ -284,21 +367,35 @@ export function DesignShowcaseClient() {
 
                 <div className="space-y-4">
                   <div>
-                    <p className="text-xs text-muted font-mono">h1 · clamp(2.25rem, 5vw + 1rem, 3.75rem)</p>
-                    <h1 className="font-heading text-4xl font-extrabold text-text">The Complete Hostel Life OS</h1>
+                    <p className="text-xs text-muted font-mono">
+                      h1 · clamp(2.25rem, 5vw + 1rem, 3.75rem)
+                    </p>
+                    <h1 className="font-heading text-4xl font-extrabold text-text">
+                      The Complete Hostel Life OS
+                    </h1>
                   </div>
                   <div>
-                    <p className="text-xs text-muted font-mono">h2 · clamp(1.875rem, 4vw + 0.75rem, 2.75rem)</p>
-                    <h2 className="font-heading text-3xl font-bold text-text">Modern Student Housing Reimagined</h2>
+                    <p className="text-xs text-muted font-mono">
+                      h2 · clamp(1.875rem, 4vw + 0.75rem, 2.75rem)
+                    </p>
+                    <h2 className="font-heading text-3xl font-bold text-text">
+                      Modern Student Housing Reimagined
+                    </h2>
                   </div>
                   <div>
-                    <p className="text-xs text-muted font-mono">h3 · clamp(1.5rem, 3vw + 0.5rem, 2rem)</p>
-                    <h3 className="font-heading text-2xl font-semibold text-text">Real-time room allocations & complaints</h3>
+                    <p className="text-xs text-muted font-mono">
+                      h3 · clamp(1.5rem, 3vw + 0.5rem, 2rem)
+                    </p>
+                    <h3 className="font-heading text-2xl font-semibold text-text">
+                      Real-time room allocations & complaints
+                    </h3>
                   </div>
                   <div>
                     <p className="text-xs text-muted font-mono">Body Regular · 1rem (16px)</p>
                     <p className="text-text max-w-3xl leading-relaxed">
-                      HostelHub enables university campuses and private residences to seamlessly manage resident allocations, gate passes, maintenance issues, meal rosters, and communications with sub-second feedback.
+                      HostelHub enables university campuses and private residences to seamlessly
+                      manage resident allocations, gate passes, maintenance issues, meal rosters,
+                      and communications with sub-second feedback.
                     </p>
                   </div>
                 </div>
@@ -357,7 +454,9 @@ export function DesignShowcaseClient() {
                   </div>
                   <div className="flex justify-between border-b border-border pb-1">
                     <span>Spring:</span>
-                    <span>stiffness {spring.stiffness}, damping {spring.damping}</span>
+                    <span>
+                      stiffness {spring.stiffness}, damping {spring.damping}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Stagger:</span>
@@ -385,18 +484,26 @@ export function DesignShowcaseClient() {
                 <Button variant="destructive">Destructive</Button>
                 <Button variant="outline">Outline</Button>
                 <Button variant="link">Link</Button>
-                <Button variant="primary" size="sm">Small</Button>
-                <Button variant="primary" size="lg">Large</Button>
+                <Button variant="primary" size="sm">
+                  Small
+                </Button>
+                <Button variant="primary" size="lg">
+                  Large
+                </Button>
                 <Button variant="primary" size="icon" aria-label="Quick action">
                   <Zap className="h-4 w-4" />
                 </Button>
-                <Button variant="primary" disabled>Disabled</Button>
+                <Button variant="primary" disabled>
+                  Disabled
+                </Button>
               </div>
             </div>
 
             {/* Cards & Glass Variant */}
             <div className="space-y-3 pt-2">
-              <h3 className="text-base font-semibold font-heading text-text">Cards & Glass Variant</h3>
+              <h3 className="text-base font-semibold font-heading text-text">
+                Cards & Glass Variant
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card>
                   <CardHeader>
@@ -404,10 +511,14 @@ export function DesignShowcaseClient() {
                     <CardDescription>Default token-based elevation and border</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted">Clean background surface with border-border tokens.</p>
+                    <p className="text-sm text-muted">
+                      Clean background surface with border-border tokens.
+                    </p>
                   </CardContent>
                   <CardFooter>
-                    <Button variant="outline" size="sm">Manage</Button>
+                    <Button variant="outline" size="sm">
+                      Manage
+                    </Button>
                   </CardFooter>
                 </Card>
                 <Card variant="glass">
@@ -416,10 +527,14 @@ export function DesignShowcaseClient() {
                     <CardDescription>--glass-fill, --glass-border & backdrop blur</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted">Subtle frosted glass appearance over gradient backgrounds.</p>
+                    <p className="text-sm text-muted">
+                      Subtle frosted glass appearance over gradient backgrounds.
+                    </p>
                   </CardContent>
                   <CardFooter>
-                    <Button variant="primary" size="sm">Explore</Button>
+                    <Button variant="primary" size="sm">
+                      Explore
+                    </Button>
                   </CardFooter>
                 </Card>
               </div>
@@ -458,7 +573,11 @@ export function DesignShowcaseClient() {
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="demo-notes">Maintenance Request</Label>
-                    <Textarea id="demo-notes" placeholder="Describe the issue with the AC or plumbing..." rows={2} />
+                    <Textarea
+                      id="demo-notes"
+                      placeholder="Describe the issue with the AC or plumbing..."
+                      rows={2}
+                    />
                   </div>
                 </div>
 
@@ -482,7 +601,9 @@ export function DesignShowcaseClient() {
 
             {/* Overlays: Dialog, Sheet, Tooltip, Sonner Toasts */}
             <div className="space-y-3 pt-4">
-              <h3 className="text-base font-semibold font-heading text-text">Overlays, Modals & Drawers</h3>
+              <h3 className="text-base font-semibold font-heading text-text">
+                Overlays, Modals & Drawers
+              </h3>
               <div className="flex flex-wrap gap-4 items-center">
                 {/* Dialog */}
                 <Dialog>
@@ -501,7 +622,10 @@ export function DesignShowcaseClient() {
                       <p>• Parent verification: Confirmed via SMS OTP</p>
                     </div>
                     <DialogFooter>
-                      <Button variant="primary" onClick={() => toast.success("Gate pass issued successfully!")}>
+                      <Button
+                        variant="primary"
+                        onClick={() => toast.success("Gate pass issued successfully!")}
+                      >
                         Approve Pass
                       </Button>
                     </DialogFooter>
@@ -562,11 +686,7 @@ export function DesignShowcaseClient() {
                 </Button>
 
                 {/* Command Palette Trigger */}
-                <Button
-                  variant="secondary"
-                  className="gap-2"
-                  onClick={() => setCommandOpen(true)}
-                >
+                <Button variant="secondary" className="gap-2" onClick={() => setCommandOpen(true)}>
                   <CommandIcon className="h-4 w-4" />
                   <span>Open Command Palette</span>
                 </Button>
@@ -585,13 +705,21 @@ export function DesignShowcaseClient() {
                     <TabsTrigger value="rules">House Rules</TabsTrigger>
                   </TabsList>
                   <TabsContent value="overview" className="space-y-2 pt-3 text-sm text-muted">
-                    <p>HostelHub Central Campus features 120 rooms across 4 wings with high-speed 1Gbps fiber WiFi.</p>
+                    <p>
+                      HostelHub Central Campus features 120 rooms across 4 wings with high-speed
+                      1Gbps fiber WiFi.
+                    </p>
                   </TabsContent>
                   <TabsContent value="amenities" className="space-y-2 pt-3 text-sm text-muted">
-                    <p>Gym, Study lounge, 24/7 laundry station, rooftop cafeteria, and biometric access.</p>
+                    <p>
+                      Gym, Study lounge, 24/7 laundry station, rooftop cafeteria, and biometric
+                      access.
+                    </p>
                   </TabsContent>
                   <TabsContent value="rules" className="space-y-2 pt-3 text-sm text-muted">
-                    <p>Strict quiet hours between 11:00 PM and 6:00 AM. Guest registration mandatory.</p>
+                    <p>
+                      Strict quiet hours between 11:00 PM and 6:00 AM. Guest registration mandatory.
+                    </p>
                   </TabsContent>
                 </Tabs>
               </div>
@@ -603,13 +731,15 @@ export function DesignShowcaseClient() {
                   <AccordionItem value="item-1">
                     <AccordionTrigger>How are room switch requests handled?</AccordionTrigger>
                     <AccordionContent>
-                      Residents can file mutual swap or medical switch requests directly in the app during the first 14 days of the semester.
+                      Residents can file mutual swap or medical switch requests directly in the app
+                      during the first 14 days of the semester.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-2">
                     <AccordionTrigger>What happens during campus emergencies?</AccordionTrigger>
                     <AccordionContent>
-                      The warden broadcasts an instant push alert with evacuation routing instructions to all resident dashboards.
+                      The warden broadcasts an instant push alert with evacuation routing
+                      instructions to all resident dashboards.
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -639,9 +769,30 @@ export function DesignShowcaseClient() {
                   </div>
                   <Progress value={progressVal} />
                   <div className="flex gap-2 pt-1">
-                    <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={() => setProgressVal(25)}>25%</Button>
-                    <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={() => setProgressVal(68)}>68%</Button>
-                    <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={() => setProgressVal(100)}>100%</Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-6 text-[10px] px-2"
+                      onClick={() => setProgressVal(25)}
+                    >
+                      25%
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-6 text-[10px] px-2"
+                      onClick={() => setProgressVal(68)}
+                    >
+                      68%
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-6 text-[10px] px-2"
+                      onClick={() => setProgressVal(100)}
+                    >
+                      100%
+                    </Button>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -673,13 +824,16 @@ export function DesignShowcaseClient() {
                 </div>
                 <h4 className="font-heading font-bold text-base">GlassCard with Spotlight</h4>
                 <p className="text-xs text-muted leading-relaxed">
-                  Move your mouse across this card! A subtle radial spotlight follows the cursor position. When reduced motion is enabled, the spotlight automatically disables.
+                  Move your mouse across this card! A subtle radial spotlight follows the cursor
+                  position. When reduced motion is enabled, the spotlight automatically disables.
                 </p>
               </GlassCard>
 
               {/* StatusChips */}
               <div className="rounded-card border border-border bg-surface p-6 space-y-4">
-                <h4 className="font-heading font-bold text-base">StatusChip (Icon + Text + Color)</h4>
+                <h4 className="font-heading font-bold text-base">
+                  StatusChip (Icon + Text + Color)
+                </h4>
                 <p className="text-xs text-muted">Never color alone (WCAG 1.4.1 compliant):</p>
                 <div className="flex flex-wrap gap-2">
                   <StatusChip status="online" />
@@ -694,10 +848,19 @@ export function DesignShowcaseClient() {
               {/* AnimatedNumber */}
               <div className="rounded-card border border-border bg-surface p-6 space-y-3 flex flex-col justify-between">
                 <div>
-                  <h4 className="font-heading font-bold text-base">AnimatedNumber (Spring Count-up)</h4>
-                  <p className="text-xs text-muted mb-4">Spring physics count-up animation, instant on reduced motion.</p>
+                  <h4 className="font-heading font-bold text-base">
+                    AnimatedNumber (Spring Count-up)
+                  </h4>
+                  <p className="text-xs text-muted mb-4">
+                    Spring physics count-up animation, instant on reduced motion.
+                  </p>
                   <div className="text-3xl font-extrabold font-mono text-brand-600 dark:text-brand-400">
-                    <AnimatedNumber key={animatedKey} from={0} to={14280} format={(n) => `₹${n.toLocaleString()}`} />
+                    <AnimatedNumber
+                      key={animatedKey}
+                      from={0}
+                      to={14280}
+                      format={(n) => `₹${n.toLocaleString()}`}
+                    />
                   </div>
                 </div>
                 <Button
@@ -716,7 +879,9 @@ export function DesignShowcaseClient() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h4 className="font-heading font-bold text-base">Stepper (Progress Bar Morph)</h4>
-                  <p className="text-xs text-muted">Horizontal step indicator with animated connector line morphing</p>
+                  <p className="text-xs text-muted">
+                    Horizontal step indicator with animated connector line morphing
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -763,23 +928,41 @@ export function DesignShowcaseClient() {
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup heading="Design Tokens">
-                <CommandItem onSelect={() => { toast.info("Brand 600: #4338CA"); setCommandOpen(false); }}>
+                <CommandItem
+                  onSelect={() => {
+                    toast.info("Brand 600: #4338CA");
+                    setCommandOpen(false);
+                  }}
+                >
                   <Palette className="h-4 w-4 mr-2" />
                   <span>Inspect Brand Colors</span>
                   <CommandShortcut>⌘B</CommandShortcut>
                 </CommandItem>
-                <CommandItem onSelect={() => { toast.info("Motion Tokens active"); setCommandOpen(false); }}>
+                <CommandItem
+                  onSelect={() => {
+                    toast.info("Motion Tokens active");
+                    setCommandOpen(false);
+                  }}
+                >
                   <Activity className="h-4 w-4 mr-2" />
                   <span>Check Motion Tokens</span>
                 </CommandItem>
               </CommandGroup>
               <CommandSeparator />
               <CommandGroup heading="Components">
-                <CommandItem onSelect={() => { setCommandOpen(false); }}>
+                <CommandItem
+                  onSelect={() => {
+                    setCommandOpen(false);
+                  }}
+                >
                   <Layers className="h-4 w-4 mr-2" />
                   <span>Button Variants</span>
                 </CommandItem>
-                <CommandItem onSelect={() => { setCommandOpen(false); }}>
+                <CommandItem
+                  onSelect={() => {
+                    setCommandOpen(false);
+                  }}
+                >
                   <Sparkles className="h-4 w-4 mr-2" />
                   <span>GlassCard Spotlight</span>
                 </CommandItem>

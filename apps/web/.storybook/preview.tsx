@@ -21,7 +21,8 @@ const preview: Preview = {
   },
   decorators: [
     (Story, context) => {
-      const theme = (context.parameters.theme as string) || (context.globals["theme"] as string) || "light";
+      const theme =
+        (context.parameters.theme as string) || (context.globals["theme"] as string) || "light";
       return React.createElement(
         ThemeProvider,
         { attribute: "class", forcedTheme: theme, defaultTheme: theme },
@@ -31,8 +32,8 @@ const preview: Preview = {
             className: `${theme === "dark" ? "dark " : ""}bg-background text-text min-h-[200px] p-6 font-sans`,
             style: { fontFamily: "Inter, system-ui, sans-serif" },
           },
-          React.createElement(Story)
-        )
+          React.createElement(Story),
+        ),
       );
     },
   ],

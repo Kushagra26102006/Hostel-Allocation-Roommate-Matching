@@ -41,12 +41,16 @@ import type { PriorityUnit } from "../../allocation/pipeline.js";
 import { dealBreakerConflict } from "../../compatibility/scoring.js";
 
 // ─── Configuration ─────────────────────────────────────────────────────────────
+//
+// 200 runs in CI, 2,000 locally (override with PBT_RUNS=N).
+// Keeping CI at 200 to stay inside a 2-minute budget per property.
+// Local: set PBT_RUNS=200 to run the fast CI configuration.
 
 const NUM_RUNS = process.env.PBT_RUNS
   ? parseInt(process.env.PBT_RUNS, 10)
   : process.env.CI
     ? 200
-    : 200;
+    : 2000;
 
 // ─── Fast-Check Generators ─────────────────────────────────────────────────────
 

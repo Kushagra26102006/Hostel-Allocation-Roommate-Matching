@@ -19,7 +19,7 @@ export function DevRoleSwitcher() {
     router.push(targetUrl);
   };
 
-  const roleEntries = Object.entries(ROLES_METADATA) as [Role, typeof ROLES_METADATA[Role]][];
+  const roleEntries = Object.entries(ROLES_METADATA) as [Role, (typeof ROLES_METADATA)[Role]][];
 
   return (
     <div className="relative inline-block text-left">
@@ -35,9 +35,7 @@ export function DevRoleSwitcher() {
           <span className="hidden sm:inline font-mono tracking-wider text-[11px] uppercase">
             {messages.shell.devRoleSwitcher}:
           </span>
-          <span className="font-bold text-text">
-            {ROLES_METADATA[role]?.name ?? role}
-          </span>
+          <span className="font-bold text-text">{ROLES_METADATA[role]?.name ?? role}</span>
           <UserCog className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 group-hover:rotate-12 transition-transform" />
         </button>
       </div>
@@ -76,9 +74,7 @@ export function DevRoleSwitcher() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-semibold">{info.name}</span>
-                    {isSelected && (
-                      <span className="h-2 w-2 rounded-full bg-brand-500" />
-                    )}
+                    {isSelected && <span className="h-2 w-2 rounded-full bg-brand-500" />}
                   </div>
                   <span className="text-[10px] text-muted mt-0.5 line-clamp-1">
                     {info.description}

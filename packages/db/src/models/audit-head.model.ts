@@ -1,13 +1,6 @@
-import mongoose, {
-  Schema,
-  model,
-  type Document,
-  type Model,
-  type Types,
-} from "mongoose";
+import mongoose, { Schema, model, type Document, type Model, type Types } from "mongoose";
 
-export const GENESIS_HASH =
-  "0000000000000000000000000000000000000000000000000000000000000000";
+export const GENESIS_HASH = "0000000000000000000000000000000000000000000000000000000000000000";
 
 export interface IAuditChainHead {
   institution_id: Types.ObjectId;

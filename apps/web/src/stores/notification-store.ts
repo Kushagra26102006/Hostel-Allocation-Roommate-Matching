@@ -24,7 +24,8 @@ const INITIAL_NOTIFICATIONS: AppNotification[] = [
   {
     id: "notif-1",
     title: "Draft Allocation Published",
-    message: "Provisional room match for Semester 1 (Block B Room 304) is ready for student review.",
+    message:
+      "Provisional room match for Semester 1 (Block B Room 304) is ready for student review.",
     timestamp: "10m ago",
     read: false,
     type: "info",
@@ -110,9 +111,7 @@ export const useNotificationStore = create<NotificationStore>()((set) => ({
 
   markAsRead: (id: string) => {
     set((state) => ({
-      notifications: state.notifications.map((n) =>
-        n.id === id ? { ...n, read: true } : n,
-      ),
+      notifications: state.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
     }));
   },
 }));

@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  encryptPayload,
-  decryptPayload,
-  registerMasterKey,
-} from "../security/cipher.js";
+import { encryptPayload, decryptPayload, registerMasterKey } from "../security/cipher.js";
 
 describe("Phase 4.3: Cryptographic Cipher & AAD Binding", () => {
   it("binds ciphertext with AAD (institutionId + studentId + keyId) and rejects wrong tenant", () => {

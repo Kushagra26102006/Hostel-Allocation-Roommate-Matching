@@ -26,9 +26,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
   const toggle = () => setTheme(isDark ? "light" : "dark");
 
   if (!mounted) {
-    return (
-      <div className={cn("h-9 w-9 rounded-ctrl", className)} />
-    );
+    return <div className={cn("h-9 w-9 rounded-ctrl", className)} />;
   }
 
   return (
@@ -50,9 +48,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         aria-hidden="true"
         className={cn(
           "absolute h-4 w-4 transition-all duration-280 ease-emphasized",
-          isDark
-            ? "opacity-100 rotate-0 scale-100"
-            : "opacity-0 rotate-90 scale-75",
+          isDark ? "opacity-100 rotate-0 scale-100" : "opacity-0 rotate-90 scale-75",
         )}
       />
       {/* Moon icon — visible in light mode (clicking switches to dark) */}
@@ -60,9 +56,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         aria-hidden="true"
         className={cn(
           "absolute h-4 w-4 transition-all duration-280 ease-emphasized",
-          isDark
-            ? "opacity-0 -rotate-90 scale-75"
-            : "opacity-100 rotate-0 scale-100",
+          isDark ? "opacity-0 -rotate-90 scale-75" : "opacity-100 rotate-0 scale-100",
         )}
       />
     </button>

@@ -21,14 +21,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@hostelhub/domain": path.resolve(
-        __dirname,
-        "../domain/src/index.ts",
-      ),
-      "@hostelhub/shared": path.resolve(
-        __dirname,
-        "../shared/src/index.ts",
-      ),
+      "@hostelhub/domain": path.resolve(__dirname, "../domain/src/index.ts"),
+      "@hostelhub/shared": path.resolve(__dirname, "../shared/src/index.ts"),
     },
   },
 });

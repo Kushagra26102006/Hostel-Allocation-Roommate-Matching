@@ -21,7 +21,10 @@ registry.registerComponent("securitySchemes", "SessionAuth", {
 export const ProblemDetailsSchema = registry.register(
   "ProblemDetails",
   z.object({
-    type: z.string().url().openapi({ example: "https://hostelhub.campus.edu/probs/validation-failed" }),
+    type: z
+      .string()
+      .url()
+      .openapi({ example: "https://hostelhub.campus.edu/probs/validation-failed" }),
     title: z.string().openapi({ example: "Validation Failed" }),
     status: z.number().int().openapi({ example: 422 }),
     detail: z.string().openapi({ example: "One or more input fields failed schema validation." }),
@@ -113,7 +116,8 @@ registry.registerPath({
   method: "get",
   path: "/api/v1/me",
   summary: "Current Authenticated User Profile",
-  description: "Returns the authenticated user context, granted roles, capabilities, and institution ID.",
+  description:
+    "Returns the authenticated user context, granted roles, capabilities, and institution ID.",
   security: [{ SessionAuth: [] }],
   responses: {
     200: {

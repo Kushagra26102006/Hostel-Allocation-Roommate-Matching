@@ -40,22 +40,19 @@ export const PATCH = apiHandler(
     requireIfMatch(req, bed.version);
 
     // 3. Perform atomic update with version checking
-    const updateData: { status?: "available" | "held" | "out_of_service" | "occupied"; attributes?: Record<string, unknown> } = {};
+    const updateData: {
+      status?: "available" | "held" | "out_of_service" | "occupied";
+      attributes?: Record<string, unknown>;
+    } = {};
     if (body.status !== undefined) updateData.status = body.status;
     if (body.attributes !== undefined) updateData.attributes = body.attributes;
 
-    const updatedBed = await repo.updateStatusOrAttributes(
-      params.id,
-      bed.version,
-      updateData,
-    );
+    const updatedBed = await repo.updateStatusOrAttributes(params.id, bed.version, updateData);
 
     // 4. Emit append-only cryptographic audit entry
     const ip = req.headers.get("x-forwarded-for");
     await AuditService.withTenant(institution_id).append({
-      actor: user
-        ? { id: user.id, email: user.email, role: user.roles[0] ?? "staff" }
-        : "system",
+      actor: user ? { id: user.id, email: user.email, role: user.roles[0] ?? "staff" } : "system",
       action: "INVENTORY_BED_UPDATED",
       target: {
         bedId: params.id,

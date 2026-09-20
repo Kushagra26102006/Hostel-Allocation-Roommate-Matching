@@ -1,8 +1,5 @@
 import mongoose, { Schema, model, type Model, type Types } from "mongoose";
-import {
-  baseSchemaPlugin,
-  type BaseTenantDocument,
-} from "../plugins/base-schema.plugin.js";
+import { baseSchemaPlugin, type BaseTenantDocument } from "../plugins/base-schema.plugin.js";
 
 export interface ICompatibilityResponse {
   student_id: Types.ObjectId;
@@ -12,9 +9,7 @@ export interface ICompatibilityResponse {
   ciphertext: string;
 }
 
-export interface CompatibilityResponseDocument
-  extends BaseTenantDocument,
-    ICompatibilityResponse {}
+export interface CompatibilityResponseDocument extends BaseTenantDocument, ICompatibilityResponse {}
 
 const compatibilityResponseSchema = new Schema<CompatibilityResponseDocument>(
   {
@@ -51,10 +46,7 @@ const compatibilityResponseSchema = new Schema<CompatibilityResponseDocument>(
 
 compatibilityResponseSchema.plugin(baseSchemaPlugin);
 
-compatibilityResponseSchema.index(
-  { institution_id: 1, student_id: 1 },
-  { unique: true },
-);
+compatibilityResponseSchema.index({ institution_id: 1, student_id: 1 }, { unique: true });
 
 export const CompatibilityResponseModel: Model<CompatibilityResponseDocument> =
   (mongoose.models?.["CompatibilityResponse"] as Model<CompatibilityResponseDocument>) ||

@@ -1,13 +1,7 @@
 import { apiHandler } from "@/lib/api/handler.js";
 import { getOccupancyMetrics } from "@/lib/inventory/occupancy.js";
 
-const STAFF_ROLES = new Set([
-  "warden",
-  "chief_warden",
-  "hostel_admin",
-  "dean",
-  "sys_admin",
-]);
+const STAFF_ROLES = new Set(["warden", "chief_warden", "hostel_admin", "dean", "sys_admin"]);
 
 export interface HostelBlockOccupancy {
   id: string;
@@ -106,7 +100,8 @@ export const GET = apiHandler(
             occupied: h.occupied,
             available: h.available,
             rate: h.rate,
-            gender: (h.gender_policy === "coed" ? "co-ed" : h.gender_policy) as "male" | "female" | "co-ed",
+            gender: (h.gender_policy === "coed" ? "co-ed" : h.gender_policy) as
+              "male" | "female" | "co-ed",
           }))
         : defaultHostels;
 

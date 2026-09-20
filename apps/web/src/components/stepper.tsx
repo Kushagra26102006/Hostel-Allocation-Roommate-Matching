@@ -16,14 +16,11 @@ interface StepperProps {
  */
 export function Stepper({ steps, currentStep, className }: StepperProps) {
   return (
-    <nav
-      aria-label="Progress"
-      className={cn("w-full", className)}
-    >
+    <nav aria-label="Progress" className={cn("w-full", className)}>
       <ol className="flex items-center">
         {steps.map((step, index) => {
           const isCompleted = index < currentStep;
-          const isCurrent  = index === currentStep;
+          const isCurrent = index === currentStep;
 
           return (
             <React.Fragment key={step}>
@@ -34,7 +31,8 @@ export function Stepper({ steps, currentStep, className }: StepperProps) {
                     "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
                     "text-xs font-semibold border-2 transition-all duration-280 ease-emphasized",
                     isCompleted && "bg-gradient-brand border-transparent text-white",
-                    isCurrent  && "border-brand-600 bg-surface text-brand-600 dark:border-brand-400 dark:text-brand-400",
+                    isCurrent &&
+                      "border-brand-600 bg-surface text-brand-600 dark:border-brand-400 dark:text-brand-400",
                     !isCompleted && !isCurrent && "border-border bg-surface text-muted",
                   )}
                 >
@@ -50,7 +48,7 @@ export function Stepper({ steps, currentStep, className }: StepperProps) {
                 <span
                   className={cn(
                     "ml-2 text-xs font-medium hidden sm:block transition-colors duration-180",
-                    isCurrent  && "text-brand-600 dark:text-brand-400",
+                    isCurrent && "text-brand-600 dark:text-brand-400",
                     isCompleted && "text-text",
                     !isCompleted && !isCurrent && "text-muted",
                   )}

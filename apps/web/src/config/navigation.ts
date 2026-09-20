@@ -325,9 +325,7 @@ export function getNavigationForRole(role: Role): NavItem[] {
 }
 
 export function getBottomTabsForRole(role: Role): NavItem[] {
-  return NAVIGATION_ITEMS.filter(
-    (item) => item.roles.includes(role) && item.isBottomTab,
-  );
+  return NAVIGATION_ITEMS.filter((item) => item.roles.includes(role) && item.isBottomTab);
 }
 
 export function getNavItemByPath(pathname: string): NavItem | undefined {

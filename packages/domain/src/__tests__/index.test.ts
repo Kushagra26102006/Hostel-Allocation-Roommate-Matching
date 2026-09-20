@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createHostelId, type Hostel } from "../index.js";
+import { createHostelId, type LegacyHostel } from "../index.js";
 
 describe("@hostelhub/domain", () => {
   it("createHostelId returns a branded string", () => {
@@ -8,7 +8,7 @@ describe("@hostelhub/domain", () => {
   });
 
   it("Hostel type can be constructed correctly", () => {
-    const hostel: Hostel = {
+    const hostel: LegacyHostel = {
       id: createHostelId("h-001"),
       name: "Sunrise Hostel",
       city: "Bangalore",

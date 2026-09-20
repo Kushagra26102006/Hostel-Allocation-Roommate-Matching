@@ -21,7 +21,8 @@ export const Default: Story = {
       <AccordionItem value="item-1">
         <AccordionTrigger>What are visiting hours?</AccordionTrigger>
         <AccordionContent>
-          Guests are permitted in the central lobby between 9:00 AM and 8:00 PM with valid identity proof.
+          Guests are permitted in the central lobby between 9:00 AM and 8:00 PM with valid identity
+          proof.
         </AccordionContent>
       </AccordionItem>
       <AccordionItem value="item-2">
@@ -53,9 +54,7 @@ export const ReducedMotion: Story = {
     <Accordion type="single" collapsible className="w-[400px]">
       <AccordionItem value="item-1">
         <AccordionTrigger>Instant Accordion</AccordionTrigger>
-        <AccordionContent>
-          Accordion item without slide morph.
-        </AccordionContent>
+        <AccordionContent>Accordion item without slide morph.</AccordionContent>
       </AccordionItem>
     </Accordion>
   ),

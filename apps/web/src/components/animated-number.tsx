@@ -47,7 +47,5 @@ export function AnimatedNumber({
     return <span className={className}>{format(to)}</span>;
   }
 
-  return (
-    <motion.span className={className}>{displayValue}</motion.span>
-  );
+  return <motion.span className={className}>{displayValue}</motion.span>;
 }

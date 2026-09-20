@@ -17,10 +17,7 @@ export interface RequestOptions extends Omit<RequestInit, "body"> {
  * Robust typed HTTP client that unwraps JSON responses, sends required headers,
  * and intercepts RFC 9457 Problem Details errors with automatic toast notifications.
  */
-export async function apiClient<T>(
-  endpoint: string,
-  options: RequestOptions = {},
-): Promise<T> {
+export async function apiClient<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const {
     params,
     body,
@@ -55,8 +52,7 @@ export async function apiClient<T>(
   }
 
   if (ifMatch !== undefined) {
-    headers["If-Match"] =
-      typeof ifMatch === "number" ? `W/"${ifMatch}"` : ifMatch;
+    headers["If-Match"] = typeof ifMatch === "number" ? `W/"${ifMatch}"` : ifMatch;
   }
 
   const config: RequestInit = {
@@ -91,7 +87,9 @@ export async function apiClient<T>(
 /**
  * Typed client function for GET /api/v1/me
  */
-export async function getMe(options?: RequestOptions): Promise<components["schemas"]["MeResponse"]> {
+export async function getMe(
+  options?: RequestOptions,
+): Promise<components["schemas"]["MeResponse"]> {
   return apiClient<components["schemas"]["MeResponse"]>("/api/v1/me", {
     method: "GET",
     ...options,
@@ -101,7 +99,9 @@ export async function getMe(options?: RequestOptions): Promise<components["schem
 /**
  * Typed client function for GET /api/v1/health
  */
-export async function getHealth(options?: RequestOptions): Promise<components["schemas"]["HealthResponse"]> {
+export async function getHealth(
+  options?: RequestOptions,
+): Promise<components["schemas"]["HealthResponse"]> {
   return apiClient<components["schemas"]["HealthResponse"]>("/api/v1/health", {
     method: "GET",
     ...options,
@@ -111,7 +111,9 @@ export async function getHealth(options?: RequestOptions): Promise<components["s
 /**
  * Typed client function for GET /api/v1/ready
  */
-export async function getReady(options?: RequestOptions): Promise<components["schemas"]["ReadyResponse"]> {
+export async function getReady(
+  options?: RequestOptions,
+): Promise<components["schemas"]["ReadyResponse"]> {
   return apiClient<components["schemas"]["ReadyResponse"]>("/api/v1/ready", {
     method: "GET",
     ...options,

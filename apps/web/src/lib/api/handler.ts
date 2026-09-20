@@ -4,10 +4,7 @@ import { randomUUID } from "node:crypto";
 import { logger, type Capability, hasPermission } from "@hostelhub/shared";
 import type { SessionUser } from "@/lib/auth/policy";
 import { ForbiddenError, UnauthorizedError } from "@/lib/auth/policy";
-import {
-  checkIdempotency,
-  saveIdempotentResponse,
-} from "./idempotency.js";
+import { checkIdempotency, saveIdempotentResponse } from "./idempotency.js";
 import { checkSlidingWindowRateLimit } from "@/lib/auth/rate-limiter";
 import {
   ApiProblemError,
@@ -16,11 +13,7 @@ import {
   toProblemResponse,
 } from "./errors.js";
 
-export interface ApiHandlerConfig<
-  TParams = unknown,
-  TQuery = unknown,
-  TBody = unknown,
-> {
+export interface ApiHandlerConfig<TParams = unknown, TQuery = unknown, TBody = unknown> {
   permission?: Capability | Capability[] | null;
   public?: boolean;
   params?: z.ZodType<TParams>;
@@ -37,11 +30,7 @@ export interface ApiHandlerConfig<
   tags?: string[];
 }
 
-export interface ApiHandlerContext<
-  TParams = unknown,
-  TQuery = unknown,
-  TBody = unknown,
-> {
+export interface ApiHandlerContext<TParams = unknown, TQuery = unknown, TBody = unknown> {
   req: Request;
   user: SessionUser | null;
   institution_id: string;
@@ -129,16 +118,12 @@ export function apiHandler<TParams = unknown, TQuery = unknown, TBody = unknown,
           !pathname.startsWith("/api/auth") &&
           !pathname.startsWith("/mfa")
         ) {
-          throw new ForbiddenError(
-            "MFA verification is required before accessing this endpoint.",
-          );
+          throw new ForbiddenError("MFA verification is required before accessing this endpoint.");
         }
 
         // Check required permission
         if (config.permission) {
-          const perms = Array.isArray(config.permission)
-            ? config.permission
-            : [config.permission];
+          const perms = Array.isArray(config.permission) ? config.permission : [config.permission];
 
           const hasAccess = perms.some((p) => hasPermission(user!.roles, p));
           if (!hasAccess) {
@@ -208,7 +193,14 @@ export function apiHandler<TParams = unknown, TQuery = unknown, TBody = unknown,
 
         if (idempResult.isReplay && idempResult.response) {
           statusCode = idempResult.response.status;
-          logRequest(method, pathname, statusCode, performance.now() - startTime, userId, institutionId);
+          logRequest(
+            method,
+            pathname,
+            statusCode,
+            performance.now() - startTime,
+            userId,
+            institutionId,
+          );
           return idempResult.response;
         }
       }
@@ -311,7 +303,14 @@ export function apiHandler<TParams = unknown, TQuery = unknown, TBody = unknown,
         }
       }
 
-      logRequest(method, pathname, statusCode, performance.now() - startTime, userId, institutionId);
+      logRequest(
+        method,
+        pathname,
+        statusCode,
+        performance.now() - startTime,
+        userId,
+        institutionId,
+      );
       return finalResponse;
     } catch (err) {
       logger.error({
@@ -324,7 +323,14 @@ export function apiHandler<TParams = unknown, TQuery = unknown, TBody = unknown,
       });
       const problemRes = toProblemResponse(err, pathname, requestId);
       statusCode = problemRes.status;
-      logRequest(method, pathname, statusCode, performance.now() - startTime, userId, institutionId);
+      logRequest(
+        method,
+        pathname,
+        statusCode,
+        performance.now() - startTime,
+        userId,
+        institutionId,
+      );
       return problemRes;
     }
   }) as ApiRouteHandler;

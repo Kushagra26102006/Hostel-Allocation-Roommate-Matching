@@ -15,29 +15,29 @@ const BLOB_CONFIGS = [
   {
     size: "600px",
     color: "hsl(var(--brand-600) / 0.35)",
-    initial: { x: "10%",  y: "20%"  },
-    animate: { x: ["10%",  "25%", "10%"],  y: ["20%", "35%", "20%"] },
+    initial: { x: "10%", y: "20%" },
+    animate: { x: ["10%", "25%", "10%"], y: ["20%", "35%", "20%"] },
     duration: 14,
   },
   {
     size: "500px",
     color: "hsl(var(--accent) / 0.25)",
-    initial: { x: "60%",  y: "10%"  },
-    animate: { x: ["60%",  "45%", "60%"],  y: ["10%", "30%", "10%"] },
+    initial: { x: "60%", y: "10%" },
+    animate: { x: ["60%", "45%", "60%"], y: ["10%", "30%", "10%"] },
     duration: 18,
   },
   {
     size: "450px",
     color: "hsl(var(--info) / 0.20)",
-    initial: { x: "20%",  y: "60%"  },
-    animate: { x: ["20%",  "40%", "20%"],  y: ["60%", "45%", "60%"] },
+    initial: { x: "20%", y: "60%" },
+    animate: { x: ["20%", "40%", "20%"], y: ["60%", "45%", "60%"] },
     duration: 22,
   },
   {
     size: "400px",
     color: "hsl(var(--accent) / 0.18)",
-    initial: { x: "70%",  y: "55%"  },
-    animate: { x: ["70%",  "55%", "70%"],  y: ["55%", "70%", "55%"] },
+    initial: { x: "70%", y: "55%" },
+    animate: { x: ["70%", "55%", "70%"], y: ["55%", "70%", "55%"] },
     duration: 16,
   },
 ] as const;
@@ -55,10 +55,7 @@ export function GradientMesh({ className, blobCount = 4 }: GradientMeshProps) {
     return (
       <div
         aria-hidden="true"
-        className={cn(
-          "pointer-events-none absolute inset-0 overflow-hidden",
-          className,
-        )}
+        className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}
         style={{
           background:
             "radial-gradient(ellipse at 20% 30%, hsl(var(--brand-600)/0.3) 0%, transparent 60%), " +
@@ -71,15 +68,9 @@ export function GradientMesh({ className, blobCount = 4 }: GradientMeshProps) {
   return (
     <div
       aria-hidden="true"
-      className={cn(
-        "pointer-events-none absolute inset-0 overflow-hidden",
-        className,
-      )}
+      className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}
     >
-      <div
-        className="absolute inset-0"
-        style={{ filter: "blur(80px)" }}
-      >
+      <div className="absolute inset-0" style={{ filter: "blur(80px)" }}>
         <AnimatePresence>
           {blobs.map((blob, i) => (
             <motion.div

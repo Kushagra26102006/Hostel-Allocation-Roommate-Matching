@@ -127,12 +127,18 @@ importers:
       "@tanstack/react-query":
         specifier: ^5.103.1
         version: 5.103.1(react@19.3.0)
+      "@tanstack/react-table":
+        specifier: ^8.21.3
+        version: 8.21.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       "@tanstack/react-virtual":
         specifier: ^3.14.13
         version: 3.14.13(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       argon2:
         specifier: ^0.45.1
         version: 0.45.1
+      bullmq:
+        specifier: ^5.41.0
+        version: 5.81.5
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -200,6 +206,9 @@ importers:
         specifier: ^5.0.15
         version: 5.0.15(@types/react@19.3.0)(react@19.3.0)(use-sync-external-store@1.7.0(react@19.3.0))
     devDependencies:
+      "@axe-core/playwright":
+        specifier: ^4.13.0
+        version: 4.13.0(playwright-core@1.63.0)
       "@playwright/test":
         specifier: ^1.47.0
         version: 1.63.0
@@ -550,6 +559,14 @@ packages:
         integrity: sha512-sl4Bm6yiMNYrZKkqqDFWN0UfnWhlS8ivKxrYl+6t0gCLrqr8y3B2IqZZbFRkfaVVp7C/baApyh71P+LeE1A2sQ==,
       }
     engines: { node: ">=18.0.0" }
+
+  "@axe-core/playwright@4.13.0":
+    resolution:
+      {
+        integrity: sha512-6YLx+kxXu5GJceG4ozFg+33a2EMTdjYwWGloJ3sb9Kta5pp+ZNS53uxGVog5JetIY8s++P5UrtX+cri+u0VAVg==,
+      }
+    peerDependencies:
+      playwright-core: ">= 1.0.0"
 
   "@babel/code-frame@7.29.7":
     resolution:
@@ -4500,6 +4517,16 @@ packages:
     peerDependencies:
       react: ^18 || ^19
 
+  "@tanstack/react-table@8.21.3":
+    resolution:
+      {
+        integrity: sha512-5nNMTSETP4ykGegmVkhjcS8tTLW6Vl4axfEGQN3v0zdHYbK4UfoqfPChclTrJ4EoK9QynqAu9oUf8VEmrpZ5Ww==,
+      }
+    engines: { node: ">=12" }
+    peerDependencies:
+      react: ">=16.8"
+      react-dom: ">=16.8"
+
   "@tanstack/react-virtual@3.14.13":
     resolution:
       {
@@ -4508,6 +4535,13 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
+  "@tanstack/table-core@8.21.3":
+    resolution:
+      {
+        integrity: sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg==,
+      }
+    engines: { node: ">=12" }
 
   "@tanstack/virtual-core@3.17.11":
     resolution:
@@ -11178,6 +11212,11 @@ snapshots:
 
   "@aws/lambda-invoke-store@0.3.0": {}
 
+  "@axe-core/playwright@4.13.0(playwright-core@1.63.0)":
+    dependencies:
+      axe-core: 4.13.0
+      playwright-core: 1.63.0
+
   "@babel/code-frame@7.29.7":
     dependencies:
       "@babel/helper-validator-identifier": 7.29.7
@@ -13825,11 +13864,19 @@ snapshots:
       "@tanstack/query-core": 5.103.1
       react: 19.3.0
 
+  "@tanstack/react-table@8.21.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0)":
+    dependencies:
+      "@tanstack/table-core": 8.21.3
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
+
   "@tanstack/react-virtual@3.14.13(react-dom@19.3.0(react@19.3.0))(react@19.3.0)":
     dependencies:
       "@tanstack/virtual-core": 3.17.11
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
+
+  "@tanstack/table-core@8.21.3": {}
 
   "@tanstack/virtual-core@3.17.11": {}
 
