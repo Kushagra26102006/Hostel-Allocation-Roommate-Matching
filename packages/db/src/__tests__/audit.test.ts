@@ -138,4 +138,18 @@ describe("AuditService & Cryptographic Hash Chain", () => {
       expect(allEntries[i]?.sequence).toBe(i + 1);
     }
   });
+
+  it("verifyChain reports broken chain when AuditChainHead claims entries but 0 entries exist", async () => {
+    const institutionId = new Types.ObjectId();
+    const { AuditChainHeadModel } = await import("../models/audit-head.model.js");
+
+    await AuditChainHeadModel.create({
+      institution_id: institutionId,
+      last_sequence: 5,
+      last_hash: "fake_head_hash",
+    });
+
+    const broken = await AuditService.verifyChain(institutionId);
+    expect(broken).not.toBeNull();
+  });
 });

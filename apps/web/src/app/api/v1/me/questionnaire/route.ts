@@ -50,6 +50,7 @@ export const GET = apiHandler(
         ciphertext: record.ciphertext,
       },
       institution_id,
+      user.id,
     );
 
     return {
@@ -94,7 +95,7 @@ export const POST = apiHandler(
     }
 
     // Encrypt answers (AES-256-GCM with HKDF data key)
-    const encrypted = encryptPayload(body.answers, institution_id);
+    const encrypted = encryptPayload(body.answers, institution_id, user.id);
 
     // Save ONLY ciphertext to DB
     const responseDoc = await CompatibilityResponseModel.findOneAndUpdate(

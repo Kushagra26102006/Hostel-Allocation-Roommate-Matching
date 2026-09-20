@@ -21,10 +21,10 @@ await mongoose.connect(env.MONGODB_URI, {
 });
 log.info("MongoDB connected");
 
-// ── 3. Connect to Redis ───────────────────────────────────────────────────────
+// ── 3. Connect to Redis (BullMQ requires maxRetriesPerRequest: null) ──────────
 log.info("Connecting to Redis...");
 const redis = new Redis(env.REDIS_URL, {
-  maxRetriesPerRequest: 3,
+  maxRetriesPerRequest: null,
   connectTimeout: 5_000,
   lazyConnect: true,
 });
@@ -32,7 +32,7 @@ await redis.connect();
 log.info("Redis connected");
 
 // ── 4. Setup BullMQ Window Scheduler ──────────────────────────────────────────
-const { queue, worker } = setupWindowScheduler(redis);
+const { queue, worker } = await setupWindowScheduler(redis);
 log.info("Window scheduler registered and running");
 
 // ── 5. Signal readiness ───────────────────────────────────────────────────────
@@ -56,4 +56,3 @@ async function shutdown(signal: string): Promise<void> {
 
 process.on("SIGTERM", () => void shutdown("SIGTERM"));
 process.on("SIGINT", () => void shutdown("SIGINT"));
-

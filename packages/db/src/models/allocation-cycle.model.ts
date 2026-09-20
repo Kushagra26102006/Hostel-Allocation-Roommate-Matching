@@ -22,6 +22,11 @@ export interface DocumentRequirement {
   required: boolean;
 }
 
+export interface RemindersSent {
+  "48h"?: Date | undefined;
+  "6h"?: Date | undefined;
+}
+
 export interface IAllocationCycle {
   academic_year: string;
   name: string;
@@ -31,6 +36,7 @@ export interface IAllocationCycle {
   document_requirements: DocumentRequirement[];
   priority_tier_order: string[];
   status: AllocationCycleStatus;
+  reminders_sent?: RemindersSent | undefined;
 }
 
 export interface AllocationCycleDocument
@@ -92,6 +98,10 @@ const allocationCycleSchema = new Schema<AllocationCycleDocument>(
       enum: ["draft", "scheduled", "open", "closed", "archived"],
       default: "draft",
       index: true,
+    },
+    reminders_sent: {
+      "48h": { type: Date },
+      "6h": { type: Date },
     },
   },
   {

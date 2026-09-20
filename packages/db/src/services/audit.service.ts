@@ -8,12 +8,18 @@ import {
   AuditChainHeadModel,
   GENESIS_HASH,
 } from "../models/audit-head.model.js";
-import { computeAuditHash } from "./canonical-json.js";
+import { computeAuditHash, computeLegacyAuditHash } from "./canonical-json.js";
+
+export interface AuditActor {
+  user_id: string;
+  email: string;
+  roles: string[];
+}
 
 export interface AppendAuditInput {
   institution_id?: string | Types.ObjectId;
   institutionId?: string | Types.ObjectId;
-  actor: Record<string, unknown> | string;
+  actor: AuditActor | Record<string, unknown> | string;
   action: string;
   target?: Record<string, unknown> | string;
   before?: Record<string, unknown> | null;
@@ -49,17 +55,36 @@ export class AuditService {
       releaseLock = resolve;
     });
 
-    AuditService.institutionLocks.set(institutionIdStr, currentLock.then(() => nextLock));
+    const thisPromise = currentLock.then(() => nextLock);
+    AuditService.institutionLocks.set(institutionIdStr, thisPromise);
 
     try {
       await currentLock;
       return await operation();
     } finally {
       releaseLock!();
-      if (AuditService.institutionLocks.get(institutionIdStr) === nextLock) {
+      if (AuditService.institutionLocks.get(institutionIdStr) === thisPromise) {
         AuditService.institutionLocks.delete(institutionIdStr);
       }
     }
+  }
+
+  /**
+   * Normalizes actor input to consistent shape { user_id, email, roles }.
+   */
+  private static normalizeActor(actor: AuditActor | Record<string, unknown> | string): Record<string, unknown> {
+    if (typeof actor === "string") {
+      return { user_id: actor, email: "unknown@campus.edu", roles: [] };
+    }
+    const rec = actor as Record<string, unknown>;
+    const userId = (rec["user_id"] ?? rec["userId"] ?? rec["id"] ?? "anonymous") as string;
+    const email = (rec["email"] ?? "unknown@campus.edu") as string;
+    const roles = Array.isArray(rec["roles"])
+      ? rec["roles"]
+      : rec["role"]
+        ? [rec["role"]]
+        : [];
+    return { user_id: String(userId), email: String(email), roles };
   }
 
   /**
@@ -97,18 +122,17 @@ export class AuditService {
     }
 
     const instIdStr = institutionId.toString();
+    const normalizedActor = AuditService.normalizeActor(input.actor);
 
     // Serialize appends per institution to avoid transaction write conflicts
     return AuditService.acquireLock(instIdStr, async () => {
       return runInTransaction(
         async (txSession) => {
-          // 1. Locate or initialize the AuditChainHead document
           let head = await AuditChainHeadModel.findOne({
             institution_id: institutionId,
           }).session(txSession);
 
           if (!head) {
-            // Find existing entries if head was missing
             const lastEntry = await AuditEntryModel.findOne({
               institution_id: institutionId,
             })
@@ -127,11 +151,10 @@ export class AuditService {
           const prevHash = head.last_hash;
           const timestamp = input.timestamp ?? new Date();
 
-          // 2. Build canonical payload for deterministic hashing
           const canonicalPayload = {
             institution_id: instIdStr,
             sequence: nextSequence,
-            actor: input.actor,
+            actor: normalizedActor,
             action: input.action,
             target: input.target ?? null,
             before: input.before ?? null,
@@ -142,18 +165,16 @@ export class AuditService {
 
           const hash = computeAuditHash(prevHash, canonicalPayload);
 
-          // 3. Atomically advance chain head
           head.last_sequence = nextSequence;
           head.last_hash = hash;
           await head.save({ session: txSession });
 
-          // 4. Create immutable AuditEntry
           const [entry] = await AuditEntryModel.create(
             [
               {
                 institution_id: institutionId,
                 sequence: nextSequence,
-                actor: input.actor,
+                actor: normalizedActor,
                 action: input.action,
                 target: input.target ?? null,
                 before: input.before ?? null,
@@ -178,9 +199,6 @@ export class AuditService {
     });
   }
 
-  /**
-   * Instance method forwarding to static append with instance's institutionId.
-   */
   public async append(
     input: Omit<AppendAuditInput, "institution_id" | "institutionId">,
     session?: ClientSession,
@@ -200,7 +218,7 @@ export class AuditService {
 
   /**
    * Recomputes the entire audit hash chain for an institution.
-   * Returns the first broken AuditEntry document, or null if the chain is intact.
+   * Compares against AuditChainHead sequence/hash and returns broken entry or null.
    */
   public static async verifyChain(
     institutionId: string | Types.ObjectId,
@@ -211,6 +229,10 @@ export class AuditService {
         ? new Types.ObjectId(institutionId)
         : institutionId;
 
+    const head = await AuditChainHeadModel.findOne({
+      institution_id: objectId,
+    }).session(session ?? null);
+
     let query = AuditEntryModel.find({
       institution_id: objectId,
     }).sort({ sequence: 1 });
@@ -220,8 +242,31 @@ export class AuditService {
     }
 
     const entries = await query.exec();
+
+    // Head says N entries exist but 0 found in DB -> chain broken
+    if (head && head.last_sequence > 0 && entries.length === 0) {
+      return new AuditEntryModel({
+        institution_id: objectId,
+        sequence: 1,
+        actor: { user_id: "system", email: "system", roles: [] },
+        action: "CORRUPT_CHAIN_HEAD_MISMATCH",
+        prev_hash: GENESIS_HASH,
+        hash: head.last_hash,
+        timestamp: new Date(),
+      }) as AuditEntryDocument;
+    }
+
     if (entries.length === 0) {
       return null;
+    }
+
+    // Head sequence/hash mismatch against last entry
+    if (
+      head &&
+      (head.last_sequence !== entries.length ||
+        head.last_hash !== entries[entries.length - 1]!.hash)
+    ) {
+      return entries[entries.length - 1]!;
     }
 
     let expectedPrevHash = GENESIS_HASH;
@@ -230,17 +275,14 @@ export class AuditService {
       const entry = entries[i]!;
       const expectedSequence = i + 1;
 
-      // Check sequence monotonicity and continuity
       if (entry.sequence !== expectedSequence) {
         return entry;
       }
 
-      // Check previous hash linkage
       if (entry.prev_hash !== expectedPrevHash) {
         return entry;
       }
 
-      // Recompute canonical entry hash
       const ts =
         entry.timestamp instanceof Date
           ? entry.timestamp
@@ -258,8 +300,10 @@ export class AuditService {
         timestamp: ts.toISOString(),
       };
 
-      const calculatedHash = computeAuditHash(expectedPrevHash, canonicalPayload);
-      if (entry.hash !== calculatedHash) {
+      const calculatedHmac = computeAuditHash(expectedPrevHash, canonicalPayload);
+      const legacySha256 = computeLegacyAuditHash(expectedPrevHash, canonicalPayload);
+
+      if (entry.hash !== calculatedHmac && entry.hash !== legacySha256) {
         return entry;
       }
 
@@ -269,9 +313,6 @@ export class AuditService {
     return null;
   }
 
-  /**
-   * Instance method forwarding to static verifyChain.
-   */
   public async verifyChain(
     session?: ClientSession,
   ): Promise<AuditEntryDocument | null> {

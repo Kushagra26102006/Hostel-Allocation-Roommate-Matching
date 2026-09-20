@@ -371,7 +371,7 @@ export async function generateSyntheticData(
       },
     };
 
-    const encrypted = encryptPayload(answers, instId.toString());
+    const encrypted = encryptPayload(answers, instId.toString(), sId.toString());
 
     consentDocs.push({
       _id: makeObjectId("consent", i),
@@ -463,10 +463,12 @@ export async function generateSyntheticData(
   const encA = encryptPayload(
     { smoking: { value: "smoker", importance: 3, dealBreaker: true } },
     instId.toString(),
+    dbStudentA._id.toString(),
   );
   const encB = encryptPayload(
     { smoking: { value: "non_smoker", importance: 3, dealBreaker: true } },
     instId.toString(),
+    dbStudentB._id.toString(),
   );
 
   compatibilityDocs[15] = {

@@ -43,7 +43,7 @@ describe("Module M5: Compatibility Encryption, Privacy & Consent Security Tests"
         smoking: { value: "non_smoker", importance: 3, dealBreaker: true },
       };
 
-      const encrypted = encryptAnswers(answers, tenantA);
+      const encrypted = encryptAnswers(answers, tenantA, studentAId);
       expect(encrypted).toHaveProperty("keyId");
       expect(encrypted).toHaveProperty("iv");
       expect(encrypted).toHaveProperty("authTag");
@@ -54,7 +54,7 @@ describe("Module M5: Compatibility Encryption, Privacy & Consent Security Tests"
       expect(encrypted.ciphertext).not.toContain("sleep");
 
       // Round-trip decryption
-      const decrypted = decryptAnswers(encrypted, tenantA);
+      const decrypted = decryptAnswers(encrypted, tenantA, studentAId);
       expect(decrypted).toEqual(answers);
     });
 
@@ -194,7 +194,7 @@ describe("Module M5: Compatibility Encryption, Privacy & Consent Security Tests"
   describe("4. Privacy & Access Control Enforcement", () => {
     it("ensures CompatibilityReader service restricts decryption to authorized reader context", async () => {
       const answers = { noise: { value: 2, importance: 1 } };
-      const encrypted = encryptAnswers(answers, tenantA);
+      const encrypted = encryptAnswers(answers, tenantA, studentAId);
 
       const doc = {
         student_id: new Types.ObjectId(studentAId),

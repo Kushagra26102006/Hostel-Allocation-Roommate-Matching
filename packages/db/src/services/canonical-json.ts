@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, createHmac } from "node:crypto";
 import stringify from "fast-json-stable-stringify";
 
 /**
@@ -10,16 +10,33 @@ export function toCanonicalJson(value: unknown): string {
 }
 
 /**
- * Computes SHA-256 hash in hexadecimal.
+ * Computes SHA-256 hash in hexadecimal (legacy fallback).
  */
 export function sha256(content: string): string {
   return createHash("sha256").update(content).digest("hex");
 }
 
 /**
- * Computes hash = sha256(prev_hash + canonical JSON of the entry).
+ * Computes HMAC-SHA-256 hash = hmac_sha256(secretKey, prev_hash + canonical JSON of the entry).
  */
 export function computeAuditHash(
+  prevHash: string,
+  entryContent: Record<string, unknown>,
+  secretKey?: string,
+): string {
+  const canonical = toCanonicalJson(entryContent);
+  const key =
+    secretKey ??
+    process.env["MASTER_ENCRYPTION_KEY"] ??
+    "hostelhub_master_secret_encryption_key_32_bytes_long!";
+
+  return createHmac("sha256", key).update(prevHash + canonical).digest("hex");
+}
+
+/**
+ * Computes legacy SHA-256 hash for backwards compatibility during migration.
+ */
+export function computeLegacyAuditHash(
   prevHash: string,
   entryContent: Record<string, unknown>,
 ): string {

@@ -4,15 +4,14 @@ import {
   hkdfSync,
   randomBytes,
 } from "node:crypto";
+import { getWebEnv } from "../env.js";
 
 export interface EncryptedPayload {
   keyId: string;
-  iv: string; // Hex string (24 chars)
-  authTag: string; // Hex string (32 chars)
+  iv: string; // Hex string (24 chars = 12 bytes)
+  authTag: string; // Hex string (32 chars = 16 bytes)
   ciphertext: string; // Base64 string
 }
-
-import { getWebEnv } from "../env.js";
 
 function getMasterKey(): string {
   return getWebEnv().MASTER_ENCRYPTION_KEY;
@@ -54,11 +53,12 @@ export function deriveInstitutionKey(
 
 /**
  * Encrypts arbitrary plaintext object using AES-256-GCM.
- * Binds payload with Additional Authenticated Data (AAD).
+ * Binds payload with Additional Authenticated Data (AAD: institutionId:studentId:keyId).
  */
 export function encryptPayload(
   data: unknown,
   institutionId: string,
+  studentId?: string,
   keyId?: string,
 ): EncryptedPayload {
   const actualKeyId = keyId ?? getKeyId();
@@ -66,7 +66,7 @@ export function encryptPayload(
   const iv = randomBytes(12); // 96-bit (12-byte) IV for GCM
 
   const cipher = createCipheriv("aes-256-gcm", key, iv, { authTagLength: 16 });
-  const aad = Buffer.from(`${institutionId}:${actualKeyId}`, "utf8");
+  const aad = Buffer.from(`${institutionId}:${studentId ?? ""}:${actualKeyId}`, "utf8");
   cipher.setAAD(aad);
 
   const plaintext = JSON.stringify(data);
@@ -85,11 +85,12 @@ export function encryptPayload(
 
 /**
  * Decrypts AES-256-GCM payload using per-institution HKDF key.
- * Validates IV length (12 bytes), Auth Tag length (16 bytes), and AAD.
+ * Validates IV length (12 bytes / 24 hex), Auth Tag length (16 bytes / 32 hex), and AAD.
  */
 export function decryptPayload<T = unknown>(
   payload: EncryptedPayload,
   institutionId: string,
+  studentId?: string,
   overrideMasterKey?: string,
 ): T {
   if (!payload || !payload.ciphertext || !payload.iv || !payload.authTag) {
@@ -110,7 +111,7 @@ export function decryptPayload<T = unknown>(
   const key = deriveInstitutionKey(institutionId, keyId, overrideMasterKey);
 
   const decipher = createDecipheriv("aes-256-gcm", key, ivBuffer, { authTagLength: 16 });
-  const aad = Buffer.from(`${institutionId}:${keyId}`, "utf8");
+  const aad = Buffer.from(`${institutionId}:${studentId ?? ""}:${keyId}`, "utf8");
   decipher.setAAD(aad);
   decipher.setAuthTag(tagBuffer);
 

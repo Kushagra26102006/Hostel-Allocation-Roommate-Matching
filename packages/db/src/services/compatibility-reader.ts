@@ -32,6 +32,7 @@ export class CompatibilityReader {
           ciphertext: record.ciphertext,
         },
         instObjId.toString(),
+        studentObjId.toString(),
       );
       return answers;
     } catch (err) {
