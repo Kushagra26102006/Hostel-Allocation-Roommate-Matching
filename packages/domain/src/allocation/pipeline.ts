@@ -79,51 +79,95 @@ interface ShadowState {
   quotaUsage: Map<string, number>;
   /** unitId → bedId (reverse map) */
   unitBed: Map<string, string>;
+  /** roomId → current vacant bed count */
+  roomVacancy: Map<string, number>;
 }
 
 function makeShadow(snapshot: Snapshot): ShadowState {
+  const roomVacancy = new Map<string, number>();
+  for (const bed of snapshot.beds.values()) {
+    if (bed.status === "available" && !bed.occupiedByUnitId && !snapshot.assignments.has(bed.id)) {
+      roomVacancy.set(bed.roomId, (roomVacancy.get(bed.roomId) ?? 0) + 1);
+    }
+  }
   return {
     bedAssignments: new Map(snapshot.assignments),
     quotaUsage: new Map(snapshot.quotaUsage),
     unitBed: new Map([...snapshot.assignments.entries()].map(([bedId, unitId]) => [unitId, bedId])),
+    roomVacancy,
   };
 }
 
 /**
- * Produces a read-only Snapshot view incorporating shadow state.
- * Beds are re-keyed with occupiedByUnitId from shadow.
+ * Produces an on-demand virtual Snapshot view incorporating shadow state.
+ * Avoids cloning 8,000 beds on every iteration.
  */
 function viewSnapshot(base: Snapshot, shadow: ShadowState): Snapshot {
-  const beds = new Map<string, Bed>();
-  for (const [bedId, bed] of base.beds) {
-    const occupiedByUnitId = shadow.bedAssignments.get(bedId);
-    beds.set(bedId, occupiedByUnitId !== undefined ? { ...bed, occupiedByUnitId } : bed);
-  }
+  const bedCache = new Map<string, Bed>();
+  const virtualBeds = {
+    get(bedId: string): Bed | undefined {
+      const cached = bedCache.get(bedId);
+      if (cached) return cached;
+      const baseBed = base.beds.get(bedId);
+      if (!baseBed) return undefined;
+      const occ = shadow.bedAssignments.get(bedId);
+      const b = occ !== undefined ? { ...baseBed, occupiedByUnitId: occ } : baseBed;
+      bedCache.set(bedId, b);
+      return b;
+    },
+    has(bedId: string): boolean {
+      return base.beds.has(bedId);
+    },
+    get size(): number {
+      return base.beds.size;
+    },
+    values(): IterableIterator<Bed> {
+      return base.beds.values();
+    },
+    entries(): IterableIterator<[string, Bed]> {
+      return base.beds.entries();
+    },
+    [Symbol.iterator]() {
+      return base.beds[Symbol.iterator]();
+    },
+  } as unknown as Map<string, Bed>;
+
   return {
     ...base,
-    beds,
+    beds: virtualBeds,
     assignments: shadow.bedAssignments,
     quotaUsage: shadow.quotaUsage,
   };
 }
 
-function assignUnit(shadow: ShadowState, unitId: string, bedId: string, quotaBucket: string): void {
+function assignUnit(
+  shadow: ShadowState,
+  unitId: string,
+  bedId: string,
+  roomId: string,
+  quotaBucket: string,
+): void {
   shadow.bedAssignments.set(bedId, unitId);
   shadow.unitBed.set(unitId, bedId);
   const current = shadow.quotaUsage.get(quotaBucket) ?? 0;
   shadow.quotaUsage.set(quotaBucket, current + 1);
+  const curV = shadow.roomVacancy.get(roomId) ?? 1;
+  shadow.roomVacancy.set(roomId, Math.max(0, curV - 1));
 }
 
 function unassignUnit(
   shadow: ShadowState,
   unitId: string,
   bedId: string,
+  roomId: string,
   quotaBucket: string,
 ): void {
   shadow.bedAssignments.delete(bedId);
   shadow.unitBed.delete(unitId);
   const current = shadow.quotaUsage.get(quotaBucket) ?? 1;
   shadow.quotaUsage.set(quotaBucket, Math.max(0, current - 1));
+  const curV = shadow.roomVacancy.get(roomId) ?? 0;
+  shadow.roomVacancy.set(roomId, curV + 1);
 }
 
 // ─── 3. Priority key ───────────────────────────────────────────────────────────
@@ -165,6 +209,7 @@ interface Candidate {
   bed: Bed;
   score: ScoreBreakdown;
   tiebreakKey: number;
+  tiebreakUsed: boolean;
 }
 
 function pickBestCandidate(
@@ -176,24 +221,46 @@ function pickBestCandidate(
   bedIndex: ReturnType<typeof buildBedIndex>,
 ): Candidate | null {
   let best: Candidate | null = null;
+  let hasTie = false;
 
   for (const room of candidateRooms) {
     const bedIds = bedIndex.bedsInRoom(room.id);
-    for (const bedId of bedIds) {
-      const bed = viewSnap.beds.get(bedId)!;
-      if (!allHardPass(unit, bed, room, viewSnap)) continue;
+    let chosenBed: Bed | null = null;
+    let otherBedsPass = false;
 
-      const score = scoreUnit(unit, room, viewSnap, weights);
-      const tk = key(seed, unit.id, room.id);
-
-      if (
-        best === null ||
-        score.total > best.score.total ||
-        (score.total === best.score.total && tk >>> 0 > best.tiebreakKey >>> 0)
-      ) {
-        best = { room, bed, score, tiebreakKey: tk };
+    for (let bIdx = 0; bIdx < bedIds.length; bIdx++) {
+      const bId = bedIds[bIdx]!;
+      const bed = viewSnap.beds.get(bId);
+      if (bed && allHardPass(unit, bed, room, viewSnap)) {
+        if (!chosenBed) {
+          chosenBed = bed;
+        } else {
+          otherBedsPass = true;
+          break;
+        }
       }
     }
+
+    if (!chosenBed) continue;
+
+    const score = scoreUnit(unit, room, viewSnap, weights);
+    const tk = key(seed, unit.id, room.id);
+
+    if (best === null) {
+      best = { room, bed: chosenBed, score, tiebreakKey: tk, tiebreakUsed: otherBedsPass };
+    } else if (score.total > best.score.total) {
+      best = { room, bed: chosenBed, score, tiebreakKey: tk, tiebreakUsed: otherBedsPass };
+      hasTie = false;
+    } else if (score.total === best.score.total) {
+      hasTie = true;
+      if (tk >>> 0 > best.tiebreakKey >>> 0) {
+        best = { room, bed: chosenBed, score, tiebreakKey: tk, tiebreakUsed: true };
+      }
+    }
+  }
+
+  if (best && hasTie) {
+    best.tiebreakUsed = true;
   }
   return best;
 }
@@ -265,25 +332,31 @@ export function allocate(
   progress("sort", ordered.length, ordered.length);
 
   // ── Step 4: Group formation ────────────────────────────────────────────────
-  for (const pu of ordered) {
+  const normalizedOrdered = ordered.map((pu) => {
     if (pu.unit.memberIds.length > 1 && !pu.unit.groupId) {
-      pu.unit.groupId = [...pu.unit.memberIds].sort()[0] ?? pu.unit.id;
+      const groupId = [...pu.unit.memberIds].sort()[0] ?? pu.unit.id;
+      return { ...pu, unit: { ...pu.unit, groupId } };
     }
-  }
+    return pu;
+  });
 
   // ── Step 5: Assignment loop ────────────────────────────────────────────────
   const shadow = makeShadow(snapshot);
   const assignments: Assignment[] = [];
   const waitlistRaw: Array<{ pu: PriorityUnit; reasonCode: string }> = [];
 
-  progress("assign", 0, ordered.length);
+  progress("assign", 0, normalizedOrdered.length);
 
-  for (let i = 0; i < ordered.length; i++) {
-    const pu = ordered[i]!;
+  const bedIndex = buildBedIndex(snapshot, {
+    roomVacancy: shadow.roomVacancy,
+    occupiedBedIds: shadow.bedAssignments,
+    getSnapshot: () => viewSnapshot(snapshot, shadow),
+  });
+
+  for (let i = 0; i < normalizedOrdered.length; i++) {
+    const pu = normalizedOrdered[i]!;
     const { unit } = pu;
 
-    const viewSnap = viewSnapshot(snapshot, shadow);
-    const bedIndex = buildBedIndex(viewSnap);
     const candidateRooms = bedIndex.feasible(unit);
 
     if (candidateRooms.length === 0) {
@@ -292,6 +365,7 @@ export function allocate(
       continue;
     }
 
+    const viewSnap = viewSnapshot(snapshot, shadow);
     const best = pickBestCandidate(unit, candidateRooms, viewSnap, weights, seed, bedIndex);
 
     if (!best) {
@@ -300,19 +374,7 @@ export function allocate(
       continue;
     }
 
-    const { room, bed, score, tiebreakKey } = best;
-    const tiebreakUsed =
-      candidateRooms.some((r) => {
-        const s = scoreUnit(unit, r, viewSnap, weights);
-        return s.total === score.total && r.id !== room.id;
-      }) ||
-      ((): boolean => {
-        const tiedBeds = bedIndex.bedsInRoom(room.id).filter((bId) => {
-          const b = viewSnap.beds.get(bId)!;
-          return allHardPass(unit, b, room, viewSnap) && b.id !== bed.id;
-        });
-        return tiedBeds.length > 0;
-      })();
+    const { room, bed, score, tiebreakKey, tiebreakUsed } = best;
 
     const explanation = buildExplanation({
       unit,
@@ -338,7 +400,7 @@ export function allocate(
     });
 
     // Update shadow state
-    assignUnit(shadow, unit.id, bed.id, unit.quotaBucket);
+    assignUnit(shadow, unit.id, bed.id, room.id, unit.quotaBucket);
     // For groups, assign additional beds in the same room
     if (unit.memberIds.length > 1) {
       const extraBeds = bedIndex.bedsInRoom(room.id).filter((bId) => {
@@ -350,6 +412,8 @@ export function allocate(
         const extraBedId = extraBeds[m - 1];
         if (extraBedId) {
           shadow.bedAssignments.set(extraBedId, unit.id);
+          const curV = shadow.roomVacancy.get(room.id) ?? 1;
+          shadow.roomVacancy.set(room.id, Math.max(0, curV - 1));
         }
       }
     }
@@ -397,8 +461,8 @@ export function allocate(
       const bedA = asgA.bedId;
       const bedB = asgB.bedId;
 
-      unassignUnit(shadow, unitA.id, bedA, unitA.quotaBucket);
-      unassignUnit(shadow, unitB.id, bedB, unitB.quotaBucket);
+      unassignUnit(shadow, unitA.id, bedA, roomA.id, unitA.quotaBucket);
+      unassignUnit(shadow, unitB.id, bedB, roomB.id, unitB.quotaBucket);
 
       const swapSnap = viewSnapshot(snapshot, shadow);
 
@@ -411,8 +475,8 @@ export function allocate(
 
       if (canAinB && canBinA) {
         // Temporarily assign A→B, B→A to score
-        assignUnit(shadow, unitA.id, bedB, unitA.quotaBucket);
-        assignUnit(shadow, unitB.id, bedA, unitB.quotaBucket);
+        assignUnit(shadow, unitA.id, bedB, roomB.id, unitA.quotaBucket);
+        assignUnit(shadow, unitB.id, bedA, roomA.id, unitB.quotaBucket);
         const swapSnap2 = viewSnapshot(snapshot, shadow);
 
         const scoreAinB = scoreUnit(unitA, roomB, swapSnap2, weights);
@@ -488,16 +552,16 @@ export function allocate(
           void highPrioDoesNotDecrease;
         } else {
           // Undo temporary assignment
-          unassignUnit(shadow, unitA.id, bedB, unitA.quotaBucket);
-          unassignUnit(shadow, unitB.id, bedA, unitB.quotaBucket);
+          unassignUnit(shadow, unitA.id, bedB, roomB.id, unitA.quotaBucket);
+          unassignUnit(shadow, unitB.id, bedA, roomA.id, unitB.quotaBucket);
           // Re-assign original positions
-          assignUnit(shadow, unitA.id, bedA, unitA.quotaBucket);
-          assignUnit(shadow, unitB.id, bedB, unitB.quotaBucket);
+          assignUnit(shadow, unitA.id, bedA, roomA.id, unitA.quotaBucket);
+          assignUnit(shadow, unitB.id, bedB, roomB.id, unitB.quotaBucket);
         }
       } else {
         // Re-assign original positions
-        assignUnit(shadow, unitA.id, bedA, unitA.quotaBucket);
-        assignUnit(shadow, unitB.id, bedB, unitB.quotaBucket);
+        assignUnit(shadow, unitA.id, bedA, roomA.id, unitA.quotaBucket);
+        assignUnit(shadow, unitB.id, bedB, roomB.id, unitB.quotaBucket);
       }
     }
 

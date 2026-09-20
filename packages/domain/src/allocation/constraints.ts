@@ -31,11 +31,30 @@ function fail(code: HardConstraintCode): ConstraintResult {
   return { ok: false, reasonCode: code };
 }
 
+const roomBedsCache = new WeakMap<Snapshot, Map<string, Bed[]>>();
+
+function getRoomBeds(roomId: string, snapshot: Snapshot): Bed[] {
+  let cache = roomBedsCache.get(snapshot);
+  if (!cache) {
+    cache = new Map();
+    for (const bed of snapshot.beds.values()) {
+      let list = cache.get(bed.roomId);
+      if (!list) {
+        list = [];
+        cache.set(bed.roomId, list);
+      }
+      list.push(bed);
+    }
+    roomBedsCache.set(snapshot, cache);
+  }
+  return cache.get(roomId) ?? [];
+}
+
 /** Count beds in a room that are currently available. */
 function availableBedsInRoom(roomId: string, snapshot: Snapshot): number {
   let count = 0;
-  for (const bed of snapshot.beds.values()) {
-    if (bed.roomId === roomId && bed.status === "available" && !bed.occupiedByUnitId) {
+  for (const bed of getRoomBeds(roomId, snapshot)) {
+    if (bed.status === "available" && !bed.occupiedByUnitId) {
       count++;
     }
   }
@@ -45,8 +64,8 @@ function availableBedsInRoom(roomId: string, snapshot: Snapshot): number {
 /** Count current occupants in a room (beds with occupiedByUnitId set). */
 function occupantCountInRoom(roomId: string, snapshot: Snapshot): number {
   let count = 0;
-  for (const bed of snapshot.beds.values()) {
-    if (bed.roomId === roomId && bed.occupiedByUnitId !== undefined) {
+  for (const bed of getRoomBeds(roomId, snapshot)) {
+    if (bed.occupiedByUnitId !== undefined) {
       count++;
     }
   }
@@ -166,15 +185,32 @@ export function hc5QuotaBucket(unit: Unit, room: Room, snapshot: Snapshot): Cons
     return { ok: true, reasonCode: "HC5_QUOTA_SPILLOVER_ALLOWED" };
   }
 
+  const dedicatedBedsCache = new WeakMap<Snapshot, Map<string, boolean>>();
+
+  function checkDedicatedBeds(unitBucket: string, snapshot: Snapshot): boolean {
+    let cache = dedicatedBedsCache.get(snapshot);
+    if (!cache) {
+      cache = new Map();
+      dedicatedBedsCache.set(snapshot, cache);
+    }
+    const cached = cache.get(unitBucket);
+    if (cached !== undefined) return cached;
+
+    let hasDedicated = false;
+    for (const r of snapshot.rooms.values()) {
+      if (r.quotaBucket === unitBucket) {
+        if (availableBedsInRoom(r.id, snapshot) > 0) {
+          hasDedicated = true;
+          break;
+        }
+      }
+    }
+    cache.set(unitBucket, hasDedicated);
+    return hasDedicated;
+  }
+
   // Unit's own bucket still has capacity. If dedicated quota rooms have available beds, unit must use them.
-  const hasDedicatedBeds = [...snapshot.rooms.values()].some(
-    (r) =>
-      r.quotaBucket === unitBucket &&
-      [...snapshot.beds.values()].some(
-        (b) => b.roomId === r.id && b.status === "available" && !b.occupiedByUnitId,
-      ),
-  );
-  if (hasDedicatedBeds) {
+  if (checkDedicatedBeds(unitBucket, snapshot)) {
     return fail("HC5_QUOTA_EXCEEDED");
   }
 
@@ -269,8 +305,8 @@ export function hc11DealBreakers(unit: Unit, room: Room, snapshot: Snapshot): Co
   if (!unit.dealBreakerUnitIds || unit.dealBreakerUnitIds.length === 0) return pass();
 
   // Gather occupants of this room.
-  for (const bed of snapshot.beds.values()) {
-    if (bed.roomId !== room.id || !bed.occupiedByUnitId) continue;
+  for (const bed of getRoomBeds(room.id, snapshot)) {
+    if (!bed.occupiedByUnitId) continue;
     const occupantId = bed.occupiedByUnitId;
 
     // Check if this occupant is in our deal-breaker list.
