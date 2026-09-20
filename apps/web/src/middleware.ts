@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { getWebEnv } from "@hostelhub/shared";
+import { getWebEnv } from "@hostelhub/shared/env";
 
 const MANDATORY_MFA_ROLES = ["hostel_admin", "chief_warden", "sys_admin"];
 const STAFF_ROLES = ["warden", "chief_warden", "hostel_admin", "dean", "sys_admin"];
@@ -53,9 +53,7 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
   const isAuthPage = pathname.startsWith("/login");
   const isMfaVerifyPage = pathname.startsWith("/mfa/verify");
   const isMfaEnrolPage = pathname.startsWith("/mfa/enrol");
-  const isProtectedPath = PROTECTED_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix),
-  );
+  const isProtectedPath = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
   // 1. If unauthenticated and accessing a protected route
   if (!token && isProtectedPath) {
@@ -87,12 +85,7 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
 
     // B. If user has mandatory MFA role and is NOT enrolled, force /mfa/enrol
     const hasMandatoryRole = roles.some((r) => MANDATORY_MFA_ROLES.includes(r));
-    if (
-      hasMandatoryRole &&
-      !mfaEnabled &&
-      !isMfaEnrolPage &&
-      !pathname.startsWith("/api/mfa")
-    ) {
+    if (hasMandatoryRole && !mfaEnabled && !isMfaEnrolPage && !pathname.startsWith("/api/mfa")) {
       return NextResponse.redirect(new URL("/mfa/enrol", req.url));
     }
 
@@ -109,7 +102,5 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-  matcher: [
-    "/((?!api/auth|_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico).*)"],
 };

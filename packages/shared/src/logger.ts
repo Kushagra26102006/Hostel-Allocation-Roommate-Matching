@@ -48,16 +48,18 @@ export function createLogger(name: string, opts: LoggerOptions = {}) {
   const isDev = process.env["NODE_ENV"] !== "production";
   const level = opts.level ?? (isDev ? "debug" : "info");
 
-  const transport: pino.TransportSingleOptions | undefined = isDev
-    ? {
-        target: "pino-pretty",
-        options: {
-          colorize: true,
-          translateTime: "SYS:HH:MM:ss",
-          ignore: "pid,hostname",
-        },
-      }
-    : undefined;
+  const isNextRuntime = typeof process.env["NEXT_RUNTIME"] !== "undefined";
+  const transport: pino.TransportSingleOptions | undefined =
+    isDev && !isNextRuntime
+      ? {
+          target: "pino-pretty",
+          options: {
+            colorize: true,
+            translateTime: "SYS:HH:MM:ss",
+            ignore: "pid,hostname",
+          },
+        }
+      : undefined;
 
   return pino(
     {

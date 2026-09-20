@@ -193,7 +193,7 @@ if (googleClientId && googleClientSecret) {
 }
 
 export const authConfig = {
-  trustHost: env.AUTH_TRUST_HOST,
+  trustHost: env.AUTH_TRUST_HOST || process.env.NODE_ENV !== "production",
   providers,
   session: {
     strategy: "jwt" as const,
