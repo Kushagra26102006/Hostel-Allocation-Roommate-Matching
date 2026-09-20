@@ -273,3 +273,53 @@ Tracks milestones for the HostelHub project.
    - Playwright test J4: Full review workflow (Dashboard -> Console -> Bed override -> Approval -> Virtual Table -> Explanation Drawer)
    - Keyboard-only reassignment test: Complete workflow tested without mouse input
    - Axe-core accessibility test: 0 violations across Review Dashboard and Review Console screens
+
+---
+
+## Milestone 7 — Waiting List & Automatic Promotion (Prompt 21) ✅
+
+**Date:** 2026-09-21  
+**Status:** Complete  
+**Commit target:** `feat(waitlist): promotion engine and reconciliation`
+
+### What was done
+
+1. **Pure Domain Promotion Engine (`packages/domain/src/waitlist/`)**:
+   - `findPromotionCandidate(ctx)`: Evaluates waitlisted units in priority order and quota bucket. Revalidates every hard constraint (`HC1`–`HC11`), accessibility requirements (`HC6`), cohort rules (`HC7`), deal-breaker pairings (`HC11`), and group integrity (`HC10` - groups only promoted if all members fit). Unfit units are skipped with recorded reason codes.
+   - `reorderWaitlistQueue`: Algorithmic reordering of waitlist units with mandatory reason ($\ge 10$ characters) validation and recalculation of positions.
+   - `reconcileOccupancy`: Independent recount comparing raw active student assignments against room and hostel capacities, verifying the 0-drift invariant.
+   - 100-cycle randomized simulation test comparing room counters against active assignments with 100% exact match invariant.
+
+2. **Database Models & Service (`packages/db/src/`)**:
+   - `PromotionProposalModel`: Stores proposals requiring warden confirmation (`draft_id`, `cycle_id`, `waitlist_entry_id`, `bed_id`, `trigger`, `status`, `warden_comment`, `resolved_by`, `resolved_at`).
+   - `WaitlistEntryModel`: Updated schema with `status`, `priority_score`, `waiting_reason_code`, and `reorder_history`.
+   - `AllocationCycleModel`: Added `promotion_policy` (`auto_confirm` vs `proposal_required`).
+   - `PromotionService`:
+     - `handleVacatedBed(draftId, bedId, trigger, actor, options)`
+     - `promoteVacatedBed(draftId, bedId, trigger, actor, policyOverride)`
+     - `confirmProposal(proposalId, actor, comment)`
+     - `rejectProposal(proposalId, actor, reason)`
+     - `manualPromote(draftId, waitlistEntryId, bedId, reason, actor)`
+     - `reorderWaitlist(draftId, waitlistEntryId, newPosition, reason, actor)`
+     - `reconcileHostelOccupancy(hostelId, draftId)`
+     - **Post-Publication Safety**: When promoting into a published draft, `DraftWorkflowService.amendDraft` creates a new amended draft version (`v + 1`) under system actor, updates occupancy, triggers notification hooks, and appends to the audit hash chain.
+   - Full integration test suite in `packages/db/src/__tests__/waitlist-workflow.test.ts` (6/6 passing).
+
+3. **Web API Endpoints (`apps/web/src/app/api/v1/waitlist/`)**:
+   - `GET /api/v1/waitlist`: List waitlist entries with student info, position badges, reason codes.
+   - `POST /api/v1/waitlist/[id]/promote`: Manual promotion with mandatory $\ge 10$ char reason.
+   - `POST /api/v1/waitlist/reorder`: Reordering with mandatory $\ge 10$ char reason.
+   - `GET /api/v1/waitlist/proposals`: List pending proposals.
+   - `POST /api/v1/waitlist/proposals/[id]/confirm`: Warden confirms proposal.
+   - `POST /api/v1/waitlist/proposals/[id]/reject`: Warden rejects proposal.
+   - `POST /api/v1/waitlist/vacate`: Trigger vacancy from withdrawal, no-show, override, appeal.
+   - `GET /api/v1/waitlist/reconcile`: Independent occupancy recount report.
+
+4. **Warden Waiting List UI (`apps/web/src/components/warden/waitlist/` & `apps/web/src/app/(staff)/staff/warden/waitlist/page.tsx`)**:
+   - `WaitlistTable` with `framer-motion` reorder animations, tier position badges (#1, #2, #3, >3), and "Why is this student waiting?" reason code badges with explanatory tooltips.
+   - `ReorderModal` with live $\ge 10$ char count validation.
+   - `ManualPromoteModal` with target bed selection and mandatory justification.
+   - `ProposalsBanner` displaying pending proposals for warden confirmation/rejection.
+   - `PromotionTimeline` visual audit trail of recent automated and manual promotions.
+   - `ReconcileModal` displaying capacity vs active recount with 0-drift verification.
+   - `VacateBedModal` to simulate vacancy triggers live.

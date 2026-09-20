@@ -232,3 +232,18 @@ export {
   WorkflowError,
   type WorkflowActor,
 } from "./services/draft-workflow.service.js";
+
+// Prompt 21: Waitlist & Automatic Promotion Models and Service
+export {
+  PromotionProposalModel,
+  type IPromotionProposal,
+  type PromotionProposalDocument,
+  type ProposalStatus,
+} from "./models/promotion-proposal.model.js";
+
+export {
+  PromotionService,
+  PromotionServiceError,
+  type PromotionNotificationPayload,
+  type PromotionNotificationHook,
+} from "./services/promotion.service.js";

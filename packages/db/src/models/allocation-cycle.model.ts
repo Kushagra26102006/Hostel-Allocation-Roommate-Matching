@@ -28,6 +28,7 @@ export interface IAllocationCycle {
   document_requirements: DocumentRequirement[];
   priority_tier_order: string[];
   status: AllocationCycleStatus;
+  promotion_policy?: "auto_confirm" | "proposal_required" | undefined;
   reminders_sent?: RemindersSent | undefined;
 }
 
@@ -88,6 +89,11 @@ const allocationCycleSchema = new Schema<AllocationCycleDocument>(
       enum: ["draft", "scheduled", "open", "closed", "archived"],
       default: "draft",
       index: true,
+    },
+    promotion_policy: {
+      type: String,
+      enum: ["auto_confirm", "proposal_required"],
+      default: "auto_confirm",
     },
     reminders_sent: {
       "48h": { type: Date },

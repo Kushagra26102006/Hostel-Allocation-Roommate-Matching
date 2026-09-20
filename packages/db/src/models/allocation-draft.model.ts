@@ -50,7 +50,6 @@ const allocationDraftSchema = new Schema<AllocationDraftDocument>(
       type: Schema.Types.ObjectId,
       ref: "AllocationRun",
       required: true,
-      unique: true,
       index: true,
     },
     status: {
@@ -101,6 +100,7 @@ const allocationDraftSchema = new Schema<AllocationDraftDocument>(
 allocationDraftSchema.plugin(baseSchemaPlugin);
 
 allocationDraftSchema.index({ institution_id: 1, cycle_id: 1, version_number: 1 });
+allocationDraftSchema.index({ run_id: 1, version_number: 1 }, { unique: true });
 
 // Track initial status for read-only checks
 allocationDraftSchema.post("init", function () {

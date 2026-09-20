@@ -19,6 +19,7 @@ import {
   Server,
   UserCog,
   FileClock,
+  ListOrdered,
 } from "lucide-react";
 import type { Role } from "@/stores/role-store";
 
@@ -117,6 +118,15 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     roles: ["warden"],
     badge: "8 Pending",
     description: "Inspect provisional algorithm matches and approve medical grounds",
+  },
+  {
+    id: "warden-waitlist",
+    titleKey: "nav.wardenWaitlist",
+    fallbackTitle: "Waiting List & Promotion",
+    href: "/staff/warden/waitlist",
+    icon: ListOrdered,
+    roles: ["warden", "chief_warden", "hostel_admin", "dean", "sys_admin"],
+    description: "Manage waitlist queue, reorder priorities, and resolve promotion proposals",
   },
   {
     id: "warden-students",
