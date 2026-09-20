@@ -32,6 +32,13 @@ export interface FlatInventoryItem {
   distanceToBlocks: number | string;
 }
 
+function sanitizeFormula(value: unknown): unknown {
+  if (typeof value === "string" && /^[=+\-@\t\r]/.test(value)) {
+    return `'${value}`;
+  }
+  return value;
+}
+
 /**
  * Loads all inventory for an institution and flattens it into row records.
  */
@@ -81,24 +88,27 @@ export async function getFlatInventory(
     };
 
     flatItems.push({
-      hostelName: hostel.name,
-      genderPolicy: hostel.gender_policy,
-      address: hostel.address,
-      hostelStatus: hostel.status,
-      blockName: block.name,
+      hostelName: sanitizeFormula(hostel.name) as string,
+      genderPolicy: sanitizeFormula(hostel.gender_policy) as string,
+      address: sanitizeFormula(hostel.address) as string,
+      hostelStatus: sanitizeFormula(hostel.status) as string,
+      blockName: sanitizeFormula(block.name) as string,
       floorNo: block.floor_no,
-      wing: block.wing,
+      wing: sanitizeFormula(block.wing) as string,
       liftAccess: block.lift_access,
-      roomNumber: room.room_number,
-      roomType: room.room_type,
+      roomNumber: sanitizeFormula(room.room_number) as string,
+      roomType: sanitizeFormula(room.room_type) as string,
       capacity: room.capacity,
       accessible: room.accessible,
       ac: room.ac,
-      roomStatus: room.status,
-      bedNo: bed.bed_no,
-      bedStatus: bed.status,
-      window: attrs.window !== undefined ? attrs.window : "",
-      distanceToBlocks: attrs.distance_to_blocks !== undefined ? attrs.distance_to_blocks : "",
+      roomStatus: sanitizeFormula(room.status) as string,
+      bedNo: sanitizeFormula(bed.bed_no) as string,
+      bedStatus: sanitizeFormula(bed.status) as string,
+      window: attrs.window !== undefined ? (sanitizeFormula(attrs.window) as boolean | string) : "",
+      distanceToBlocks:
+        attrs.distance_to_blocks !== undefined
+          ? (sanitizeFormula(attrs.distance_to_blocks) as number | string)
+          : "",
     });
   }
 
