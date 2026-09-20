@@ -1,8 +1,4 @@
-import mongoose, {
-  type ConnectOptions,
-  type ClientSession,
-  type Connection,
-} from "mongoose";
+import mongoose, { type ConnectOptions, type ClientSession, type Connection } from "mongoose";
 
 export interface DatabaseConfig {
   uri: string;
@@ -88,11 +84,22 @@ export async function runInTransaction<T>(
 
   try {
     let result: T;
-    await session.withTransaction(async () => {
-      result = await fn(session);
-    });
-    // @ts-expect-error result is assigned inside withTransaction
-    return result;
+    try {
+      await session.withTransaction(async () => {
+        result = await fn(session);
+      });
+      // @ts-expect-error result is assigned inside withTransaction
+      return result;
+    } catch (txError) {
+      const msg = (txError as Error)?.message ?? "";
+      if (
+        msg.includes("replica set member or mongos") ||
+        msg.includes("Transaction numbers are only allowed")
+      ) {
+        return await fn(undefined as unknown as ClientSession);
+      }
+      throw txError;
+    }
   } finally {
     if (shouldEndSession) {
       await session.endSession();

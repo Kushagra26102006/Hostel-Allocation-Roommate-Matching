@@ -4,15 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
-import {
-  Lock,
-  Mail,
-  ArrowRight,
-  Loader2,
-  AlertCircle,
-  KeyRound,
-  UserCheck,
-} from "lucide-react";
+import { Lock, Mail, ArrowRight, Loader2, AlertCircle, KeyRound, UserCheck } from "lucide-react";
 import { Turnstile } from "@/components/auth/turnstile";
 
 export default function LoginPage() {
@@ -53,8 +45,15 @@ export default function LoginPage() {
       const sessionRes = await fetch("/api/auth/session", { cache: "no-store" });
       const session = await sessionRes.json();
 
-      if (session?.user?.mfaPending) {
+      if (session?.user?.mfaPending && session?.user?.mfaEnabled) {
         router.push("/mfa/verify?callbackUrl=" + encodeURIComponent(callbackUrl));
+      } else if (
+        !session?.user?.mfaEnabled &&
+        session?.user?.roles?.some((r: string) =>
+          ["hostel_admin", "chief_warden", "sys_admin"].includes(r),
+        )
+      ) {
+        router.push("/mfa/enrol");
       } else {
         router.push(callbackUrl);
       }
@@ -91,9 +90,7 @@ export default function LoginPage() {
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 text-primary mb-4 shadow-inner">
           <KeyRound className="w-6 h-6" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">
-          Sign in to HostelHub
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">Sign in to HostelHub</h1>
         <p className="text-sm text-slate-400 mt-1">
           University residential allocation &amp; campus governance
         </p>
@@ -147,10 +144,7 @@ export default function LoginPage() {
         </div>
 
         {/* Turnstile Captcha */}
-        <Turnstile
-          onVerify={(token) => setTurnstileToken(token)}
-          className="py-1"
-        />
+        <Turnstile onVerify={(token) => setTurnstileToken(token)} className="py-1" />
 
         <button
           type="submit"

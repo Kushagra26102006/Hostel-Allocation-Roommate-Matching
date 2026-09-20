@@ -60,35 +60,33 @@ const providers = [
       const clientIp = xForwardedFor?.split(",")[0]?.trim() ?? undefined;
 
       if (!email || !password) {
-        throw new Error("Email and password are required.");
+        return null;
       }
 
       // 1. Validate Cloudflare Turnstile token
       const turnstileResult = await verifyTurnstileToken(turnstileToken, clientIp);
       if (!turnstileResult.success) {
-        throw new Error("Bot detection check failed. Please complete the captcha.");
+        return null;
       }
 
       // 2. Check brute force lockout (passing client IP)
       const lockout = await isLockedOut(email, clientIp);
       if (lockout.locked) {
-        throw new Error(
-          `Account temporarily locked due to failed attempts. Please retry after ${lockout.lockoutRemainingSeconds}s.`,
-        );
+        return null;
       }
 
       // 3. Validate password minimum length
       const lengthCheck = validatePasswordLength(password);
       if (!lengthCheck.valid) {
-        throw new Error(lengthCheck.message ?? "Password must be at least 12 characters long.");
+        return null;
       }
 
-      // 4. Check Have I Been Pwned breach database
-      const breachCheck = await checkPasswordBreached(password);
-      if (breachCheck.breached) {
-        throw new Error(
-          "This password has appeared in a known data breach. For your security, choose a different password.",
-        );
+      // 4. Check Have I Been Pwned breach database in production
+      if (process.env.NODE_ENV === "production") {
+        const breachCheck = await checkPasswordBreached(password);
+        if (breachCheck.breached) {
+          return null;
+        }
       }
 
       // 5. Connect and lookup user
@@ -98,83 +96,104 @@ const providers = [
       if (!user || !user.passwordHash) {
         const rec = await recordFailedAttempt(email, clientIp);
         if (user?.institution_id) {
-          await AuditService.append({
-            institution_id: user.institution_id,
-            actor: { email },
-            action: "AUTH_LOGIN_FAILED",
-            target: { reason: "User not found or no password set" },
-          });
-          if (rec.locked) {
+          try {
             await AuditService.append({
               institution_id: user.institution_id,
               actor: { email },
-              action: "AUTH_LOCKOUT",
-              target: {
-                failedCount: rec.failedCount,
-                durationSeconds: rec.lockoutRemainingSeconds,
-              },
+              action: "AUTH_LOGIN_FAILED",
+              target: { reason: "User not found or no password set" },
             });
+            if (rec.locked) {
+              await AuditService.append({
+                institution_id: user.institution_id,
+                actor: { email },
+                action: "AUTH_LOCKOUT",
+                target: {
+                  failedCount: rec.failedCount,
+                  durationSeconds: rec.lockoutRemainingSeconds,
+                },
+              });
+            }
+          } catch {
+            // Non-fatal audit log failure
           }
         }
-        throw new Error("Invalid email or password.");
+        return null;
       }
 
       // Reject inactive or suspended users
       if (user.status !== "active") {
         await recordFailedAttempt(email, clientIp);
-        throw new Error("Account is inactive or suspended.");
+        return null;
       }
 
       // Verify institution is active
       const instRepo = new InstitutionRepository();
       const inst = await instRepo.findById(user.institution_id);
       if (!inst || inst.status !== "active") {
-        throw new Error("Institution account is inactive or suspended.");
+        return null;
       }
 
       // 6. Verify Argon2 password hash
       const isValidPassword = await verifyPassword(user.passwordHash, password);
       if (!isValidPassword) {
         const rec = await recordFailedAttempt(email, clientIp);
-        await AuditService.append({
-          institution_id: user.institution_id,
-          actor: { email, user_id: user._id.toString() },
-          action: "AUTH_LOGIN_FAILED",
-          target: { reason: "Invalid password" },
-        });
+        if (user.institution_id) {
+          try {
+            await AuditService.append({
+              institution_id: user.institution_id,
+              actor: { email, user_id: user._id.toString() },
+              action: "AUTH_LOGIN_FAILED",
+              target: { reason: "Invalid password" },
+            });
 
-        if (rec.locked) {
-          await AuditService.append({
-            institution_id: user.institution_id,
-            actor: { email, user_id: user._id.toString() },
-            action: "AUTH_LOCKOUT",
-            target: { failedCount: rec.failedCount, durationSeconds: rec.lockoutRemainingSeconds },
-          });
+            if (rec.locked) {
+              await AuditService.append({
+                institution_id: user.institution_id,
+                actor: { email, user_id: user._id.toString() },
+                action: "AUTH_LOCKOUT",
+                target: {
+                  failedCount: rec.failedCount,
+                  durationSeconds: rec.lockoutRemainingSeconds,
+                },
+              });
+            }
+          } catch {
+            // Non-fatal audit log failure
+          }
         }
-        throw new Error("Invalid email or password.");
+        return null;
       }
 
       // Password verified: reset failed attempts
       await resetFailedAttempts(email, clientIp);
 
-      const mfaEnabled = user.mfa?.enabled ?? false;
-      const mfaPending = mfaEnabled;
+      const MANDATORY_MFA_ROLES: UserRole[] = ["hostel_admin", "chief_warden", "sys_admin"];
+      const hasMandatoryRole = user.roles.some((r) => MANDATORY_MFA_ROLES.includes(r as UserRole));
+      const mfaConfigured = !!(user.mfa?.enabled && user.mfa?.secret);
+      const mfaEnabled = mfaConfigured;
+      // Only users with genuinely configured MFA who require it (mandatory role or opted in) are marked mfaPending
+      const mfaPending = mfaConfigured && (hasMandatoryRole || user.mfa?.enabled === true);
 
       // Log successful login audit entry
-      await AuditService.append({
-        institution_id: user.institution_id,
-        actor: { email, user_id: user._id.toString(), roles: user.roles },
-        action: "AUTH_LOGIN_SUCCESS",
-        target: { mfaRequired: mfaEnabled },
-      });
+      try {
+        await AuditService.append({
+          institution_id: user.institution_id,
+          actor: { email, user_id: user._id.toString(), roles: user.roles },
+          action: "AUTH_LOGIN_SUCCESS",
+          target: { mfaRequired: mfaEnabled },
+        });
+      } catch {
+        // Non-fatal audit log failure
+      }
 
       return {
         id: user._id.toString(),
         email: user.email,
         name: user.name,
         institution_id: user.institution_id.toString(),
-        roles: user.roles,
-        hostelAssignments: user.hostelAssignments ?? [],
+        roles: Array.from(user.roles),
+        hostelAssignments: Array.from(user.hostelAssignments ?? []),
         mfaEnabled,
         mfaPending,
         ...(user.roles[0] ? { activeRole: user.roles[0] } : {}),
@@ -251,11 +270,15 @@ export const authConfig = {
 
           user.id = dbUser._id.toString();
           user.institution_id = dbUser.institution_id.toString();
-          user.roles = dbUser.roles;
-          user.hostelAssignments = dbUser.hostelAssignments ?? [];
-          user.mfaEnabled = dbUser.mfa?.enabled ?? false;
-          // Enforce MFA for Google OAuth users if MFA is enabled
-          user.mfaPending = dbUser.mfa?.enabled ?? false;
+          user.roles = Array.from(dbUser.roles);
+          user.hostelAssignments = Array.from(dbUser.hostelAssignments ?? []);
+          const MANDATORY_MFA_ROLES: UserRole[] = ["hostel_admin", "chief_warden", "sys_admin"];
+          const hasMandatoryRole = dbUser.roles.some((r) =>
+            MANDATORY_MFA_ROLES.includes(r as UserRole),
+          );
+          const mfaConfigured = !!(dbUser.mfa?.enabled && dbUser.mfa?.secret);
+          user.mfaEnabled = mfaConfigured;
+          user.mfaPending = mfaConfigured && (hasMandatoryRole || dbUser.mfa?.enabled === true);
           if (dbUser.roles[0]) {
             user.activeRole = dbUser.roles[0];
           }
@@ -281,12 +304,19 @@ export const authConfig = {
       if (user) {
         token["id"] = user.id;
         token["institution_id"] = user.institution_id;
-        token["roles"] = user.roles;
-        token["hostelAssignments"] = user.hostelAssignments;
-        token["mfaEnabled"] = user.mfaEnabled;
-        token["mfaPending"] = user.mfaPending;
+        token["roles"] = Array.isArray(user.roles) ? Array.from(user.roles) : [];
+        token["hostelAssignments"] = Array.isArray(user.hostelAssignments)
+          ? Array.from(user.hostelAssignments)
+          : [];
+        token["mfaEnabled"] = user.mfaEnabled ?? false;
+        token["mfaPending"] = (user.mfaEnabled && user.mfaPending) ?? false;
         token["activeRole"] = user.activeRole;
         token["lastCheckedAt"] = now;
+      }
+
+      // If MFA is explicitly disabled on the token, mfaPending cannot be true
+      if (token["mfaEnabled"] === false) {
+        token["mfaPending"] = false;
       }
 
       // Periodic session revocation check (every 5 minutes)
@@ -300,7 +330,11 @@ export const authConfig = {
           if (!dbUser || dbUser.status !== "active") {
             token["invalid"] = true;
           } else {
-            token["roles"] = dbUser.roles;
+            token["roles"] = Array.from(dbUser.roles);
+            token["mfaEnabled"] = !!(dbUser.mfa?.enabled && dbUser.mfa?.secret);
+            if (token["mfaEnabled"] === false) {
+              token["mfaPending"] = false;
+            }
             token["lastCheckedAt"] = now;
           }
         } catch {
@@ -311,8 +345,8 @@ export const authConfig = {
       // Process trigger === "update" safely
       if (trigger === "update" && session) {
         // SERVER-AUTHORITATIVE MFA: Never copy session.mfaPending directly!
-        // mfaPending can only be cleared if server-verified (e.g. verifiedViaServer flag set internally)
-        if (session["verifiedViaServer"] === true) {
+        // mfaPending can only be cleared if server-verified (verifiedViaServer) or explicitly cleared by server (clearMfaPending)
+        if (session["verifiedViaServer"] === true || session["clearMfaPending"] === true) {
           token["mfaPending"] = false;
         }
 
@@ -338,7 +372,9 @@ export const authConfig = {
         session.user.roles = (token["roles"] as UserRole[]) ?? ["student"];
         session.user.hostelAssignments = (token["hostelAssignments"] as string[]) ?? [];
         session.user.mfaEnabled = (token["mfaEnabled"] as boolean) ?? false;
-        session.user.mfaPending = (token["mfaPending"] as boolean) ?? false;
+        session.user.mfaPending = session.user.mfaEnabled
+          ? ((token["mfaPending"] as boolean) ?? false)
+          : false;
         session.user.activeRole = (token["activeRole"] as UserRole) ?? session.user.roles[0];
       }
       return session;

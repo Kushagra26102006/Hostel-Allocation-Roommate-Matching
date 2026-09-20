@@ -126,4 +126,88 @@ describe("Phase 1: Security & Auth Hardening Tests", () => {
       expect(json.mfa).not.toHaveProperty("backupCodes");
     });
   });
+
+  describe("1.5 Student Credentials Login Regression", () => {
+    it("successfully authenticates student.demo@nit.edu with Student@12345 in development", async () => {
+      const { authConfig } = await import("@/auth");
+      const credentialsProvider = authConfig.providers.find(
+        (p: { id?: string; name?: string }) => p.id === "credentials" || p.name === "Credentials",
+      ) as unknown as {
+        options?: {
+          authorize: (
+            credentials: Record<string, unknown>,
+            req?: unknown,
+          ) => Promise<Record<string, unknown> | null>;
+        };
+        authorize: (
+          credentials: Record<string, unknown>,
+          req?: unknown,
+        ) => Promise<Record<string, unknown> | null>;
+      };
+      expect(credentialsProvider).toBeDefined();
+
+      const authorizeFn = credentialsProvider.options?.authorize ?? credentialsProvider.authorize;
+      const user = await authorizeFn(
+        {
+          email: "student.demo@nit.edu",
+          password: "Student@12345",
+          turnstileToken: "1x00000000000000000000AA-test",
+        },
+        { headers: {} },
+      );
+
+      expect(user).not.toBeNull();
+      expect(user?.email).toBe("student.demo@nit.edu");
+      expect(user?.roles).toEqual(["student"]);
+      expect(user?.mfaPending).toBe(false);
+      expect(user?.activeRole).toBe("student");
+
+      // Verify user object is cleanly serializable for jose / structuredClone (JWT encoding)
+      expect(() => structuredClone(user)).not.toThrow();
+
+      // Verify JWT callback serializes clean arrays that jose can encrypt
+      const jwtCallback = authConfig.callbacks?.jwt;
+      const initialToken: Record<string, unknown> = {};
+      const token = await jwtCallback!({
+        token: initialToken,
+        user: user as never,
+        trigger: "signIn",
+      });
+
+      expect(token["email"]).toBeUndefined(); // sub/id is in token
+      expect(token["id"]).toBe(user?.id);
+      expect(token["roles"]).toEqual(["student"]);
+      expect(() => structuredClone(token)).not.toThrow();
+    });
+
+    it("returns null for invalid password without throwing unhandled exception", async () => {
+      const { authConfig } = await import("@/auth");
+      const credentialsProvider = authConfig.providers.find(
+        (p: { id?: string; name?: string }) => p.id === "credentials" || p.name === "Credentials",
+      ) as unknown as {
+        options?: {
+          authorize: (
+            credentials: Record<string, unknown>,
+            req?: unknown,
+          ) => Promise<Record<string, unknown> | null>;
+        };
+        authorize: (
+          credentials: Record<string, unknown>,
+          req?: unknown,
+        ) => Promise<Record<string, unknown> | null>;
+      };
+
+      const authorizeFn = credentialsProvider.options?.authorize ?? credentialsProvider.authorize;
+      const user = await authorizeFn(
+        {
+          email: "student.demo@nit.edu",
+          password: "WrongPassword123!@#",
+          turnstileToken: "1x00000000000000000000AA-test",
+        },
+        { headers: {} },
+      );
+
+      expect(user).toBeNull();
+    });
+  });
 });

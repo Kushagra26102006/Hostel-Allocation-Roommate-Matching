@@ -1,27 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import {
-  ShieldCheck,
-  KeyRound,
-  ArrowRight,
-  Loader2,
-  AlertCircle,
-} from "lucide-react";
+import { ShieldCheck, KeyRound, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 
 export default function MfaVerifyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
-  const { update } = useSession();
+  const { data: session, update } = useSession();
 
   const [useBackupCode, setUseBackupCode] = useState(false);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // If user has unconfigured MFA (or MFA disabled), clear state and leave verify page
+  useEffect(() => {
+    if (session?.user && !session.user.mfaEnabled) {
+      update({ clearMfaPending: true }).then(() => {
+        router.replace(callbackUrl);
+      });
+    }
+  }, [session, callbackUrl, router, update]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,9 +32,7 @@ export default function MfaVerifyPage() {
     setLoading(true);
 
     try {
-      const payload = useBackupCode
-        ? { backupCode: code.trim() }
-        : { token: code.trim() };
+      const payload = useBackupCode ? { backupCode: code.trim() } : { token: code.trim() };
 
       const res = await fetch("/api/mfa/verify", {
         method: "POST",
@@ -41,11 +42,17 @@ export default function MfaVerifyPage() {
 
       const data = await res.json();
       if (!res.ok) {
+        if (data.clearMfaPending) {
+          await update({ clearMfaPending: true });
+          router.replace(callbackUrl);
+          router.refresh();
+          return;
+        }
         throw new Error(data.error ?? "MFA verification failed.");
       }
 
-      // Refresh NextAuth JWT session to clear mfaPending
-      await update({ mfaPending: false });
+      // Refresh NextAuth JWT session with server verification proof
+      await update({ verifiedViaServer: true, mfaPending: false });
 
       router.push(callbackUrl);
       router.refresh();
@@ -65,9 +72,7 @@ export default function MfaVerifyPage() {
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 text-primary mb-4 shadow-inner">
           <ShieldCheck className="w-6 h-6" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">
-          Two-Factor Authentication
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">Two-Factor Authentication</h1>
         <p className="text-sm text-slate-400 mt-1">
           {useBackupCode
             ? "Enter one of your 10-character emergency backup codes"
@@ -95,9 +100,7 @@ export default function MfaVerifyPage() {
             value={code}
             onChange={(e) =>
               setCode(
-                useBackupCode
-                  ? e.target.value.toUpperCase()
-                  : e.target.value.replace(/\D/g, ""),
+                useBackupCode ? e.target.value.toUpperCase() : e.target.value.replace(/\D/g, ""),
               )
             }
             placeholder={useBackupCode ? "XXXXX-XXXXX" : "000000"}
