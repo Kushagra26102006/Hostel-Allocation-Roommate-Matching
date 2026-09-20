@@ -165,9 +165,24 @@ export function hc5QuotaBucket(unit: Unit, room: Room, snapshot: Snapshot): Cons
     if (genUsage >= genBudget) return fail("HC5_QUOTA_EXCEEDED");
     return { ok: true, reasonCode: "HC5_QUOTA_SPILLOVER_ALLOWED" };
   }
-  // Unit's own bucket still has capacity — don't spill; use own bucket.
-  // But this is a General room → allow (the engine should prefer quota rooms first).
-  return pass();
+
+  // Unit's own bucket still has capacity. If dedicated quota rooms have available beds, unit must use them.
+  const hasDedicatedBeds = [...snapshot.rooms.values()].some(
+    (r) =>
+      r.quotaBucket === unitBucket &&
+      [...snapshot.beds.values()].some(
+        (b) => b.roomId === r.id && b.status === "available" && !b.occupiedByUnitId,
+      ),
+  );
+  if (hasDedicatedBeds) {
+    return fail("HC5_QUOTA_EXCEEDED");
+  }
+
+  // Dedicated beds exhausted even though budget not reached → spillover into General
+  const genBudget = snapshot.quotaBudget.get("General") ?? Infinity;
+  const genUsage = snapshot.quotaUsage.get("General") ?? 0;
+  if (genUsage >= genBudget) return fail("HC5_QUOTA_EXCEEDED");
+  return { ok: true, reasonCode: "HC5_QUOTA_SPILLOVER_ALLOWED" };
 }
 
 // ─── HC6: Accessibility ────────────────────────────────────────────────────────

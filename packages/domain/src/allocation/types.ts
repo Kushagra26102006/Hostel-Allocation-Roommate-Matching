@@ -12,7 +12,7 @@ import type { QuestionnaireAnswers } from "../compatibility/types.js";
 export type Gender = "male" | "female";
 export type GenderPolicy = "male" | "female" | "coed";
 export type BedStatus = "available" | "reserved" | "occupied" | "out_of_service";
-export type RoomType = "single" | "double" | "triple";
+export type RoomType = "single" | "double" | "triple" | "quad" | "dorm";
 
 // ─── Inventory ─────────────────────────────────────────────────────────────────
 
@@ -210,9 +210,93 @@ export interface Explanation {
 
 export interface RunMetrics {
   cycleId: string;
+  /** FNV-1a hash of the canonical snapshot JSON (sorted keys). */
+  inputHash: string;
   totalUnits: number;
   assigned: number;
   unassigned: number;
+  /** Units rejected before the assignment loop (e.g. hold active). */
+  rejected: number;
   constraintViolations: number;
+  /** ms elapsed — supplied externally; engine itself does not call Date. */
   durationMs: number;
+  /** Fraction of assigned units that received their first-choice hostel (0..1). */
+  firstChoiceRate: number;
+  /** Mean rank position of assigned units (1 = first choice). */
+  avgRankSatisfied: number;
+  /** Gini coefficient of total scores across assigned units (0 = perfect equality). */
+  giniPreferenceScore: number;
+  /**
+   * Max difference in firstChoiceRate across quota buckets.
+   * 0 = identical rates across all buckets.
+   */
+  categoryParityGap: number;
+  /**
+   * Number of cases where a lower-priority unit has a better hostel rank than
+   * a higher-priority unit in the same quota bucket. Must always be 0 after
+   * a valid run.
+   */
+  priorityInversions: number;
+  /** Mean room compatibility score (0..1) across all assigned rooms. */
+  meanRoomCompatibility: number;
+  /** Minimum room compatibility score (0..1) across all assigned rooms. */
+  minRoomCompatibility: number;
+}
+
+// ─── Pipeline I/O ──────────────────────────────────────────────────────────────
+
+export interface AllocateOptions {
+  /** Seed for the PCG32 PRNG used for deterministic tiebreaking and local search. */
+  seed: number;
+  weights?: Weights;
+  /** Maximum local-search swap iterations. Default: 500. */
+  maxIterations?: number;
+  /** Called after each pipeline stage with progress info. */
+  onProgress?: (stage: string, done: number, total: number) => void;
+}
+
+export interface WaitlistEntry {
+  unitId: string;
+  quotaBucket: string;
+  /** The deterministic priority sort key (lower = higher priority). */
+  priorityKey: number;
+  /** The hard constraint reason code that blocked assignment. */
+  reasonCode: string;
+  /** Human-readable sentence. */
+  sentence: string;
+}
+
+export interface RejectedEntry {
+  unitId: string;
+  /** E.g. HC9_HOLD_ACTIVE. */
+  reasonCode: string;
+  sentence: string;
+}
+
+export interface AllocateResult {
+  assignments: Assignment[];
+  waitlist: WaitlistEntry[];
+  rejected: RejectedEntry[];
+  metrics: RunMetrics;
+  /** FNV-1a hash of the canonical snapshot input (echoed from metrics). */
+  inputHash: string;
+}
+
+// ─── Error ──────────────────────────────────────────────────────────────────────
+
+/**
+ * Thrown when the pipeline detects a post-assignment invariant violation.
+ * The `invariant` field identifies which invariant (P1–P7) was violated.
+ */
+export class InvariantError extends Error {
+  readonly invariant: string;
+  readonly details: unknown;
+
+  constructor(invariant: string, message: string, details?: unknown) {
+    super(message);
+    this.name = "InvariantError";
+    this.invariant = invariant;
+    this.details = details;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
 }

@@ -9,3 +9,4 @@ export * from "./constraints.js";
 export * from "./scoring.js";
 export * from "./bedIndex.js";
 export * from "./explanation.js";
+export * from "./pipeline.js";
