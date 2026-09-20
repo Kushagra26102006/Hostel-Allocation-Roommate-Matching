@@ -1,0 +1,26 @@
+{
+  "name": "@hostelhub/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc --project tsconfig.json --outDir dist"
+  },
+  "dependencies": {
+    "@hostelhub/db": "workspace:*",
+    "@hostelhub/domain": "workspace:*",
+    "@hostelhub/shared": "workspace:*",
+    "bullmq": "^5.41.0",
+    "ioredis": "^5.4.1",
+    "mongoose": "^8.6.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.17.0",
+    "typescript": "*",
+    "vitest": "*"
+  }
+}

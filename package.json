@@ -1,0 +1,43 @@
+{
+  "name": "hostelhub",
+  "private": true,
+  "version": "0.0.0",
+  "description": "HostelHub monorepo",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @hostelhub/web dev",
+    "build": "pnpm -r build",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "prettier --write .",
+    "i18n:check": "pnpm --filter @hostelhub/web i18n:check",
+    "prepare": "husky",
+    "seed:synthetic": "pnpm --filter @hostelhub/db exec tsx src/seed/synthetic.ts",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "infra:reset": "docker compose down -v"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@commitlint/types": "^19.8.1",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.9.0",
+    "eslint-config-prettier": "^9.1.0",
+    "husky": "^9.1.5",
+    "lint-staged": "^15.2.9",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "webpack": "5.101.2"
+    }
+  }
+}

@@ -1,0 +1,335 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  LayoutDashboard,
+  FileText,
+  BedDouble,
+  Users,
+  AlertCircle,
+  CreditCard,
+  ClipboardCheck,
+  Shield,
+  Building,
+  KeyRound,
+  FileSpreadsheet,
+  Scale,
+  Activity,
+  History,
+  QrCode,
+  Sliders,
+  Server,
+  UserCog,
+  FileClock,
+} from "lucide-react";
+import type { Role } from "@/stores/role-store";
+
+export interface NavItem {
+  id: string;
+  titleKey: string;
+  fallbackTitle: string;
+  href: string;
+  icon: LucideIcon;
+  roles: Role[];
+  badge?: string;
+  isBottomTab?: boolean;
+  description: string;
+}
+
+export const NAVIGATION_ITEMS: NavItem[] = [
+  // ── Student Destinations ──────────────────────────────────────────────────
+  {
+    id: "student-dashboard",
+    titleKey: "nav.dashboard",
+    fallbackTitle: "Dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+    roles: ["student"],
+    isBottomTab: true,
+    description: "Overview of room assignment, application status, and notices",
+  },
+  {
+    id: "student-applications",
+    titleKey: "nav.applications",
+    fallbackTitle: "My Applications",
+    href: "/applications",
+    icon: FileText,
+    roles: ["student"],
+    badge: "Open",
+    isBottomTab: true,
+    description: "Room preferences, questionnaire, and special accommodation requests",
+  },
+  {
+    id: "student-room",
+    titleKey: "nav.room",
+    fallbackTitle: "Room & Allotment",
+    href: "/room",
+    icon: BedDouble,
+    roles: ["student"],
+    isBottomTab: true,
+    description: "Allotment certificate, room specs, inventory checklist, and key check-in",
+  },
+  {
+    id: "student-roommate",
+    titleKey: "nav.roommate",
+    fallbackTitle: "Roommate Matching",
+    href: "/roommate",
+    icon: Users,
+    roles: ["student"],
+    isBottomTab: true,
+    description: "Lifestyle compatibility score, mutual pairings, and roommate chat",
+  },
+  {
+    id: "student-complaints",
+    titleKey: "nav.complaints",
+    fallbackTitle: "Complaints & Requests",
+    href: "/complaints",
+    icon: AlertCircle,
+    roles: ["student"],
+    isBottomTab: false,
+    description: "Maintenance work tickets, electrical, plumbing, and housekeeping",
+  },
+  {
+    id: "student-payments",
+    titleKey: "nav.payments",
+    fallbackTitle: "Fee Payments",
+    href: "/payments",
+    icon: CreditCard,
+    roles: ["student"],
+    isBottomTab: false,
+    description: "Hostel dues, mess security deposit, and payment receipts",
+  },
+
+  // ── Warden Destinations ───────────────────────────────────────────────────
+  {
+    id: "warden-overview",
+    titleKey: "nav.wardenOverview",
+    fallbackTitle: "Warden Overview",
+    href: "/staff/warden/overview",
+    icon: LayoutDashboard,
+    roles: ["warden"],
+    description: "Block summary, active occupancy, and pending approval queue",
+  },
+  {
+    id: "warden-allotments",
+    titleKey: "nav.wardenAllotments",
+    fallbackTitle: "Allocation Reviews",
+    href: "/staff/warden/allotments",
+    icon: ClipboardCheck,
+    roles: ["warden"],
+    badge: "8 Pending",
+    description: "Inspect provisional algorithm matches and approve medical grounds",
+  },
+  {
+    id: "warden-students",
+    titleKey: "nav.wardenStudents",
+    fallbackTitle: "Student Directory",
+    href: "/staff/warden/students",
+    icon: Users,
+    roles: ["warden"],
+    description: "Search enrolled residents, emergency contacts, and room numbers",
+  },
+  {
+    id: "warden-complaints",
+    titleKey: "nav.wardenComplaints",
+    fallbackTitle: "Hostel Tickets",
+    href: "/staff/warden/complaints",
+    icon: AlertCircle,
+    roles: ["warden"],
+    description: "Maintenance complaints, resolution time tracking, and contractor logs",
+  },
+  {
+    id: "warden-leaves",
+    titleKey: "nav.wardenLeaves",
+    fallbackTitle: "Night Out Passes",
+    href: "/staff/warden/leaves",
+    icon: FileClock,
+    roles: ["warden"],
+    description: "Review and approve student night leaves and weekend home passes",
+  },
+
+  // ── Chief Warden Destinations ─────────────────────────────────────────────
+  {
+    id: "chief-overview",
+    titleKey: "nav.chiefOverview",
+    fallbackTitle: "Campus Overview",
+    href: "/staff/chief-warden/overview",
+    icon: LayoutDashboard,
+    roles: ["chief_warden"],
+    description: "Executive cross-hostel occupancy, gender ratio, and capacity trends",
+  },
+  {
+    id: "chief-allocations",
+    titleKey: "nav.chiefAllocations",
+    fallbackTitle: "Algorithm Runs",
+    href: "/staff/chief-warden/allocations",
+    icon: Sliders,
+    roles: ["chief_warden"],
+    badge: "Round 1",
+    description: "Trigger Gale-Shapley solver and review Pareto optimality graphs",
+  },
+  {
+    id: "chief-inventory",
+    titleKey: "nav.chiefInventory",
+    fallbackTitle: "Campus Inventory",
+    href: "/staff/chief-warden/inventory",
+    icon: Building,
+    roles: ["chief_warden"],
+    description: "Bed allocations across Aryabhata, Gargi, Ramanujan, and Kalpana Chawla",
+  },
+  {
+    id: "chief-appeals",
+    titleKey: "nav.chiefAppeals",
+    fallbackTitle: "Special Appeals",
+    href: "/staff/chief-warden/appeals",
+    icon: Scale,
+    roles: ["chief_warden"],
+    badge: "3 New",
+    description: "Hear high-priority housing appeals and medical exemptions",
+  },
+  {
+    id: "chief-wardens",
+    titleKey: "nav.chiefWardens",
+    fallbackTitle: "Warden Roster",
+    href: "/staff/chief-warden/wardens",
+    icon: Shield,
+    roles: ["chief_warden"],
+    description: "Assign wardens to blocks, monitor response SLAs, and council meetings",
+  },
+
+  // ── Hostel Admin Destinations ─────────────────────────────────────────────
+  {
+    id: "admin-inventory",
+    titleKey: "nav.adminInventory",
+    fallbackTitle: "Block Inventory",
+    href: "/staff/admin/inventory",
+    icon: Building,
+    roles: ["hostel_admin"],
+    description: "Inventory audit of furniture, mattresses, ACs, and electrical fittings",
+  },
+  {
+    id: "admin-rooms",
+    titleKey: "nav.adminRooms",
+    fallbackTitle: "Room Inspection",
+    href: "/staff/admin/rooms",
+    icon: KeyRound,
+    roles: ["hostel_admin"],
+    description: "Physical room condition assessments, handover checklists, and locks",
+  },
+  {
+    id: "admin-maintenance",
+    titleKey: "nav.adminMaintenance",
+    fallbackTitle: "Maintenance Log",
+    href: "/staff/admin/maintenance",
+    icon: AlertCircle,
+    roles: ["hostel_admin"],
+    description: "Vendor dispatch, AMC records, and spare parts requisition",
+  },
+  {
+    id: "admin-check-in",
+    titleKey: "nav.adminCheckIn",
+    fallbackTitle: "Gate Pass Scanner",
+    href: "/staff/admin/check-in",
+    icon: QrCode,
+    roles: ["hostel_admin"],
+    description: "Scan digital check-in QR passes and issue biometric room access keys",
+  },
+
+  // ── Dean Destinations ─────────────────────────────────────────────────────
+  {
+    id: "dean-overview",
+    titleKey: "nav.deanOverview",
+    fallbackTitle: "Dean Executive",
+    href: "/staff/dean/overview",
+    icon: LayoutDashboard,
+    roles: ["dean"],
+    description: "University residential governance, grievance metrics, and safety score",
+  },
+  {
+    id: "dean-policies",
+    titleKey: "nav.deanPolicies",
+    fallbackTitle: "Housing Policies",
+    href: "/staff/dean/policies",
+    icon: FileSpreadsheet,
+    roles: ["dean"],
+    description: "Reservation quotas, distance scoring weights, and scholarship rules",
+  },
+  {
+    id: "dean-analytics",
+    titleKey: "nav.deanAnalytics",
+    fallbackTitle: "Campus Analytics",
+    href: "/staff/dean/analytics",
+    icon: Activity,
+    roles: ["dean"],
+    description: "Historical allocation trends, student satisfaction, and retention impact",
+  },
+  {
+    id: "dean-audits",
+    titleKey: "nav.deanAudits",
+    fallbackTitle: "Audit Committee",
+    href: "/staff/dean/audits",
+    icon: Scale,
+    roles: ["dean"],
+    description: "Independent welfare committee reviews and dispute resolution ledger",
+  },
+
+  // ── System Admin Destinations ─────────────────────────────────────────────
+  {
+    id: "sys-health",
+    titleKey: "nav.sysHealth",
+    fallbackTitle: "System Telemetry",
+    href: "/staff/system/health",
+    icon: Activity,
+    roles: ["sys_admin"],
+    badge: "Optimal",
+    description: "Service health, Redis cache hit ratio, MongoDB replicas, and memory",
+  },
+  {
+    id: "sys-users",
+    titleKey: "nav.sysUsers",
+    fallbackTitle: "User Access & RBAC",
+    href: "/staff/system/users",
+    icon: UserCog,
+    roles: ["sys_admin"],
+    description: "Manage permissions, warden designations, and student authentication",
+  },
+  {
+    id: "sys-audit-logs",
+    titleKey: "nav.sysAuditLogs",
+    fallbackTitle: "Audit Trail Ledger",
+    href: "/staff/system/audit-logs",
+    icon: History,
+    roles: ["sys_admin"],
+    description: "Cryptographically hashed audit stream of all allocation operations",
+  },
+  {
+    id: "sys-algorithm",
+    titleKey: "nav.sysAlgorithm",
+    fallbackTitle: "Allocation Rules",
+    href: "/staff/system/algorithm",
+    icon: Sliders,
+    roles: ["sys_admin"],
+    description: "Constraint matrix tuning, Gale-Shapley iterations, and anti-gaming rules",
+  },
+  {
+    id: "sys-integrations",
+    titleKey: "nav.sysIntegrations",
+    fallbackTitle: "API & Infrastructure",
+    href: "/staff/system/integrations",
+    icon: Server,
+    roles: ["sys_admin"],
+    description: "MinIO S3 bucket policies, webhook configurations, and database backups",
+  },
+];
+
+export function getNavigationForRole(role: Role): NavItem[] {
+  return NAVIGATION_ITEMS.filter((item) => item.roles.includes(role));
+}
+
+export function getBottomTabsForRole(role: Role): NavItem[] {
+  return NAVIGATION_ITEMS.filter(
+    (item) => item.roles.includes(role) && item.isBottomTab,
+  );
+}
+
+export function getNavItemByPath(pathname: string): NavItem | undefined {
+  return NAVIGATION_ITEMS.find((item) => item.href === pathname);
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "paths": {
+      "@hostelhub/domain": ["../../packages/domain/src/index.ts"],
+      "@hostelhub/domain/*": ["../../packages/domain/src/*"],
+      "@hostelhub/db": ["../../packages/db/src/index.ts"],
+      "@hostelhub/db/*": ["../../packages/db/src/*"],
+      "@hostelhub/shared": ["../../packages/shared/src/index.ts"],
+      "@hostelhub/shared/*": ["../../packages/shared/src/*"]
+    }
+  }
+}

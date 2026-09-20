@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@hostelhub/shared": ["./src/index.ts"],
+      "@hostelhub/shared/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*"]
+}

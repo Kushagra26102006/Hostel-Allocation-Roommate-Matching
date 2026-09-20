@@ -1,0 +1,105 @@
+services:
+  # ── MongoDB 7 — single-node replica set (rs0) ────────────────────────────────
+  mongo:
+    image: mongo:7
+    container_name: hostelhub-mongo
+    restart: unless-stopped
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./infra/mongo-init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - hostelhub
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--quiet",
+          "--eval",
+          "try { rs.status().ok } catch(e) { rs.initiate({ _id:'rs0', members:[{_id:0,host:'mongo:27017'}] }).ok }",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # ── Redis 7 ───────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: hostelhub-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - hostelhub
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── MinIO ─────────────────────────────────────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: hostelhub-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    networks:
+      - hostelhub
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  # One-shot service that creates the "hostelhub" bucket after MinIO is healthy
+  createbuckets:
+    image: minio/mc:latest
+    container_name: hostelhub-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - hostelhub
+    entrypoint: >
+      /bin/sh -c "
+        mc alias set local http://minio:9000 minioadmin minioadmin &&
+        mc mb --ignore-existing local/hostelhub &&
+        echo 'Bucket hostelhub ready.'
+      "
+
+  # ── Mailpit (SMTP + Web UI) ───────────────────────────────────────────────────
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: hostelhub-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    networks:
+      - hostelhub
+
+# ── Named volumes ─────────────────────────────────────────────────────────────
+volumes:
+  mongo_data:
+  redis_data:
+  minio_data:
+
+# ── Shared network ────────────────────────────────────────────────────────────
+networks:
+  hostelhub:
+    driver: bridge

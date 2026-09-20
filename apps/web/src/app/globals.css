@@ -1,0 +1,263 @@
+/* HostelHub Design System — globals.css
+ * All colour/spacing/motion tokens are defined as CSS custom properties.
+ * Components MUST use these variables — never hard-coded colours.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   LAYER 0: Base resets & font smoothing
+   ══════════════════════════════════════════════════════════════════════════════ */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--text));
+    font-family: var(--font-body), system-ui, sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading), system-ui, sans-serif;
+  }
+
+  code,
+  pre,
+  kbd,
+  samp {
+    font-family: var(--font-mono), ui-monospace, monospace;
+  }
+
+  /* Reduced-motion override — applied system-wide */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  .reduce-motion *,
+  .reduce-motion *::before,
+  .reduce-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   LAYER 1: Design tokens — Light theme (default)
+   ══════════════════════════════════════════════════════════════════════════════ */
+:root {
+  /* ── Brand & Semantic colours (HSL values, no hsl() wrapper — applied in Tailwind) */
+  --brand-50: 239 100% 97%;
+  --brand-100: 241 100% 93%;
+  --brand-200: 239 91% 85%;
+  --brand-300: 240 84% 75%;
+  --brand-400: 241 75% 66%;
+  --brand-500: 241 68% 58%;
+  --brand-600: 243 75% 49%; /* #4338CA */
+  --brand-700: 243 74% 42%;
+  --brand-800: 244 65% 35%;
+  --brand-900: 243 56% 28%;
+
+  --accent: 262 83% 58%; /* #7C3AED */
+  --info: 191 91% 37%; /* #0891B2 */
+  --success: 160 84% 39%; /* #059669 */
+  --warning: 37 91% 55%; /* #D97706 */
+  --danger: 347 88% 50%; /* #E11D48 */
+
+  /* ── Neutral scale */
+  --surface: 0 0% 100%; /* #FFFFFF */
+  --background: 210 40% 98%; /* #F8FAFC */
+  --text: 222 47% 11%; /* #0F172A */
+  --muted: 215 16% 47%; /* #475569 */
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 243 75% 49%;
+
+  /* ── Foreground on coloured surfaces */
+  --brand-foreground: 0 0% 100%;
+  --accent-foreground: 0 0% 100%;
+  --danger-foreground: 0 0% 100%;
+  --success-foreground: 0 0% 100%;
+  --warning-foreground: 222 47% 11%;
+
+  /* ── Radius */
+  --radius-ctrl: 12px;
+  --radius-card: 20px;
+  --radius-hero: 28px;
+
+  /* ── Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* ── Glass */
+  --glass-fill: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-blur: 16px;
+
+  /* ── Motion */
+  --duration-100: 100ms;
+  --duration-180: 180ms;
+  --duration-280: 280ms;
+  --duration-480: 480ms;
+  --duration-800: 800ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+
+  /* ── shadcn/ui aliases (maps to our tokens) */
+  --background: var(--background);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --primary: var(--brand-600);
+  --primary-foreground: var(--brand-foreground);
+  --secondary: var(--brand-100);
+  --secondary-foreground: var(--brand-700);
+  --muted-foreground: var(--muted);
+  --destructive: var(--danger);
+  --destructive-foreground: var(--danger-foreground);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   LAYER 2: Dark theme overrides
+   ══════════════════════════════════════════════════════════════════════════════ */
+.dark {
+  --brand-600: 234 89% 74%; /* #818CF8 */
+  --accent: 259 84% 76%; /* #A78BFA */
+  --info: 187 85% 53%; /* #22D3EE */
+  --success: 159 57% 58%; /* #34D399 */
+  --warning: 45 93% 56%; /* #FBBF24 */
+  --danger: 350 87% 73%; /* #FB7185 */
+
+  --surface: 229 58% 9%; /* #0B1026 */
+  --background: 232 66% 7%; /* #070B1F */
+  --text: 213 32% 91%; /* #E2E8F0 */
+  --muted: 215 20% 65%; /* #94A3B8 */
+  --border: 228 40% 20%;
+  --input: 228 40% 20%;
+  --ring: 234 89% 74%;
+
+  --glass-fill: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.12);
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   LAYER 3: Typography fluid scale (clamp)
+   ══════════════════════════════════════════════════════════════════════════════ */
+:root {
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.8125rem);
+  --text-sm: clamp(0.875rem, 0.825rem + 0.25vw, 0.9375rem);
+  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.0625rem);
+  --text-lg: clamp(1.125rem, 1.05rem + 0.375vw, 1.25rem);
+  --text-xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --text-2xl: clamp(1.5rem, 1.3rem + 1vw, 2rem);
+  --text-3xl: clamp(1.875rem, 1.5rem + 1.875vw, 2.5rem);
+  --text-4xl: clamp(2.25rem, 1.7rem + 2.75vw, 3.25rem);
+  --text-5xl: clamp(3rem, 2rem + 5vw, 4.5rem);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   LAYER 4: Utility classes
+   ══════════════════════════════════════════════════════════════════════════════ */
+@layer utilities {
+  /* Glass effect */
+  .glass {
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+  }
+
+  /* Text gradient */
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--brand-600)), hsl(var(--accent)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Brand gradient fill */
+  .bg-gradient-brand {
+    background: linear-gradient(135deg, hsl(var(--brand-600)), hsl(var(--accent)));
+  }
+
+  /* Focus ring */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2;
+  }
+
+  /* Wiggle animation for notifications */
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+    20%,
+    60% {
+      transform: rotate(-14deg);
+    }
+    40%,
+    80% {
+      transform: rotate(14deg);
+    }
+  }
+
+  .animate-wiggle {
+    animation: wiggle 0.6s ease-in-out;
+  }
+
+  /* Indic font rules when active locale is hi or pa */
+  .font-devanagari,
+  .font-devanagari body,
+  .font-devanagari h1,
+  .font-devanagari h2,
+  .font-devanagari h3,
+  .font-devanagari h4,
+  .font-devanagari p,
+  .font-devanagari span,
+  .font-devanagari button {
+    font-family: var(--font-devanagari), var(--font-body), sans-serif !important;
+  }
+
+  .font-gurmukhi,
+  .font-gurmukhi body,
+  .font-gurmukhi h1,
+  .font-gurmukhi h2,
+  .font-gurmukhi h3,
+  .font-gurmukhi h4,
+  .font-gurmukhi p,
+  .font-gurmukhi span,
+  .font-gurmukhi button {
+    font-family: var(--font-gurmukhi), var(--font-body), sans-serif !important;
+  }
+}

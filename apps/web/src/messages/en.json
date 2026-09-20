@@ -1,0 +1,306 @@
+{
+  "navbar": {
+    "brand": "HostelHub",
+    "links": {
+      "howItWorks": "How it works",
+      "hostels": "Hostels",
+      "occupancy": "Live occupancy",
+      "faq": "FAQ"
+    },
+    "language": {
+      "current": "EN",
+      "select": "Select language",
+      "en": "English",
+      "hi": "Hindi",
+      "pa": "Punjabi"
+    },
+    "signIn": "Sign in"
+  },
+  "hero": {
+    "headline": "Find your place on campus.",
+    "supportingCopy": "Fair, explainable hostel allocation and roommate matching - reviewed by wardens, transparent to every student.",
+    "primaryCta": "Start application",
+    "secondaryCta": "Check my status",
+    "badge": "2026-2027 Academic Year Housing Open",
+    "stats": {
+      "occupancy": {
+        "title": "Live occupancy",
+        "value": "92%",
+        "detail": "1,398 / 1,520 beds allocated"
+      },
+      "matchScore": {
+        "title": "Match score",
+        "value": "98.4%",
+        "detail": "Roommate lifestyle compatibility"
+      },
+      "status": {
+        "title": "Your status",
+        "value": "Draft assigned",
+        "detail": "Block B • Room 304"
+      }
+    }
+  },
+  "occupancy": {
+    "title": "Real-time campus inventory",
+    "subtitle": "Live telemetry synchronized across all residential towers and halls.",
+    "totalBeds": "Total bed capacity",
+    "occupiedBeds": "Beds occupied",
+    "availableBeds": "Vacant beds remaining",
+    "rateLabel": "Overall occupancy",
+    "lastSynced": "Live synced just now",
+    "cta": "Explore floor plans",
+    "blocks": {
+      "blockA": "Aryabhata Hall (Block A)",
+      "blockB": "Gargi Residence (Block B)",
+      "blockC": "Ramanujan Tower (Block C)",
+      "blockD": "Kalpana Chawla Hall (Block D)"
+    }
+  },
+  "howItWorks": {
+    "title": "How it works",
+    "badge": "Algorithm & Process",
+    "subtitle": "A four-stage transparent allocation pipeline designed with student fairness at the center.",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Apply",
+        "tagline": "Complete lifestyle & room preference questionnaire",
+        "description": "Tell us your study routines, sleep chronotypes, quiet hour preferences, and select your top 5 hostel choices in order.",
+        "badge": "15 min questionnaire"
+      },
+      {
+        "number": "02",
+        "title": "Rank and match",
+        "tagline": "Explainable Gale-Shapley matching algorithm",
+        "description": "Our constraint solver pairs compatible roommates and prioritizes hostel allotments without arbitrary lottery cutoffs or bias.",
+        "badge": "Multi-agent optimization"
+      },
+      {
+        "number": "03",
+        "title": "Warden review",
+        "tagline": "Human oversight with an immutable audit log",
+        "description": "Hostel wardens and student welfare committees inspect the provisional roster, accommodating medical needs and special considerations.",
+        "badge": "Verified governance"
+      },
+      {
+        "number": "04",
+        "title": "Get your room",
+        "tagline": "Cryptographically signed allotment & digital check-in",
+        "description": "Download your tamper-proof PDF allotment letter, verify via digital signature, and scan your check-in QR code at the hostel gate.",
+        "badge": "Instant pass"
+      }
+    ]
+  },
+  "features": {
+    "title": "Engineered for fairness and transparency",
+    "badge": "System Features",
+    "subtitle": "Eliminate chaotic midnight portal crashes, nepotism, and mismatched roommates with an audited allocation engine.",
+    "cards": [
+      {
+        "id": "ranked-preferences",
+        "title": "Ranked preferences",
+        "description": "Submit multi-tiered preference lists across towers, single/double rooms, and AC provisions with strict anti-gaming protections.",
+        "tag": "Strategy-proof"
+      },
+      {
+        "id": "explainable-results",
+        "title": "Explainable results",
+        "description": "Transparent breakdown showing exactly how your score, year tier, distance criterion, and preferences determined your room.",
+        "tag": "Zero black boxes"
+      },
+      {
+        "id": "private-by-design",
+        "title": "Private by design",
+        "description": "Sleep schedules, medical notes, and personal habits are processed via zero-knowledge tokens and never exposed to other students.",
+        "tag": "Confidential"
+      },
+      {
+        "id": "verified-letters",
+        "title": "Verified letters",
+        "description": "Digital allotment certificates with cryptographic watermarks and QR codes for seamless check-in at the security desk.",
+        "tag": "Tamper-evident"
+      },
+      {
+        "id": "fair-and-audited",
+        "title": "Fair and audited",
+        "description": "Every allocation run is logged with an immutable audit trail, ensuring complete institutional accountability for wardens.",
+        "tag": "Compliance-ready"
+      },
+      {
+        "id": "works-on-your-phone",
+        "title": "Works on your phone",
+        "description": "Optimized mobile-first interface designed for low latency on campus Wi-Fi or cellular connections. No portal crashes.",
+        "tag": "Sub-second load"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "badge": "Got questions?",
+    "subtitle": "Everything you need to know about allocation criteria, timelines, and appeals.",
+    "items": [
+      {
+        "id": "eligibility",
+        "question": "Who is eligible to apply for on-campus hostel housing?",
+        "answer": "All enrolled undergraduate and postgraduate students with an active university roll number are eligible. Priority scoring takes into account your year of study, home-to-campus transit distance, and designated academic scholarship criteria."
+      },
+      {
+        "id": "privacy",
+        "question": "How is my roommate questionnaire data protected?",
+        "answer": "Your lifestyle responses (such as sleeping hours, study quietness, and dietary preferences) are strictly private. The matching engine uses mathematical compatibility vectors without revealing individual answers to prospective roommates or unauthorized staff."
+      },
+      {
+        "id": "draft",
+        "question": "What is a 'Draft allotment' and can it change?",
+        "answer": "A draft allotment is a provisional match generated after the algorithm run. During the 48-hour warden review window, provisional assignments are vetted for special medical cases or maintenance blocks before being published as final."
+      },
+      {
+        "id": "appeal",
+        "question": "How does the appeals process work if I need changes?",
+        "answer": "If you have an urgent medical condition, accessibility accommodation request, or documented conflict, you can submit an online appeal within 72 hours of provisional list publication. Wardens review all tickets with a transparent resolution timestamp."
+      }
+    ]
+  },
+  "footer": {
+    "brand": "HostelHub",
+    "tagline": "Modern, explainable hostel allocation and campus residential management.",
+    "status": "All systems operational",
+    "sections": {
+      "product": {
+        "title": "Platform",
+        "links": [
+          { "label": "How it works", "href": "#how-it-works" },
+          { "label": "Live occupancy", "href": "#live-occupancy" },
+          { "label": "Hostel towers", "href": "#hostels" },
+          { "label": "Bento features", "href": "#features" }
+        ]
+      },
+      "students": {
+        "title": "Students",
+        "links": [
+          { "label": "Application portal", "href": "/login" },
+          { "label": "Status checker", "href": "/login" },
+          { "label": "Appeals & grievance", "href": "/appeals" },
+          { "label": "Housing guidelines", "href": "/guidelines" }
+        ]
+      },
+      "administration": {
+        "title": "Wardens & Staff",
+        "links": [
+          { "label": "Warden console", "href": "/admin" },
+          { "label": "Audit log ledger", "href": "/admin/audit" },
+          { "label": "Inventory manager", "href": "/admin/inventory" },
+          { "label": "Emergency protocols", "href": "/protocols" }
+        ]
+      },
+      "legal": {
+        "title": "Governance",
+        "links": [
+          { "label": "Privacy charter", "href": "/privacy" },
+          { "label": "Terms of residence", "href": "/terms" },
+          { "label": "Security compliance", "href": "/security" }
+        ]
+      }
+    },
+    "copyright": "© 2026 HostelHub Systems. Designed for university residential campuses.",
+    "reducedMotionToggle": "Motion preferences"
+  },
+  "shell": {
+    "brand": "HostelHub",
+    "devRoleSwitcher": "DEV ROLE SWITCHER",
+    "devRoleNotice": "Dev Simulation Mode: Select role to review navigation",
+    "currentRole": "Current Role",
+    "switchRole": "Switch Role",
+    "searchPlaceholder": "Search screens, actions, themes...",
+    "openCommandPalette": "Command Palette",
+    "commandShortcut": "⌘K",
+    "notifications": "Notifications",
+    "noNotifications": "No notifications yet",
+    "markAllRead": "Mark all as read",
+    "triggerDemoNotification": "Trigger Demo",
+    "breadcrumbs": {
+      "home": "Home",
+      "dashboard": "Dashboard",
+      "staff": "Staff",
+      "portal": "Portal"
+    },
+    "sidebar": {
+      "collapse": "Collapse sidebar",
+      "expand": "Expand sidebar",
+      "signOut": "Sign out",
+      "navigation": "Navigation",
+      "system": "System"
+    },
+    "bottomBar": {
+      "home": "Home",
+      "apps": "Apply",
+      "room": "Room",
+      "roommates": "Match",
+      "more": "More"
+    },
+    "palette": {
+      "navigationGroup": "Navigation",
+      "themeGroup": "Appearance",
+      "languageGroup": "Language",
+      "roleGroup": "Dev Role Simulator",
+      "noResults": "No results found."
+    }
+  },
+  "roles": {
+    "student": "Student",
+    "warden": "Hostel Warden",
+    "chief_warden": "Chief Warden",
+    "hostel_admin": "Hostel Administrator",
+    "dean": "Dean of Student Welfare",
+    "sys_admin": "System Administrator"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "applications": "My Applications",
+    "room": "Room & Allotment",
+    "roommate": "Roommate Matching",
+    "complaints": "Complaints & Requests",
+    "payments": "Fee Payments",
+    "wardenOverview": "Warden Overview",
+    "wardenAllotments": "Allotment Approvals",
+    "wardenStudents": "Student Directory",
+    "wardenComplaints": "Hostel Tickets",
+    "wardenLeaves": "Night Out Passes",
+    "chiefOverview": "Campus Overview",
+    "chiefAllocations": "Algorithm Runs",
+    "chiefInventory": "Campus Inventory",
+    "chiefAppeals": "Special Appeals",
+    "chiefWardens": "Warden Roster",
+    "adminInventory": "Block Inventory",
+    "adminRooms": "Room Inspection",
+    "adminMaintenance": "Maintenance Log",
+    "adminCheckIn": "Gate Pass Scanner",
+    "deanOverview": "Dean Executive",
+    "deanPolicies": "Housing Policies",
+    "deanAnalytics": "Campus Analytics",
+    "deanAudits": "Audit Committee",
+    "sysHealth": "System Telemetry",
+    "sysUsers": "User Access & RBAC",
+    "sysAuditLogs": "Audit Trail Ledger",
+    "sysAlgorithm": "Allocation Rules",
+    "sysIntegrations": "API & Infrastructure"
+  },
+  "common": {
+    "loading": "Loading module...",
+    "error": "An error occurred while loading this page.",
+    "retry": "Try again",
+    "notFoundTitle": "Page Not Found",
+    "notFoundDescription": "The requested campus housing resource does not exist or has moved.",
+    "backHome": "Back to Home",
+    "backDashboard": "Go to Dashboard",
+    "placeholderTitle": "Module Ready for Implementation",
+    "placeholderDescription": "This destination is configured for {role}. Full functional workflow scheduled for the next release prompt.",
+    "emptyAction": "Simulate Workflow",
+    "themeLight": "Light Mode",
+    "themeDark": "Dark Mode",
+    "themeSystem": "System Theme",
+    "langEn": "English",
+    "langHi": "हिन्दी (Hindi)",
+    "langPa": "ਪੰਜਾਬੀ (Punjabi)"
+  }
+}
