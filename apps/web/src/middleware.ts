@@ -62,12 +62,31 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
     return NextResponse.redirect(loginUrl);
   }
 
+  function getPortalForRole(role?: string): string {
+    switch (role) {
+      case "warden":
+      case "chief_warden":
+        return "/staff/warden/review";
+      case "hostel_admin":
+        return "/staff/admin/inventory";
+      case "dean":
+        return "/staff/dean/overview";
+      case "sys_admin":
+        return "/staff/system/health";
+      case "student":
+      default:
+        return "/dashboard";
+    }
+  }
+
   // 2. If authenticated and attempting to visit /login
   if (token && isAuthPage) {
     if (token["mfaPending"]) {
       return NextResponse.redirect(new URL("/mfa/verify", req.url));
     }
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    const roles = (token["roles"] as string[]) ?? [];
+    const primaryRole = (token["activeRole"] as string) || roles[0];
+    return NextResponse.redirect(new URL(getPortalForRole(primaryRole), req.url));
   }
 
   // 3. MFA & Route Enforcements for logged in users
@@ -94,6 +113,14 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
       const isStaff = roles.some((r) => STAFF_ROLES.includes(r));
       if (!isStaff) {
         return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
+    }
+
+    // D. Auto-route staff users landing on /dashboard to their respective portal
+    if (pathname === "/dashboard") {
+      const primaryRole = (token["activeRole"] as string) || roles[0];
+      if (primaryRole && primaryRole !== "student") {
+        return NextResponse.redirect(new URL(getPortalForRole(primaryRole), req.url));
       }
     }
   }

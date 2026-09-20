@@ -26,14 +26,14 @@ export const ROLES_METADATA: Record<Role, RoleInfo> = {
     name: "Hostel Warden",
     badge: "Warden Console",
     description: "Review provisional allocations, verify medical requests, and sign off rosters",
-    portalPrefix: "/staff/warden/overview",
+    portalPrefix: "/staff/warden/review",
   },
   chief_warden: {
     id: "chief_warden",
     name: "Chief Warden",
     badge: "Chief Executive",
     description: "Manage university-wide algorithm runs, inventory quotas, and student appeals",
-    portalPrefix: "/staff/chief-warden/overview",
+    portalPrefix: "/staff/warden/review",
   },
   hostel_admin: {
     id: "hostel_admin",
@@ -83,3 +83,23 @@ export const useRoleStore = create<RoleStore>()(
     },
   ),
 );
+
+/**
+ * Returns the designated landing route for a specific user role.
+ */
+export function getPortalForRole(role?: string): string {
+  switch (role) {
+    case "warden":
+    case "chief_warden":
+      return "/staff/warden/review";
+    case "hostel_admin":
+      return "/staff/admin/inventory";
+    case "dean":
+      return "/staff/dean/overview";
+    case "sys_admin":
+      return "/staff/system/health";
+    case "student":
+    default:
+      return "/dashboard";
+  }
+}

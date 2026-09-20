@@ -6,6 +6,7 @@ import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
 import { Lock, Mail, ArrowRight, Loader2, AlertCircle, KeyRound, UserCheck } from "lucide-react";
 import { Turnstile } from "@/components/auth/turnstile";
+import { getPortalForRole } from "@/stores/role-store";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -45,10 +46,14 @@ export default function LoginPage() {
       const sessionRes = await fetch("/api/auth/session", { cache: "no-store" });
       const session = await sessionRes.json();
 
+      const userRole = session?.user?.activeRole || session?.user?.roles?.[0] || "student";
+      const targetUrl =
+        !callbackUrl || callbackUrl === "/dashboard" ? getPortalForRole(userRole) : callbackUrl;
+
       if (session?.user?.mfaPending) {
-        router.push("/mfa/verify?callbackUrl=" + encodeURIComponent(callbackUrl));
+        router.push("/mfa/verify?callbackUrl=" + encodeURIComponent(targetUrl));
       } else {
-        router.push(callbackUrl);
+        window.location.href = targetUrl;
       }
     } catch (err) {
       setError((err as Error).message ?? "Authentication failed.");

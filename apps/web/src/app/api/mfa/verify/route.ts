@@ -1,9 +1,71 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+import { getToken, encode } from "next-auth/jwt";
+import { getWebEnv } from "@hostelhub/shared/env";
 import { auth } from "@/auth";
 import { AuditService, connectDb, UserRepository } from "@hostelhub/db";
 import { decryptPayload } from "@hostelhub/shared";
 import { verifyAndConsumeBackupCode, verifyTotpToken } from "@/lib/auth/mfa";
 import { isLockedOut, recordFailedAttempt, resetFailedAttempts } from "@/lib/auth/rate-limiter";
+
+async function createVerifiedMfaResponse(
+  req: Request,
+  user: {
+    _id: unknown;
+    email: string;
+    name: string;
+    institution_id: unknown;
+    roles: readonly string[];
+    hostelAssignments?: readonly string[];
+  },
+  method: "backup_code" | "totp",
+  message: string,
+): Promise<NextResponse> {
+  const env = getWebEnv();
+  const cookieName =
+    process.env.NODE_ENV === "production"
+      ? "__Secure-hostelhub.session-token"
+      : "hostelhub.session-token";
+
+  const nextReq = new NextRequest(req.url, { headers: req.headers });
+  const rawToken = await getToken({ req: nextReq, secret: env.AUTH_SECRET, cookieName });
+
+  const updatedToken = {
+    ...(rawToken ?? {}),
+    id: user._id ? String(user._id) : "",
+    email: user.email,
+    name: user.name,
+    institution_id: user.institution_id ? String(user.institution_id) : "",
+    roles: Array.from(user.roles),
+    hostelAssignments: Array.from(user.hostelAssignments ?? []),
+    mfaEnabled: true,
+    mfaPending: false,
+    activeRole: user.roles[0],
+  };
+
+  const newSessionToken = await encode({
+    token: updatedToken,
+    secret: env.AUTH_SECRET,
+    salt: cookieName,
+  });
+
+  const response = NextResponse.json({
+    success: true,
+    method,
+    message,
+  });
+
+  response.cookies.set({
+    name: cookieName,
+    value: newSessionToken,
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 8 * 60 * 60,
+  });
+
+  return response;
+}
 
 export async function POST(req: Request): Promise<NextResponse> {
   const session = await auth();
@@ -152,11 +214,12 @@ export async function POST(req: Request): Promise<NextResponse> {
       target: { method: "backup_code" },
     });
 
-    return NextResponse.json({
-      success: true,
-      method: "backup_code",
-      message: "Verified with single-use backup code.",
-    });
+    return await createVerifiedMfaResponse(
+      req,
+      user,
+      "backup_code",
+      "Verified with single-use backup code.",
+    );
   }
 
   // B. Verify TOTP Token
@@ -205,11 +268,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       target: { method: "totp" },
     });
 
-    return NextResponse.json({
-      success: true,
-      method: "totp",
-      message: "MFA verified successfully.",
-    });
+    return await createVerifiedMfaResponse(req, user, "totp", "MFA verified successfully.");
   }
 
   return NextResponse.json({ error: "Verification code is required." }, { status: 400 });

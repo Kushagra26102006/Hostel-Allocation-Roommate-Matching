@@ -21,12 +21,22 @@ import {
 import { GlassCard } from "@/components/glass-card";
 import { StatusChip } from "@/components/status-chip";
 
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { getPortalForRole } from "@/stores/role-store";
+
 export const metadata: Metadata = {
   title: "Student Housing Dashboard — HostelHub",
   description: "View room allotment status, roommate match, announcements, and quick actions.",
 };
 
-export default function StudentDashboardPage() {
+export default async function StudentDashboardPage() {
+  const session = await auth();
+  const primaryRole = session?.user?.activeRole || session?.user?.roles?.[0];
+  if (primaryRole && primaryRole !== "student") {
+    redirect(getPortalForRole(primaryRole));
+  }
+
   const student = {
     name: "Aarav Sharma",
     rollNo: "22BCS042",

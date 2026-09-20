@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { ShieldCheck, KeyRound, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { getPortalForRole } from "@/stores/role-store";
 
 export default function MfaVerifyPage() {
   const searchParams = useSearchParams();
@@ -42,7 +43,13 @@ export default function MfaVerifyPage() {
         mfaPending: false,
       });
 
-      window.location.href = callbackUrl;
+      const sessionRes = await fetch("/api/auth/session", { cache: "no-store" });
+      const session = await sessionRes.json();
+      const userRole = session?.user?.activeRole || session?.user?.roles?.[0] || "student";
+      const targetUrl =
+        !callbackUrl || callbackUrl === "/dashboard" ? getPortalForRole(userRole) : callbackUrl;
+
+      window.location.href = targetUrl;
     } catch (err) {
       setError((err as Error).message);
       setLoading(false);
