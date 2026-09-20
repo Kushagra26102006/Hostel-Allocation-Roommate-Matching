@@ -93,6 +93,14 @@ export function validateMagicBytes(
     };
   }
 
+  if (declaredMimeType && matchedPattern.mime !== declaredMimeType) {
+    return {
+      valid: false,
+      detectedMime: matchedPattern.mime,
+      reason: `Declared MIME type '${declaredMimeType}' does not match detected format '${matchedPattern.mime}'`,
+    };
+  }
+
   return {
     valid: true,
     detectedMime: matchedPattern.mime,

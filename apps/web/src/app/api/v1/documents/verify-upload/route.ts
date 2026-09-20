@@ -1,18 +1,28 @@
 import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler.js";
-import { ApplicationDocumentRepository } from "@hostelhub/db";
+import { ApplicationDocumentRepository, ApplicationRepository } from "@hostelhub/db";
 import { validateMagicBytes } from "@/lib/storage/magic-bytes";
 import { malwareScanner } from "@/lib/services/scan-port";
 import { ApiProblemError } from "@/lib/api/errors.js";
+import { getS3Client } from "@/lib/minio.js";
+import { HeadObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+
+const DOCUMENT_TYPES = [
+  "income_certificate",
+  "caste_certificate",
+  "disability_certificate",
+  "id_proof",
+  "conduct_certificate",
+  "other",
+] as const;
 
 const verifyUploadSchema = z.object({
   application_id: z.string().min(1),
-  type: z.string().min(1),
+  type: z.enum(DOCUMENT_TYPES),
   storage_key: z.string().min(1),
   original_name: z.string().min(1),
   mime_type: z.string().min(1),
-  size_bytes: z.number().min(1),
-  file_base64: z.string().optional(), // base64 string or header sample for magic byte check
+  file_base64: z.string().optional(),
 });
 
 export const POST = apiHandler(
@@ -31,39 +41,83 @@ export const POST = apiHandler(
       });
     }
 
-    // Prepare buffer to test magic bytes
+    // 1. Verify storage_key tenant/user path isolation
+    const expectedPrefix = `tenants/${institution_id}/students/${user.id}/`;
+    if (!body.storage_key.startsWith(expectedPrefix)) {
+      throw new ApiProblemError({
+        title: "Invalid Storage Key",
+        status: 403,
+        detail: "Storage key does not match current user tenant path",
+        code: "FORBIDDEN",
+      });
+    }
+
+    // 2. Verify application exists, belongs to user & tenant
+    const appRepo = new ApplicationRepository(institution_id);
+    const app = await appRepo.findById(body.application_id);
+    if (!app || String(app.student_id) !== String(user.id)) {
+      throw new ApiProblemError({
+        title: "Application Not Found",
+        status: 404,
+        detail: "Application not found or does not belong to user",
+        code: "NOT_FOUND",
+      });
+    }
+
+    // 3. Fetch S3 HeadObject for actual size_bytes & GetObject stream
+    const s3 = getS3Client();
+    const bucket = process.env["S3_BUCKET"] ?? "hostelhub";
+    let sizeBytes = 0;
     let buffer: Buffer;
-    if (body.file_base64) {
-      buffer = Buffer.from(body.file_base64, "base64");
-    } else {
-      // Mock minimal buffer matching mime for presigned flow when file_base64 is omitted in testing
-      if (body.mime_type === "application/pdf" || body.original_name.endsWith(".pdf")) {
-        buffer = Buffer.from("%PDF-1.4 mock content");
-      } else if (body.mime_type === "image/png" || body.original_name.endsWith(".png")) {
-        buffer = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]);
-      } else if (body.mime_type === "image/jpeg" || body.original_name.endsWith(".jpg") || body.original_name.endsWith(".jpeg")) {
-        buffer = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00]);
+
+    try {
+      const headRes = await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: body.storage_key }));
+      sizeBytes = headRes.ContentLength ?? 0;
+
+      const getRes = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: body.storage_key }));
+      if (!getRes.Body) {
+        throw new Error("Empty body from S3 GetObject");
+      }
+      const byteArray = await getRes.Body.transformToByteArray();
+      buffer = Buffer.from(byteArray);
+    } catch (err: any) {
+      if (process.env.NODE_ENV !== "production" && (body as any).file_base64) {
+        buffer = Buffer.from((body as any).file_base64, "base64");
+        sizeBytes = buffer.length;
       } else {
-        buffer = Buffer.from("plain text non matching content");
+        throw new ApiProblemError({
+          title: "Storage Error",
+          status: 400,
+          detail: `Failed to fetch uploaded file from storage: ${err.message}`,
+          code: "BAD_REQUEST",
+        });
       }
     }
 
-    // 1. Magic byte & extension validation
+    // 4. Magic byte validation
     const magicResult = validateMagicBytes(buffer, body.original_name, body.mime_type);
     if (!magicResult.valid) {
       throw new ApiProblemError({
         title: "Invalid File Magic Bytes",
         status: 400,
         detail: magicResult.reason ?? "Server-side file magic-byte validation failed.",
-        code: "BAD_REQUEST" as any,
+        code: "BAD_REQUEST",
       });
     }
 
-    // 2. Malware scan adapter (ScanPort)
-    const scanResult = await malwareScanner.scanBuffer(buffer, body.original_name);
-    const initialStatus = scanResult.clean ? "clean" : "quarantined";
+    // 5. Malware scan
+    let initialStatus: "clean" | "quarantined" = "clean";
+    try {
+      const scanResult = await malwareScanner.scanBuffer(buffer, body.original_name);
+      initialStatus = scanResult.clean ? "clean" : "quarantined";
+    } catch (scanErr) {
+      if (process.env.NODE_ENV === "production") {
+        throw scanErr;
+      }
+      initialStatus = "clean";
+    }
 
-    // 3. Save to database
+    // 6. Save to database
     const docRepo = new ApplicationDocumentRepository(institution_id);
     const doc = await docRepo.create({
       application_id: body.application_id as any,
@@ -72,7 +126,7 @@ export const POST = apiHandler(
       storage_key: body.storage_key,
       original_name: body.original_name,
       mime_type: magicResult.detectedMime ?? body.mime_type,
-      size_bytes: body.size_bytes,
+      size_bytes: sizeBytes,
       status: initialStatus,
     });
 

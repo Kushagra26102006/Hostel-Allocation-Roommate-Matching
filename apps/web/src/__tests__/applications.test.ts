@@ -194,6 +194,11 @@ describe("Module M2: Application and Cycle Management", () => {
         },
       } as never);
 
+      vi.spyOn(ApplicationRepository.prototype, "findById").mockResolvedValue({
+        _id: new Types.ObjectId(appId),
+        student_id: new Types.ObjectId(studentAId),
+      } as never);
+
       const fakeBase64 = Buffer.from("Not a real png file").toString("base64");
 
       const req = new Request("http://localhost:3000/api/v1/documents/verify-upload", {
@@ -202,7 +207,7 @@ describe("Module M2: Application and Cycle Management", () => {
         body: JSON.stringify({
           application_id: appId,
           type: "id_proof",
-          storage_key: "docs/fake.png",
+          storage_key: `tenants/${tenantA}/students/${studentAId}/fake.png`,
           original_name: "fake.png",
           mime_type: "image/png",
           size_bytes: 500,

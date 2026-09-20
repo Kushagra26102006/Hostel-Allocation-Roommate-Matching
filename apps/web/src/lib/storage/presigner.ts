@@ -16,6 +16,7 @@ export async function getPresignedPutUrl(
   mimeType: string,
   institutionId: string,
   studentId: string,
+  sizeBytes?: number,
 ): Promise<PresignedPutResult> {
   const client = getS3Client();
   const bucket = process.env["S3_BUCKET"] ?? "hostelhub";
@@ -27,6 +28,7 @@ export async function getPresignedPutUrl(
     Bucket: bucket,
     Key: storageKey,
     ContentType: mimeType,
+    ...(sizeBytes ? { ContentLength: sizeBytes } : {}),
   });
 
   const expiresInSeconds = 900; // 15 minutes

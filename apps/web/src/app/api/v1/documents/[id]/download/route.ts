@@ -1,8 +1,14 @@
 import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler.js";
-import { ApplicationDocumentRepository, EntityNotFoundError } from "@hostelhub/db";
+import {
+  ApplicationDocumentRepository,
+  ApplicationRepository,
+  AuditService,
+  EntityNotFoundError,
+} from "@hostelhub/db";
 import { getPresignedGetUrl } from "@/lib/storage/presigner";
-import { ForbiddenError } from "@/lib/auth/policy";
+import { ForbiddenError, canAccessApplication } from "@/lib/auth/policy";
+import { ApiProblemError } from "@/lib/api/errors.js";
 
 const paramsSchema = z.object({
   id: z.string(),
@@ -21,13 +27,53 @@ export const GET = apiHandler(
       throw new EntityNotFoundError(params.id, "ApplicationDocument");
     }
 
-    // Object-level isolation: student can only download their own document; staff can download any
-    const isStaff = user?.roles.some((r) => ["hostel_admin", "warden", "sys_admin"].includes(r));
-    if (!isStaff && String(doc.student_id) !== String(user?.id)) {
+    // Refuse quarantined or pending_scan documents
+    if (doc.status === "quarantined" || doc.status === "pending_scan") {
+      throw new ApiProblemError({
+        title: "Document Access Denied",
+        status: 403,
+        detail: `Cannot download document with status '${doc.status}'. Document must be clean or verified.`,
+        code: "FORBIDDEN",
+      });
+    }
+
+    // Auth check: student can download their own document; staff can download if authorized via policy
+    const isOwner = user && String(doc.student_id) === String(user.id);
+    let isAuthorized = isOwner;
+
+    if (!isAuthorized && user) {
+      const appRepo = new ApplicationRepository(institution_id);
+      const app = await appRepo.findById(String(doc.application_id));
+      if (app && canAccessApplication(user as any, app as any)) {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
       throw new ForbiddenError("You are not authorized to access this document.");
     }
 
     const presignedUrl = await getPresignedGetUrl(doc.storage_key, 900);
+
+    // Audit record for access
+    await AuditService.append({
+      institution_id,
+      actor: {
+        userId: user?.id ?? "anonymous",
+        email: user?.email ?? "unknown@campus.edu",
+        role: user?.roles[0] ?? "student",
+      },
+      action: "document:download",
+      target: {
+        type: "ApplicationDocument",
+        id: params.id,
+      },
+      before: {},
+      after: {
+        document_id: doc._id,
+        storage_key: doc.storage_key,
+      },
+    });
 
     return {
       document_id: doc._id,
