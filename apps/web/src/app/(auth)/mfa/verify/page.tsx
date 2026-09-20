@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { ShieldCheck, KeyRound, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 
 export default function MfaVerifyPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
   const { update } = useSession();
@@ -37,10 +36,13 @@ export default function MfaVerifyPage() {
       }
 
       // Refresh NextAuth JWT session to clear mfaPending
-      await update({ mfaPending: false });
+      await update({
+        clearMfaPending: true,
+        verifiedViaServer: true,
+        mfaPending: false,
+      });
 
-      router.push(callbackUrl);
-      router.refresh();
+      window.location.href = callbackUrl;
     } catch (err) {
       setError((err as Error).message);
       setLoading(false);
