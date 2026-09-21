@@ -13,6 +13,7 @@ const config = [
       "**/build/**",
       "**/storybook-static/**",
       "**/.storybook/**",
+      "**/coverage/**",
       "**/*.d.ts",
     ],
   },

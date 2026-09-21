@@ -15,6 +15,10 @@ import { setupAppealEscalationWorker } from "./appeal-escalation-processor.js";
 import { setupReportWorker } from "./report-processor.js";
 import { setupSimulationWorker } from "./simulator-processor.js";
 import { setupAuditVerifierWorker } from "./audit-verifier-processor.js";
+import { initWorkerSentry } from "./sentry.js";
+
+// Initialize Sentry for background worker
+initWorkerSentry();
 
 // ── 1. Validate environment (fail fast) ───────────────────────────────────────
 const env = parseEnv(workerEnvSchema, process.env);

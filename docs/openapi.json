@@ -1,0 +1,259 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HostelHub Campus Allocation API",
+    "version": "1.0.0",
+    "description": "University residential allocation, Gale-Shapley matching, explainability, and cryptographic audit ledger.",
+    "contact": {
+      "name": "HostelHub Core Team",
+      "email": "support@hostelhub.campus.edu"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Current environment"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "SessionAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "hostelhub.session-token",
+        "description": "NextAuth JWT session token stored in httpOnly secure cookie."
+      }
+    },
+    "schemas": {
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://hostelhub.campus.edu/probs/validation-failed"
+          },
+          "title": {
+            "type": "string",
+            "example": "Validation Failed"
+          },
+          "status": {
+            "type": "integer",
+            "example": 422
+          },
+          "detail": {
+            "type": "string",
+            "example": "One or more input fields failed schema validation."
+          },
+          "instance": {
+            "type": "string",
+            "example": "/api/v1/applications"
+          },
+          "code": {
+            "type": "string",
+            "example": "VALIDATION_FAILED"
+          },
+          "requestId": {
+            "type": "string",
+            "example": "req_9f8d7c6b5a"
+          },
+          "invalidParams": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": ["name", "reason"]
+            }
+          }
+        },
+        "required": ["type", "title", "status", "detail", "instance", "code", "requestId"]
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["ok"]
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["status", "ts"]
+      },
+      "ReadyResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["ok", "degraded"]
+          },
+          "deps": {
+            "type": "object",
+            "properties": {
+              "mongo": {
+                "type": "string"
+              },
+              "redis": {
+                "type": "string"
+              },
+              "minio": {
+                "type": "string"
+              }
+            },
+            "required": ["mongo", "redis", "minio"]
+          }
+        },
+        "required": ["status", "deps"]
+      },
+      "MeResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "name": {
+                "type": "string"
+              },
+              "institution_id": {
+                "type": "string"
+              },
+              "roles": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "hostelAssignments": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "mfaEnabled": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "email",
+              "name",
+              "institution_id",
+              "roles",
+              "hostelAssignments",
+              "mfaEnabled"
+            ]
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "activeRole": {
+            "type": "string"
+          }
+        },
+        "required": ["user", "capabilities", "activeRole"]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "summary": "Liveness Probe",
+        "description": "Always returns 200 if the web process is running.",
+        "responses": {
+          "200": {
+            "description": "Service is healthy and responding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ready": {
+      "get": {
+        "summary": "Readiness Probe",
+        "description": "Checks MongoDB, Redis, and MinIO connectivity.",
+        "responses": {
+          "200": {
+            "description": "All downstream dependencies are ready.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadyResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "One or more downstream dependencies are degraded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadyResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "summary": "Current Authenticated User Profile",
+        "description": "Returns the authenticated user context, granted roles, capabilities, and institution ID.",
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current user context retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}
