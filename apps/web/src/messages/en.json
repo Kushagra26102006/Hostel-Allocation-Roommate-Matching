@@ -169,36 +169,81 @@
       "product": {
         "title": "Platform",
         "links": [
-          { "label": "How it works", "href": "#how-it-works" },
-          { "label": "Live occupancy", "href": "#live-occupancy" },
-          { "label": "Hostel towers", "href": "#hostels" },
-          { "label": "Bento features", "href": "#features" }
+          {
+            "label": "How it works",
+            "href": "#how-it-works"
+          },
+          {
+            "label": "Live occupancy",
+            "href": "#live-occupancy"
+          },
+          {
+            "label": "Hostel towers",
+            "href": "#hostels"
+          },
+          {
+            "label": "Bento features",
+            "href": "#features"
+          }
         ]
       },
       "students": {
         "title": "Students",
         "links": [
-          { "label": "Application portal", "href": "/login" },
-          { "label": "Status checker", "href": "/login" },
-          { "label": "Appeals & grievance", "href": "/appeals" },
-          { "label": "Housing guidelines", "href": "/guidelines" }
+          {
+            "label": "Application portal",
+            "href": "/login"
+          },
+          {
+            "label": "Status checker",
+            "href": "/login"
+          },
+          {
+            "label": "Appeals & grievance",
+            "href": "/appeals"
+          },
+          {
+            "label": "Housing guidelines",
+            "href": "/guidelines"
+          }
         ]
       },
       "administration": {
         "title": "Wardens & Staff",
         "links": [
-          { "label": "Warden console", "href": "/admin" },
-          { "label": "Audit log ledger", "href": "/admin/audit" },
-          { "label": "Inventory manager", "href": "/admin/inventory" },
-          { "label": "Emergency protocols", "href": "/protocols" }
+          {
+            "label": "Warden console",
+            "href": "/admin"
+          },
+          {
+            "label": "Audit log ledger",
+            "href": "/admin/audit"
+          },
+          {
+            "label": "Inventory manager",
+            "href": "/admin/inventory"
+          },
+          {
+            "label": "Emergency protocols",
+            "href": "/protocols"
+          }
         ]
       },
       "legal": {
         "title": "Governance",
         "links": [
-          { "label": "Privacy charter", "href": "/privacy" },
-          { "label": "Terms of residence", "href": "/terms" },
-          { "label": "Security compliance", "href": "/security" }
+          {
+            "label": "Privacy charter",
+            "href": "/privacy"
+          },
+          {
+            "label": "Terms of residence",
+            "href": "/terms"
+          },
+          {
+            "label": "Security compliance",
+            "href": "/security"
+          }
         ]
       }
     },
@@ -302,5 +347,124 @@
     "langEn": "English",
     "langHi": "हिन्दी (Hindi)",
     "langPa": "ਪੰਜਾਬੀ (Punjabi)"
+  },
+  "application": {
+    "title": "Hostel Seat Application",
+    "subtitle": "Multi-step hostel application form with autosave and document verification.",
+    "refPrefix": "Ref",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "autosaveConflict": "Autosave conflict",
+    "steps": {
+      "profile": "Profile",
+      "documents": "Documents",
+      "preferences": "Preferences",
+      "questionnaire": "Questionnaire",
+      "review": "Review & Submit"
+    },
+    "profile": {
+      "title": "Student Profile & Address",
+      "fullName": "Full Name",
+      "email": "Institutional Email",
+      "phone": "Phone Number",
+      "pincode": "PIN Code",
+      "city": "City",
+      "state": "State",
+      "address": "Residential Address"
+    },
+    "preferences": {
+      "title": "Room & Living Preferences",
+      "roomType": "Room Type Preference",
+      "single": "Single Occupancy",
+      "double": "Double Sharing",
+      "triple": "Triple Sharing",
+      "ac": "Air Conditioning",
+      "acOption": "AC Room",
+      "nonAcOption": "Non-AC Room",
+      "floor": "Floor Preference",
+      "ground": "Ground Floor",
+      "lower": "Lower Floors (1-3)",
+      "upper": "Upper Floors (4+)"
+    },
+    "questionnaire": {
+      "title": "Lifestyle & Priority Questionnaire",
+      "priorityTier": "Priority Category",
+      "pwd": "PwD Accommodation",
+      "singleParent": "Single Parent Ward",
+      "merit": "Academic Merit",
+      "general": "General Pool",
+      "dietary": "Dietary Preference",
+      "veg": "Vegetarian",
+      "nonVeg": "Non-Vegetarian",
+      "vegan": "Vegan",
+      "studyHabits": "Study Habits",
+      "earlyBird": "Early Bird (Morning)",
+      "nightOwl": "Night Owl (Late Night)"
+    },
+    "documents": {
+      "title": "Supporting Documents Verification",
+      "uploadInstructions": "Upload PDF or PNG files up to 5MB. Files are verified for authenticity before submission."
+    },
+    "review": {
+      "title": "Review Your Application",
+      "summaryText": "Please verify your details carefully. You can edit your draft anytime before final submission."
+    },
+    "submission": {
+      "title": "Application Submitted!",
+      "subtitle": "Your application has been received and logged in the system.",
+      "refNumber": "Reference Number",
+      "submittedAt": "Submitted At",
+      "status": "Status",
+      "note": "Keep note of your reference number to track your allocation status."
+    },
+    "offline": {
+      "bannerOffline": "Offline — your changes will sync",
+      "bannerOfflineDetail": "All your application edits are saved locally in IndexedDB and will automatically submit when online.",
+      "bannerSyncing": "Connection restored — syncing your changes...",
+      "bannerSynced": "Changes synced with server",
+      "syncNow": "Sync Now"
+    },
+    "conflict": {
+      "title": "Application Draft Conflict Detected",
+      "description": "Another session or device updated your application on the campus server while you made changes offline. Please choose which version you would like to keep.",
+      "offlineEdits": "Your Offline Edits",
+      "serverVersion": "Server Version",
+      "keepOffline": "Keep My Offline Edits (Overwrite Server)",
+      "useServer": "Discard Offline & Use Server"
+    }
+  },
+  "roommate": {
+    "title": "Roommate Matching & Lifestyle Preferences",
+    "subtitle": "Find compatible roommates based on study habits, quiet hours, and lifestyle choices.",
+    "matchScore": "Lifestyle Match Score",
+    "requests": "Roommate Requests",
+    "sendRequest": "Send Request",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
+  "complaints": {
+    "title": "Hostel Complaints & Service Requests",
+    "subtitle": "Lodge and track maintenance, electrical, plumbing, or cleanliness issues.",
+    "submitTicket": "Log New Issue",
+    "category": "Category",
+    "priority": "Priority",
+    "roomNumber": "Room Number",
+    "status": "Status"
+  },
+  "payments": {
+    "title": "Hostel Fee Payments & Invoices",
+    "subtitle": "Review room charges, mess fees, and transaction receipts.",
+    "payNow": "Pay Dues",
+    "transactionId": "Transaction Reference",
+    "receipt": "Download Receipt"
+  },
+  "pwa": {
+    "installTitle": "Install HostelHub",
+    "installDesc": "Install the app for instant access, offline application drafts, and real-time allotment alerts.",
+    "installButton": "Install App",
+    "notNow": "Not Now",
+    "offlineTitle": "You are currently offline",
+    "offlineDesc": "HostelHub has stored your application drafts locally on this device. Any unsaved changes will automatically synchronize once your internet connection is restored.",
+    "retry": "Retry Connection"
   }
 }

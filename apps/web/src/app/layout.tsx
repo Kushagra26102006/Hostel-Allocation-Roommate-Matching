@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Inter,
   Plus_Jakarta_Sans,
@@ -84,7 +84,26 @@ export const metadata: Metadata = {
     description:
       "Fair, explainable hostel allocation and roommate matching — reviewed by wardens, transparent to every student.",
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "HostelHub",
+  },
+  icons: {
+    icon: "/icons/icon-192x192.png",
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
+
+export const viewport: Viewport = {
+  themeColor: "#4f46e5",
+  width: "device-width",
+  initialScale: 1,
+};
+
+import { PwaRegister } from "@/components/pwa/pwa-register";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 
 // ── Root layout ───────────────────────────────────────────────────────────────
 export default function RootLayout({
@@ -108,6 +127,8 @@ export default function RootLayout({
           <SessionProvider>
             <QueryProvider>
               {children}
+              <PwaRegister />
+              <InstallPrompt />
               <Toaster richColors position="bottom-right" />
             </QueryProvider>
           </SessionProvider>

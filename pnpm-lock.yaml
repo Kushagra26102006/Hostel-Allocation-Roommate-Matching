@@ -157,6 +157,9 @@ importers:
       framer-motion:
         specifier: ^13.4.0
         version: 13.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      idb:
+        specifier: ^8.0.3
+        version: 8.0.3
       ioredis:
         specifier: ^5.4.1
         version: 5.11.1
@@ -7620,6 +7623,12 @@ packages:
     resolution:
       {
         integrity: sha512-5RQ5fP5inR+VZRTR4KwYBzy217ua4E9lxBT+zFHZcJv0dTOtRs9xXECSIWMQHAfmd0Hq2RXSSP2Gmyw/oQQY6A==,
+      }
+
+  idb@8.0.3:
+    resolution:
+      {
+        integrity: sha512-LtwtVyVYO5BqRvcsKuB2iUMnHwPVByPCXFXOpuU96IZPPoPN6xjOGxZQ74pgSVVLQWtUOYgyeL4GE98BY5D3wg==,
       }
 
   ieee754@1.2.1:
@@ -16148,6 +16157,8 @@ snapshots:
   icu-minify@4.14.5:
     dependencies:
       "@formatjs/icu-messageformat-parser": 3.5.20
+
+  idb@8.0.3: {}
 
   ieee754@1.2.1: {}
 

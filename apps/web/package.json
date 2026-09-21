@@ -51,6 +51,7 @@
     "cmdk": "^1.1.1",
     "exceljs": "^4.4.0",
     "framer-motion": "^13.4.0",
+    "idb": "^8.0.3",
     "ioredis": "^5.4.1",
     "lucide-react": "^1.47.0",
     "mongoose": "^8.6.3",

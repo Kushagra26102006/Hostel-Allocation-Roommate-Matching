@@ -9,6 +9,13 @@ import {
   type NotificationEventType,
   type NotificationChannel,
 } from "@hostelhub/domain";
+import { toast } from "sonner";
+import {
+  getPushSubscriptionStatus,
+  subscribeToPushNotifications,
+  unsubscribeFromPushNotifications,
+  type PushStatus,
+} from "@/lib/notifications/push-subscription";
 
 const EVENT_LABELS: Record<NotificationEventType, { title: string; desc: string }> = {
   "application.submitted": {
@@ -73,6 +80,14 @@ export default function NotificationPreferencesPage() {
   const [isSaving, setIsSaving] = React.useState(false);
   const [savedSuccess, setSavedSuccess] = React.useState(false);
 
+  // Web Push Subscription State
+  const [pushStatus, setPushStatus] = React.useState<PushStatus>({
+    supported: false,
+    permission: "unsupported",
+    isSubscribed: false,
+  });
+  const [isSubscribingPush, setIsSubscribingPush] = React.useState(false);
+
   React.useEffect(() => {
     fetch("/api/v1/notifications/preferences")
       .then((res) => res.json())
@@ -82,9 +97,37 @@ export default function NotificationPreferencesPage() {
         if (typeof data.dailyDigest === "boolean") setDailyDigest(data.dailyDigest);
       })
       .catch(() => {});
+
+    void getPushSubscriptionStatus().then(setPushStatus);
   }, []);
 
+  const handleTogglePushSubscription = async () => {
+    setIsSubscribingPush(true);
+    try {
+      if (pushStatus.isSubscribed) {
+        const success = await unsubscribeFromPushNotifications();
+        if (success) {
+          toast.success("Push notifications disabled on this device");
+          setPushStatus((prev) => ({ ...prev, isSubscribed: false }));
+        }
+      } else {
+        const result = await subscribeToPushNotifications();
+        if (result.success) {
+          toast.success("Web Push enabled! You will receive live allotment updates.");
+          setPushStatus((prev) => ({ ...prev, isSubscribed: true, permission: "granted" }));
+        } else {
+          toast.error(result.error || "Failed to enable Web Push.");
+        }
+      }
+    } finally {
+      setIsSubscribingPush(false);
+    }
+  };
+
   const handleToggleChannel = (eventType: NotificationEventType, channel: NotificationChannel) => {
+    if (channel === "push" && !pushStatus.isSubscribed && pushStatus.supported) {
+      void handleTogglePushSubscription();
+    }
     setChannels((prev) => {
       const currentList = prev[eventType] ?? [...DEFAULT_NOTIFICATION_MATRIX[eventType].channels];
       const nextList = currentList.includes(channel)
@@ -210,6 +253,58 @@ export default function NotificationPreferencesPage() {
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Web Push Registration Card */}
+      <div className="bg-surface rounded-card border border-border p-6 shadow-sm mt-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-brand-500/10 text-brand-600 dark:text-brand-400">
+              <Smartphone className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-text">Web Push Device Registration</h3>
+                {pushStatus.isSubscribed ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    <Check className="h-3 w-3" /> Active on This Device
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-muted/20 px-2.5 py-0.5 text-[11px] font-medium text-muted">
+                    Not Registered
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-muted mt-0.5 leading-relaxed max-w-xl">
+                Receive instant OS notifications for allocation reveals, dual-authorization
+                sign-offs, and critical review windows even when the browser is closed.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            id="toggle-web-push-btn"
+            onClick={handleTogglePushSubscription}
+            disabled={!pushStatus.supported || isSubscribingPush}
+            className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-btn text-xs font-bold transition-all shadow-sm ${
+              pushStatus.isSubscribed
+                ? "border border-border bg-background text-text hover:bg-muted/20"
+                : "bg-brand-600 text-white hover:bg-brand-700"
+            } disabled:opacity-50`}
+          >
+            {isSubscribingPush ? (
+              <span>Connecting...</span>
+            ) : pushStatus.isSubscribed ? (
+              <span>Disable on This Device</span>
+            ) : (
+              <>
+                <Smartphone className="h-4 w-4" />
+                <span>Enable Web Push</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 

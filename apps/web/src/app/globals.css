@@ -46,6 +46,42 @@
     font-family: var(--font-mono), ui-monospace, monospace;
   }
 
+  /* Devanagari & Gurmukhi Font Subsets */
+  html.font-devanagari,
+  html.font-devanagari body,
+  html.font-devanagari h1,
+  html.font-devanagari h2,
+  html.font-devanagari h3,
+  html.font-devanagari h4,
+  html.font-devanagari h5,
+  html.font-devanagari h6,
+  html.font-devanagari button,
+  html.font-devanagari input {
+    font-family: var(--font-devanagari), var(--font-body), sans-serif;
+    line-height: 1.6;
+  }
+
+  html.font-gurmukhi,
+  html.font-gurmukhi body,
+  html.font-gurmukhi h1,
+  html.font-gurmukhi h2,
+  html.font-gurmukhi h3,
+  html.font-gurmukhi h4,
+  html.font-gurmukhi h5,
+  html.font-gurmukhi h6,
+  html.font-gurmukhi button,
+  html.font-gurmukhi input {
+    font-family: var(--font-gurmukhi), var(--font-body), sans-serif;
+    line-height: 1.6;
+  }
+
+  /* Internationalization flexible layout rules to prevent text clipping */
+  .i18n-resilient {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
   /* Reduced-motion override — applied system-wide */
   @media (prefers-reduced-motion: reduce) {
     *,

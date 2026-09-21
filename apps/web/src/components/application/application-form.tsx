@@ -26,6 +26,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { OfflineSyncBanner } from "@/components/application/offline-sync-banner";
+import { ConflictResolutionDialog } from "@/components/application/conflict-resolution-dialog";
+import {
+  saveOfflineDraft,
+  getOfflineDraft,
+  markDraftSynced,
+  markDraftConflict,
+} from "@/lib/storage/offline-draft-db";
 
 const profileSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
@@ -108,10 +116,25 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [shakeStep, setShakeStep] = useState(false);
 
+  // Offline & Synchronization State
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== "undefined" ? navigator.onLine : true,
+  );
+  const [syncStatus, setSyncStatus] = useState<"synced" | "pending_sync" | "syncing" | "conflict">(
+    "synced",
+  );
+  const [conflictModalOpen, setConflictModalOpen] = useState(false);
+  const [conflictServerVersion, setConflictServerVersion] = useState(1);
+  const [conflictServerData, setConflictServerData] = useState<Partial<ApplicationFormData> | null>(
+    null,
+  );
+  const [lastSavedTime, setLastSavedTime] = useState<string>("");
+
   const {
     register,
     control,
     setValue,
+    reset,
     watch,
     formState: { errors, touchedFields },
   } = useForm<ApplicationFormData>({
@@ -142,9 +165,48 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
 
   const formValues = watch();
 
-  // Create initial draft if none exists
+  // 1. Initial Load: Check IndexedDB offline draft
   useEffect(() => {
-    if (!applicationId && cycleId) {
+    async function loadCachedDraft() {
+      if (!cycleId) return;
+      const cached = await getOfflineDraft(cycleId);
+      if (cached?.formData) {
+        if (
+          !initialApplication?.form_data ||
+          !navigator.onLine ||
+          cached.updatedAt > Date.now() - 3600000
+        ) {
+          reset(cached.formData);
+          if (cached.version) setVersion(cached.version);
+          if (cached.applicationId) setApplicationId(cached.applicationId);
+          if (cached.referenceNumber) setReferenceNumber(cached.referenceNumber);
+          if (cached.syncStatus === "pending_sync") {
+            setSyncStatus("pending_sync");
+          }
+        }
+      }
+    }
+    void loadCachedDraft();
+  }, [cycleId, initialApplication, reset]);
+
+  // 2. Persist to IndexedDB on every edit
+  useEffect(() => {
+    if (cycleId) {
+      void saveOfflineDraft({
+        cycleId,
+        applicationId,
+        referenceNumber,
+        formData: formValues,
+        version,
+        updatedAt: Date.now(),
+        syncStatus: !isOnline ? "pending_sync" : syncStatus,
+      });
+    }
+  }, [formValues, cycleId, applicationId, referenceNumber, version, isOnline, syncStatus]);
+
+  // 3. Create initial draft if none exists and online
+  useEffect(() => {
+    if (!applicationId && cycleId && isOnline) {
       void fetch("/api/v1/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -160,12 +222,12 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
         })
         .catch(() => {});
     }
-  }, [cycleId, applicationId]);
+  }, [cycleId, applicationId, isOnline]);
 
-  // PIN code auto-fill trigger
+  // 4. PIN code auto-fill trigger
   const pincodeVal = watch("profile.pincode");
   useEffect(() => {
-    if (pincodeVal && pincodeVal.length === 6) {
+    if (pincodeVal && pincodeVal.length === 6 && isOnline) {
       setPincodeLoading(true);
       fetch(`/api/v1/location/pincode/${pincodeVal}`)
         .then((res) => res.json())
@@ -176,14 +238,32 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
         .catch(() => {})
         .finally(() => setPincodeLoading(false));
     }
-  }, [pincodeVal, setValue]);
+  }, [pincodeVal, setValue, isOnline]);
 
-  // Debounced Autosave
-  const autosave = useCallback(
-    async (data: ApplicationFormData) => {
-      if (!applicationId) return;
+  // 5. Background sync trigger function
+  const triggerBackgroundSync = useCallback(
+    async (currentData: ApplicationFormData = formValues) => {
+      if (!applicationId || !navigator.onLine) {
+        setSyncStatus("pending_sync");
+        return;
+      }
+
+      setSyncStatus("syncing");
       setAutosaveStatus("saving");
+
       try {
+        // Register browser background sync if available
+        if ("serviceWorker" in navigator && "SyncManager" in window) {
+          try {
+            const reg = await navigator.serviceWorker.ready;
+            await (
+              reg as unknown as { sync: { register: (tag: string) => Promise<void> } }
+            ).sync.register("sync-application-draft");
+          } catch {
+            // Background sync API not permitted or unsupported, proceed with direct network call
+          }
+        }
+
         const res = await fetch(`/api/v1/applications/${applicationId}`, {
           method: "PATCH",
           headers: {
@@ -192,30 +272,90 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
           },
           body: JSON.stringify({
             version,
-            form_data: data,
+            form_data: currentData,
           }),
         });
 
         if (res.status === 412) {
+          // Version conflict detected (optimistic concurrency)
           setAutosaveStatus("error");
-          // Re-fetch application to sync version
           const appRes = await fetch(`/api/v1/applications/${applicationId}`);
-          const appData = await appRes.json();
-          if (appData.version) setVersion(appData.version);
+          if (appRes.ok) {
+            const appData = await appRes.json();
+            setConflictServerVersion(appData.version || version + 1);
+            setConflictServerData(appData.form_data || null);
+            setSyncStatus("conflict");
+            setConflictModalOpen(true);
+            void markDraftConflict(cycleId, appData.version || version + 1);
+          }
           return;
         }
 
         if (res.ok) {
           const updated = await res.json();
-          if (updated.version) setVersion(updated.version);
+          const newVer = updated.version ?? version;
+          setVersion(newVer);
+          setSyncStatus("synced");
           setAutosaveStatus("saved");
+          setLastSavedTime(
+            new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          );
+          void markDraftSynced(cycleId, newVer);
           setTimeout(() => setAutosaveStatus("idle"), 2000);
+        } else {
+          setSyncStatus("pending_sync");
+          setAutosaveStatus("error");
         }
       } catch {
+        setSyncStatus("pending_sync");
         setAutosaveStatus("error");
       }
     },
-    [applicationId, version],
+    [applicationId, version, formValues, cycleId],
+  );
+
+  // 6. Online/Offline & Service Worker event listeners
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      void triggerBackgroundSync(formValues);
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      setSyncStatus("pending_sync");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    const handleSwMessage = (e: MessageEvent) => {
+      if (e.data?.type === "BACKGROUND_SYNC_TRIGGERED") {
+        void triggerBackgroundSync(formValues);
+      }
+    };
+    if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener("message", handleSwMessage);
+    }
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+      if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+        navigator.serviceWorker.removeEventListener("message", handleSwMessage);
+      }
+    };
+  }, [triggerBackgroundSync, formValues]);
+
+  // 7. Debounced Autosave
+  const autosave = useCallback(
+    async (data: ApplicationFormData) => {
+      if (!isOnline) {
+        setSyncStatus("pending_sync");
+        return;
+      }
+      await triggerBackgroundSync(data);
+    },
+    [isOnline, triggerBackgroundSync],
   );
 
   useEffect(() => {
@@ -226,6 +366,46 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
     }, 1000);
     return () => clearTimeout(timer);
   }, [formValues, autosave, applicationId]);
+
+  // 8. Conflict Resolution Handlers
+  const handleChooseLocalVersion = async () => {
+    if (!applicationId) return;
+    setSyncStatus("syncing");
+    try {
+      const res = await fetch(`/api/v1/applications/${applicationId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "If-Match": `"${conflictServerVersion}"`,
+        },
+        body: JSON.stringify({
+          version: conflictServerVersion,
+          form_data: formValues,
+        }),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        const newVer = updated.version ?? conflictServerVersion + 1;
+        setVersion(newVer);
+        setConflictModalOpen(false);
+        setSyncStatus("synced");
+        void markDraftSynced(cycleId, newVer);
+      }
+    } catch {
+      setSyncStatus("pending_sync");
+    }
+  };
+
+  const handleChooseServerVersion = () => {
+    if (conflictServerData) {
+      reset(conflictServerData as ApplicationFormData);
+      setVersion(conflictServerVersion);
+      setConflictModalOpen(false);
+      setSyncStatus("synced");
+      void markDraftSynced(cycleId, conflictServerVersion);
+    }
+  };
 
   // File Upload handler with presigned URL and Magic Byte check
   const handleFileUpload = async (type: string, file: File) => {
@@ -420,6 +600,14 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
           )}
         </div>
       </div>
+
+      {/* Offline Status & Background Sync Banner */}
+      <OfflineSyncBanner
+        isOnline={isOnline}
+        syncStatus={syncStatus}
+        lastSavedText={lastSavedTime ? `Saved at ${lastSavedTime}` : undefined}
+        onManualSync={() => void triggerBackgroundSync(formValues)}
+      />
 
       {/* Stepper Navigation */}
       <Stepper steps={STEPS} currentStep={currentStep} />
@@ -762,6 +950,17 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Version Conflict Resolution Dialog */}
+      <ConflictResolutionDialog
+        isOpen={conflictModalOpen}
+        localVersion={version}
+        serverVersion={conflictServerVersion}
+        localData={formValues}
+        serverData={conflictServerData}
+        onChooseLocal={handleChooseLocalVersion}
+        onChooseServer={handleChooseServerVersion}
+      />
     </div>
   );
 }
