@@ -23,3 +23,4 @@ export * from "./fixtures/sample-allocation-data.js";
 export * from "./allocation/index.js";
 export * from "./review/index.js";
 export * from "./waitlist/index.js";
+export * from "./publication/index.js";

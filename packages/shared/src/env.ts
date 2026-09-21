@@ -28,6 +28,12 @@ const baseSchema = z.object({
   // Encryption
   MASTER_ENCRYPTION_KEY: z.string().min(32, "MASTER_ENCRYPTION_KEY must be at least 32 chars"),
   ENCRYPTION_KEY_ID: z.string().default("v1"),
+
+  // Ed25519 QR Verification Keys
+  ED25519_KEY_ID: z.string().default("2026-v1"),
+  ED25519_PRIVATE_KEY: z.string().optional(),
+  ED25519_PUBLIC_KEY: z.string().optional(),
+  ED25519_PUBLIC_KEYS_JSON: z.string().optional(),
 });
 
 // ── Feature flags shared by all apps ─────────────────────────────────────────

@@ -9,6 +9,7 @@ import { Redis } from "ioredis";
 import { parseEnv, workerEnvSchema, createLogger } from "@hostelhub/shared";
 import { setupWindowScheduler } from "./window-scheduler.js";
 import { setupAllocationWorker } from "./allocation-processor.js";
+import { setupLetterWorker } from "./letter-processor.js";
 
 // ── 1. Validate environment (fail fast) ───────────────────────────────────────
 const env = parseEnv(workerEnvSchema, process.env);
@@ -39,6 +40,9 @@ log.info("Window scheduler registered and running");
 const allocationWorker = setupAllocationWorker(redis);
 log.info("Allocation background worker registered and listening for jobs");
 
+const letterWorker = setupLetterWorker(redis);
+log.info("Letter background worker registered and listening for batch jobs");
+
 // ── 5. Signal readiness ───────────────────────────────────────────────────────
 log.info({ pid: process.pid }, "worker ready");
 
@@ -46,6 +50,7 @@ log.info({ pid: process.pid }, "worker ready");
 async function shutdown(signal: string): Promise<void> {
   log.info({ signal }, "Shutting down worker...");
   try {
+    await letterWorker.close();
     await allocationWorker.close();
     await worker.close();
     await queue.close();

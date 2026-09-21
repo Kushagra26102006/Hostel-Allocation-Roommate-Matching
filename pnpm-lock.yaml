@@ -139,6 +139,9 @@ importers:
       bullmq:
         specifier: ^5.41.0
         version: 5.81.5
+      canvas-confetti:
+        specifier: ^1.9.4
+        version: 1.9.4
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -230,6 +233,9 @@ importers:
       "@testing-library/react":
         specifier: ^16.0.0
         version: 16.3.3(@testing-library/dom@10.4.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      "@types/canvas-confetti":
+        specifier: ^1.9.0
+        version: 1.9.0
       "@types/node":
         specifier: ^20.0.0
         version: 20.19.43
@@ -275,6 +281,9 @@ importers:
 
   apps/worker:
     dependencies:
+      "@aws-sdk/client-s3":
+        specifier: ^3.651.1
+        version: 3.1136.0
       "@hostelhub/db":
         specifier: workspace:*
         version: link:../../packages/db
@@ -293,10 +302,16 @@ importers:
       mongoose:
         specifier: ^8.6.3
         version: 8.24.4
+      qrcode:
+        specifier: ^1.5.4
+        version: 1.5.4
     devDependencies:
       "@types/node":
         specifier: ^20.0.0
         version: 20.19.43
+      "@types/qrcode":
+        specifier: ^1.5.6
+        version: 1.5.6
       tsx:
         specifier: ^4.17.0
         version: 4.23.15
@@ -4630,6 +4645,12 @@ packages:
         integrity: sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q==,
       }
 
+  "@types/canvas-confetti@1.9.0":
+    resolution:
+      {
+        integrity: sha512-aBGj/dULrimR1XDZLtG9JwxX1b4HPRF6CX9Yfwh3NvstZEm1ZL7RBnel4keCPSqs1ANRu1u2Aoz9R+VmtjYuTg==,
+      }
+
   "@types/conventional-commits-parser@5.0.2":
     resolution:
       {
@@ -5771,6 +5792,12 @@ packages:
     resolution:
       {
         integrity: sha512-TITQPUkaz+aVk5GL6NhOdwk1aEaNTSDPsGFWrTuhKGtjTF70jL/Oht2W4c6rXUe5fu7Ie19VIahAXHIIiWWNeg==,
+      }
+
+  canvas-confetti@1.9.4:
+    resolution:
+      {
+        integrity: sha512-yxQbJkAVrFXWNbTUjPqjF7G+g6pDotOUHGbkZq2NELZUMDpiJ85rIEazVb8GTaAptNW2miJAXbs1BtioA251Pw==,
       }
 
   case-sensitive-paths-webpack-plugin@2.4.0:
@@ -13948,6 +13975,8 @@ snapshots:
     dependencies:
       "@babel/types": 7.29.8
 
+  "@types/canvas-confetti@1.9.0": {}
+
   "@types/conventional-commits-parser@5.0.2":
     dependencies:
       "@types/node": 20.19.43
@@ -14697,6 +14726,8 @@ snapshots:
   camelcase@6.3.0: {}
 
   caniuse-lite@1.0.30001810: {}
+
+  canvas-confetti@1.9.4: {}
 
   case-sensitive-paths-webpack-plugin@2.4.0: {}
 

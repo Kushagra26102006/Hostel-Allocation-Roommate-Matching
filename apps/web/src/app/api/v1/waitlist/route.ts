@@ -121,7 +121,8 @@ export const GET = apiHandler(
         student_name:
           user?.name ??
           `${personalInfo.first_name ?? "Student"} ${personalInfo.last_name ?? ""}`.trim(),
-        student_email: user?.email ?? personalInfo.email ?? "unknown@hostelhub.internal",
+        student_email:
+          user?.email ?? (personalInfo.email as string | undefined) ?? "unknown@hostelhub.internal",
         reference_number: app?.reference_number ?? `APP-${e.position}`,
         gender: personalInfo.gender ?? "male",
         programme: academicInfo.programme ?? "General",

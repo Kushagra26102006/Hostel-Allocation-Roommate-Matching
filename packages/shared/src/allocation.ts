@@ -1,4 +1,5 @@
 export const ALLOCATION_QUEUE_NAME = "allocation";
+export const LETTERS_QUEUE_NAME = "allocation-letters";
 
 export function getAllocationEventChannel(runId: string): string {
   return `allocation:run:${runId}:events`;
@@ -6,6 +7,16 @@ export function getAllocationEventChannel(runId: string): string {
 
 export function getAllocationCancelKey(runId: string): string {
   return `allocation:run:${runId}:cancel`;
+}
+
+export function getLetterProgressChannel(draftId: string): string {
+  return `letters:draft:${draftId}:progress`;
+}
+
+export interface LettersJobPayload {
+  draftId: string;
+  institutionId: string;
+  chunkSize?: number | undefined;
 }
 
 export interface AllocationJobPayload {

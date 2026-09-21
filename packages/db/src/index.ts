@@ -247,3 +247,13 @@ export {
   type PromotionNotificationPayload,
   type PromotionNotificationHook,
 } from "./services/promotion.service.js";
+
+// Prompt 22: Publication Letters & Student Result Service
+export {
+  AllocationLetterModel,
+  type IAllocationLetter,
+  type AllocationLetterDocument,
+  type AllocationLetterStatus,
+} from "./models/allocation-letter.model.js";
+
+export { LetterService, LetterServiceError } from "./services/letter.service.js";
