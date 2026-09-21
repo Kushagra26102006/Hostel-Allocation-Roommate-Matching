@@ -325,3 +325,18 @@ export {
 } from "./models/report-read-model.model.js";
 
 export { ReportService, type ReportFilterOptions } from "./services/report.service.js";
+
+// Prompt 26: What-If Simulator
+export {
+  SimulationBatchModel,
+  type ISimulationBatch,
+  type SimulationBatchDocument,
+  type ISimulationScenarioEntry,
+} from "./models/simulation-batch.model.js";
+
+export {
+  SimulatorService,
+  type RunSimulationBatchParams,
+  type SimulationActor,
+  type ScenarioOptions,
+} from "./services/simulator.service.js";

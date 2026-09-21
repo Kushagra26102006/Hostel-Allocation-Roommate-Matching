@@ -1,10 +1,24 @@
 export const ALLOCATION_QUEUE_NAME = "allocation";
+export const SIMULATION_QUEUE_NAME = "simulation";
 export const LETTERS_QUEUE_NAME = "allocation-letters";
 export const NOTIFICATIONS_QUEUE_NAME = "notifications";
 export const APPEAL_ESCALATION_QUEUE_NAME = "appeal-escalation";
 export const REPORTS_QUEUE_NAME = "reports";
 export const REPORTS_SCHEDULED_QUEUE_NAME = "reports-scheduled";
 export const DEFAULT_SLA_WORKING_DAYS = 3;
+
+export interface SimulationJobPayload {
+  institutionId: string;
+  cycleId: string;
+  baseRunId?: string | undefined;
+  seed?: number | undefined;
+  scenarios: unknown[];
+  actor: {
+    id: string;
+    email: string;
+    role: string;
+  };
+}
 
 export interface ReportJobPayload {
   reportType:

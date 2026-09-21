@@ -439,6 +439,14 @@ export class DraftWorkflowService {
       throw new WorkflowError("Draft not found", "DRAFT_NOT_FOUND", 404);
     }
 
+    if (draft.dry_run) {
+      throw new WorkflowError(
+        "A dry-run draft cannot be approved or published",
+        "DRY_RUN_NOT_APPROVABLE",
+        400,
+      );
+    }
+
     // Fetch all overrides for this draft
     const overrides = await OverrideModel.find({ draft_id: draft._id });
 
@@ -554,6 +562,14 @@ export class DraftWorkflowService {
     const draft = await AllocationDraftModel.findById(draftId);
     if (!draft) {
       throw new WorkflowError("Draft not found", "DRAFT_NOT_FOUND", 404);
+    }
+
+    if (draft.dry_run) {
+      throw new WorkflowError(
+        "A dry-run draft cannot be approved or published",
+        "DRY_RUN_NOT_PUBLISHABLE",
+        400,
+      );
     }
 
     if (draft.status !== "APPROVED") {

@@ -21,6 +21,7 @@ import {
   FileClock,
   ListOrdered,
   BarChart3,
+  Sparkles,
 } from "lucide-react";
 import type { Role } from "@/stores/role-store";
 
@@ -176,6 +177,16 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     roles: ["chief_warden"],
     badge: "Round 1",
     description: "Trigger Gale-Shapley solver and review Pareto optimality graphs",
+  },
+  {
+    id: "chief-simulator",
+    titleKey: "nav.chiefSimulator",
+    fallbackTitle: "What-If Simulator",
+    href: "/staff/chief-warden/simulator",
+    icon: Sparkles,
+    roles: ["chief_warden", "hostel_admin"],
+    badge: "Dry-Run",
+    description: "Simulate and compare allocation scenarios in parallel with identical seeds",
   },
   {
     id: "chief-reports",

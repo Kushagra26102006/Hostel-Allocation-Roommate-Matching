@@ -18,6 +18,7 @@ import {
 import { GlassCard } from "@/components/glass-card";
 import { OccupancyHeatMap } from "@/components/inventory/occupancy-heatmap";
 import { DocumentVerificationQueue } from "@/components/admin/document-verification-queue";
+import { AppliedSettingsBanner } from "@/components/simulator/applied-settings-banner";
 import { getNavItemByPath } from "@/config/navigation";
 
 interface PageProps {
@@ -176,6 +177,9 @@ export default async function StaffModulePage({ params }: PageProps) {
             </button>
           </div>
         </div>
+
+        {/* Banner showing settings imported from What-If Simulator */}
+        <AppliedSettingsBanner />
 
         {/* Engine Performance Banner */}
         <GlassCard className="p-6 border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10">

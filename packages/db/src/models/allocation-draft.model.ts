@@ -15,6 +15,8 @@ export interface IAllocationDraft {
   input_hash: string;
   seed: number;
   metrics?: RunMetrics | undefined;
+  dry_run?: boolean | undefined;
+  scenario_name?: string | undefined;
 }
 
 export interface AllocationDraftDocument extends BaseTenantDocument, IAllocationDraft {
@@ -59,13 +61,18 @@ const allocationDraftSchema = new Schema<AllocationDraftDocument>(
       index: true,
       validate: {
         validator: function (this: IAllocationDraft, val: string) {
+          // Rule 1: A dry-run draft can NEVER be approved or published
+          if (this.dry_run && ["APPROVED", "PUBLISHED", "published"].includes(val)) {
+            return false;
+          }
           // Layer b: Database validation rejects status PUBLISHED when approval_id is missing
           if (val === "PUBLISHED" || val === "published") {
             return Boolean(this.approval_id);
           }
           return true;
         },
-        message: "Database validation failed: status PUBLISHED requires approval_id",
+        message:
+          "Database validation failed: a dry-run draft cannot be approved or published, and status PUBLISHED requires approval_id",
       },
     },
     version_number: {
@@ -90,6 +97,14 @@ const allocationDraftSchema = new Schema<AllocationDraftDocument>(
     metrics: {
       type: Schema.Types.Mixed,
     },
+    dry_run: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    scenario_name: {
+      type: String,
+    },
   },
   {
     timestamps: true,
@@ -109,6 +124,16 @@ allocationDraftSchema.post("init", function () {
 
 // Layer b & c: Pre-save protection
 allocationDraftSchema.pre("save", function (next) {
+  // Rule 1: A dry-run draft can NEVER be approved or published
+  if (
+    this.dry_run &&
+    (this.status === "APPROVED" || this.status === "PUBLISHED" || this.status === "published")
+  ) {
+    return next(
+      new Error("Database validation failed: a dry-run draft cannot be approved or published"),
+    );
+  }
+
   // Layer b: direct model write check
   if ((this.status === "PUBLISHED" || this.status === "published") && !this.approval_id) {
     return next(new Error("Database validation failed: status PUBLISHED requires approval_id"));
@@ -135,17 +160,32 @@ allocationDraftSchema.pre(["updateOne", "findOneAndUpdate"], async function (nex
     const update = rawUpdate as Record<string, unknown> & {
       status?: string;
       approval_id?: string;
-      $set?: { status?: string; approval_id?: string };
+      dry_run?: boolean;
+      $set?: { status?: string; approval_id?: string; dry_run?: boolean };
     };
 
     const query = this.getQuery();
     const existing = await this.model
       .findOne(query)
-      .select("status approval_id")
-      .lean<{ status?: string; approval_id?: string }>();
+      .select("status approval_id dry_run")
+      .lean<{ status?: string; approval_id?: string; dry_run?: boolean }>();
 
     const newStatus = update.status ?? update.$set?.status;
     const newApprovalId = update.approval_id ?? update.$set?.approval_id;
+    const isDryRun =
+      existing?.dry_run ||
+      Boolean(update.dry_run) ||
+      Boolean((update.$set as Record<string, unknown> | undefined)?.dry_run);
+
+    // Rule 1: A dry-run draft can NEVER be approved or published
+    if (
+      isDryRun &&
+      (newStatus === "APPROVED" || newStatus === "PUBLISHED" || newStatus === "published")
+    ) {
+      return next(
+        new Error("Database validation failed: a dry-run draft cannot be approved or published"),
+      );
+    }
 
     // Layer b: Rejects setting status to PUBLISHED without approval_id
     if (newStatus === "PUBLISHED" || newStatus === "published") {
