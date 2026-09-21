@@ -64,6 +64,8 @@ export const inventoryRowSchema = z.object({
     return undefined;
   }, z.boolean().optional()),
   distanceToBlocks: z.coerce.number().optional(),
+  hostelLat: z.coerce.number().min(-90).max(90).optional(),
+  hostelLng: z.coerce.number().min(-180).max(180).optional(),
 });
 
 export type InventoryRow = z.infer<typeof inventoryRowSchema>;
@@ -130,6 +132,14 @@ const FIELD_ALIASES: Record<string, keyof InventoryRow> = {
   distance: "distanceToBlocks",
   distancetoblocks: "distanceToBlocks",
   distance_to_blocks: "distanceToBlocks",
+  hostellat: "hostelLat",
+  hostel_lat: "hostelLat",
+  lat: "hostelLat",
+  latitude: "hostelLat",
+  hostellng: "hostelLng",
+  hostel_lng: "hostelLng",
+  lng: "hostelLng",
+  longitude: "hostelLng",
 };
 
 /**
@@ -343,6 +353,18 @@ export async function executeInventoryImport(
 
         if (existingHostel) {
           hostelMap.set(row.hostelName, existingHostel._id as Types.ObjectId);
+          // Update location if coordinates are provided and not already set
+          if (
+            row.hostelLat !== undefined &&
+            row.hostelLng !== undefined &&
+            !existingHostel.location
+          ) {
+            await hostelRepo.update(
+              existingHostel._id as Types.ObjectId,
+              { $set: { location: { lat: row.hostelLat, lng: row.hostelLng } } },
+              session,
+            );
+          }
         } else {
           const newHostel = await hostelRepo.create(
             {
@@ -350,6 +372,9 @@ export async function executeInventoryImport(
               gender_policy: row.genderPolicy as GenderPolicy,
               address: row.address,
               status: row.status as HostelStatus,
+              ...(row.hostelLat !== undefined && row.hostelLng !== undefined
+                ? { location: { lat: row.hostelLat, lng: row.hostelLng } }
+                : {}),
             },
             session,
           );
@@ -475,6 +500,19 @@ export async function executeInventoryImport(
     createdCount = bulkRes?.upsertedCount ?? 0;
     updatedCount = bulkRes?.modifiedCount ?? 0;
   });
+
+  // After successful import, trigger walking distance pre-computation (fire-and-forget).
+  // This populates the cache used by the engine D-score without blocking the import response.
+  void import("@/lib/routing/distance-precomputer.js")
+    .then(({ precomputeWalkingDistances }) => precomputeWalkingDistances(instObjectId))
+    .then((precomputeResult) => {
+      console.info(
+        `[import-engine] Walking distances pre-computed: ${precomputeResult.computed} pairs in ${precomputeResult.durationMs}ms`,
+      );
+    })
+    .catch((err) => {
+      console.warn("[import-engine] Walking distance pre-computation failed:", err);
+    });
 
   return {
     dryRun: false,

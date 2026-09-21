@@ -67,6 +67,18 @@ export {
 export { BlockModel, type IBlock, type BlockDocument } from "./models/block.model.js";
 
 export {
+  AcademicBlockModel,
+  type IAcademicBlock,
+  type AcademicBlockDocument,
+} from "./models/academic-block.model.js";
+
+export {
+  WalkingDistanceCacheModel,
+  type IWalkingDistanceCache,
+  type WalkingDistanceCacheDocument,
+} from "./models/walking-distance-cache.model.js";
+
+export {
   RoomModel,
   type IRoom,
   type RoomDocument,

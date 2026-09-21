@@ -19,16 +19,9 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { motion } from "framer-motion";
-import {
-  GripVertical,
-  ArrowUp,
-  ArrowDown,
-  MapPin,
-  Check,
-  AlertCircle,
-  Loader2,
-} from "lucide-react";
+import { GripVertical, ArrowUp, ArrowDown, Check, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RoutePreviewBadge } from "@/components/map/route-preview-badge";
 import { cn } from "@/lib/utils";
 
 export interface HostelCardData {
@@ -119,8 +112,7 @@ function SortableHostelCard({ hostel, rank, total, onMoveUp, onMoveDown }: Sorta
             <span className="capitalize">{hostel.roomType} Seater</span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-brand-400" /> {hostel.walkingTimeMin} min walk to
-              campus
+              <RoutePreviewBadge walkingMinutes={hostel.walkingTimeMin} />
             </span>
           </div>
           <p className="text-[11px] text-emerald-400 mt-1 font-medium">{hostel.availabilityHint}</p>

@@ -13,6 +13,12 @@ const createHostelSchema = z.object({
   gender_policy: z.enum(["male", "female", "coed"]),
   address: z.string().min(1, "Address is required"),
   status: z.enum(["active", "inactive", "maintenance"]).default("active"),
+  location: z
+    .object({
+      lat: z.number().min(-90).max(90),
+      lng: z.number().min(-180).max(180),
+    })
+    .optional(),
 });
 
 export const GET = apiHandler(
@@ -55,6 +61,7 @@ export const POST = apiHandler(
       gender_policy: body.gender_policy,
       address: body.address,
       status: body.status ?? "active",
+      ...(body.location && { location: body.location }),
     });
     return hostel;
   },

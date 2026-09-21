@@ -9,6 +9,7 @@ export interface IHostel {
   gender_policy: GenderPolicy;
   address: string;
   status: HostelStatus;
+  location?: { lat: number; lng: number };
 }
 
 export interface HostelDocument extends BaseTenantDocument, IHostel {}
@@ -35,6 +36,14 @@ const hostelSchema = new Schema<HostelDocument>(
       enum: ["active", "inactive", "maintenance"],
       default: "active",
       index: true,
+    },
+    location: {
+      type: {
+        lat: { type: Number, required: true },
+        lng: { type: Number, required: true },
+      },
+      required: false,
+      _id: false,
     },
   },
   {
