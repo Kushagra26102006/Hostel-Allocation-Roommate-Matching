@@ -1332,7 +1332,7 @@ export class ReportService {
     if (format === "csv") {
       const { headers, rows } = this.extractTableRows(reportType, reportData);
       const csvLines: string[] = [
-        headers.join(","),
+        headers.map((h) => `"${h.replace(/"/g, '""')}"`).join(","),
         ...rows.map((row) =>
           row
             .map((cell) => {

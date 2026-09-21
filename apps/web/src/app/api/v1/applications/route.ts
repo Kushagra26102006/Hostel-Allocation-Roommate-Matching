@@ -60,6 +60,10 @@ export const POST = apiHandler(
     body: createApplicationSchema,
     operationId: "createApplication",
     summary: "Create or get draft Application for cycle",
+    rateLimit: {
+      limit: 10,
+      windowSeconds: 60,
+    },
   },
   async ({ user, institution_id, body }) => {
     if (!user) {

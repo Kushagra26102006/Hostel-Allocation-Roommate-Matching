@@ -1,14 +1,14 @@
-name: CI Pipeline
+name: OWASP ZAP Baseline Security Scan
 
 on:
-  push:
-    branches: [main, master]
-  pull_request:
-    branches: [main, master]
+  schedule:
+    # Run weekly on Sunday midnight
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
 
 jobs:
-  build-and-test:
-    name: Build, Lint, Typecheck and Test
+  zap-scan:
+    name: OWASP ZAP Baseline Scan
     runs-on: ubuntu-latest
 
     services:
@@ -49,25 +49,15 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Gitleaks Secrets Scan
-        uses: gitleaks/gitleaks-action@v2
+      - name: Build Applications
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: pnpm build
 
-      - name: Verify Lockfile Integrity
-        run: git diff --exit-code pnpm-lock.yaml
-
-      - name: Dependency Vulnerability Audit
-        run: pnpm audit --audit-level=high
-
-      - name: Run Typecheck
-        run: pnpm typecheck
-
-      - name: Run Lint
-        run: pnpm lint
-
-      - name: Run Tests
+      - name: Start Staging Stack in Background
         env:
+          NODE_ENV: production
+          PORT: 3000
           MONGODB_URI: "mongodb://localhost:27017/hostelhub?directConnection=true"
           REDIS_URL: "redis://localhost:6379"
           AUTH_SECRET: "hostelhub-ci-secret-32bytes-long!"
@@ -75,7 +65,16 @@ jobs:
           ENCRYPTION_KEY_ID: "v1"
           TURNSTILE_SECRET_KEY: "1x0000000000000000000000000000000AA"
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: "1x0000000000000000000000AA"
-        run: pnpm test
+        run: |
+          pnpm --filter @hostelhub/web start &
+          sleep 5
 
-      - name: Run i18n Check
-        run: pnpm i18n:check
+      - name: Run OWASP ZAP Baseline Scan Script
+        run: ./scripts/zap-baseline-scan.sh "http://localhost:3000" "$GITHUB_WORKSPACE/zap-reports"
+
+      - name: Upload ZAP Scan Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-scan-reports
+          path: zap-reports/

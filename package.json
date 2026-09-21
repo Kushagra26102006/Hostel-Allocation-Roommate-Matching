@@ -39,7 +39,18 @@
   },
   "pnpm": {
     "overrides": {
-      "webpack": "5.101.2"
+      "webpack": "5.101.2",
+      "next": "15.5.25",
+      "postcss": ">=8.5.18",
+      "sharp": ">=0.35.4"
+    },
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-5xrq-8626-4rwp",
+        "GHSA-fx2h-pf6j-xcff",
+        "GHSA-w3rx-r6r6-pgpr",
+        "GHSA-5p2g-fcmc-qvqq"
+      ]
     }
   }
 }

@@ -22,6 +22,10 @@ export const POST = apiHandler(
     body: presignSchema,
     operationId: "presignDocumentUpload",
     summary: "Get presigned PUT URL for document upload",
+    rateLimit: {
+      limit: 10,
+      windowSeconds: 60,
+    },
   },
   async ({ user, institution_id, body }) => {
     if (!user) {

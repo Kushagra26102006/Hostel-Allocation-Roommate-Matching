@@ -93,6 +93,22 @@ services:
     networks:
       - hostelhub
 
+  # ── ClamAV Antivirus Daemon ───────────────────────────────────────────────────
+  clamav:
+    image: clamav/clamav:stable_base
+    container_name: hostelhub-clamav
+    restart: unless-stopped
+    ports:
+      - "3310:3310"
+    networks:
+      - hostelhub
+    healthcheck:
+      test: ["CMD", "clamdscan", "--version"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
 # ── Named volumes ─────────────────────────────────────────────────────────────
 volumes:
   mongo_data:

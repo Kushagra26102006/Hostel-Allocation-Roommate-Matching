@@ -19,6 +19,10 @@ export const POST = apiHandler(
     params: paramsSchema,
     operationId: "submitApplication",
     summary: "Submit hostel application for cycle",
+    rateLimit: {
+      limit: 10,
+      windowSeconds: 60,
+    },
   },
   async ({ user, institution_id, params, requestId: _requestId }) => {
     const repo = new ApplicationRepository(institution_id);

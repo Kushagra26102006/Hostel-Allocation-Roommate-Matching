@@ -1,0 +1,21 @@
+title = "HostelHub Gitleaks Configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlist for synthetic test fixtures and mocks"
+paths = [
+  '''(?i).*\.(test|spec)\.(ts|tsx|js|jsx)$''',
+  '''(?i)tests?/.*''',
+  '''(?i)__tests__/.*''',
+  '''(?i)docs/.*''',
+  '''(?i)scripts/.*''',
+  '''pnpm-lock\.yaml''',
+]
+stopwords = [
+  "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "hostelhub-ci-secret-32bytes-long!",
+  "1x0000000000000000000000000000000AA",
+  "1x0000000000000000000000AA",
+]

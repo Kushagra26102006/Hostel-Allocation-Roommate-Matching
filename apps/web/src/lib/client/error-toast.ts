@@ -38,6 +38,10 @@ const PROBLEM_CODE_MESSAGES: Record<ProblemCode, { title: string; defaultDetail:
     title: "Rate Limit Exceeded",
     defaultDetail: "Too many requests. Please wait a moment before retrying.",
   },
+  MALWARE_DETECTED: {
+    title: "Malware Detected",
+    defaultDetail: "The uploaded file was flagged as potentially unsafe and quarantined.",
+  },
   BAD_REQUEST: {
     title: "Invalid Request",
     defaultDetail: "The server could not understand the request due to invalid syntax.",

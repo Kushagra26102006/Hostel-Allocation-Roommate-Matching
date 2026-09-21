@@ -111,15 +111,34 @@ export const POST = apiHandler(
     }
 
     // 5. Malware scan
-    let initialStatus: "clean" | "quarantined" = "clean";
     try {
       const scanResult = await malwareScanner.scanBuffer(buffer, body.original_name);
-      initialStatus = scanResult.clean ? "clean" : "quarantined";
+      if (!scanResult.clean) {
+        // Segregate and quarantine infected file
+        const docRepo = new ApplicationDocumentRepository(institution_id);
+        await docRepo.create({
+          application_id: new Types.ObjectId(body.application_id),
+          student_id: new Types.ObjectId(user.id),
+          type: body.type,
+          storage_key: body.storage_key,
+          original_name: body.original_name,
+          mime_type: magicResult.detectedMime ?? body.mime_type,
+          size_bytes: sizeBytes,
+          status: "quarantined",
+        });
+
+        throw new ApiProblemError({
+          title: "Malware Detected",
+          status: 422,
+          detail: `File failed malware check (${scanResult.threatName ?? "Threat identified"}). File has been quarantined.`,
+          code: "MALWARE_DETECTED",
+        });
+      }
     } catch (scanErr) {
+      if (scanErr instanceof ApiProblemError) throw scanErr;
       if (process.env.NODE_ENV === "production") {
         throw scanErr;
       }
-      initialStatus = "clean";
     }
 
     // 6. Save to database
@@ -132,7 +151,7 @@ export const POST = apiHandler(
       original_name: body.original_name,
       mime_type: magicResult.detectedMime ?? body.mime_type,
       size_bytes: sizeBytes,
-      status: initialStatus,
+      status: "clean",
     });
 
     return doc;

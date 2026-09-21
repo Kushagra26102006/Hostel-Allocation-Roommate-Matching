@@ -18,6 +18,10 @@ export const PATCH = apiHandler(
     body: verifyDocSchema,
     operationId: "verifyDocument",
     summary: "Verify or reject an application document (audited)",
+    rateLimit: {
+      limit: 30,
+      windowSeconds: 60,
+    },
   },
   async ({ user, institution_id, params, body }) => {
     const repo = new ApplicationDocumentRepository(institution_id);

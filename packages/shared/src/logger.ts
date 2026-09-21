@@ -8,7 +8,7 @@
 import pino from "pino";
 
 // Paths to redact from all log output (exact keys and nested patterns)
-const REDACT_PATHS: string[] = [
+export const REDACT_PATHS: string[] = [
   // Auth / secrets
   "password",
   "*.password",
@@ -30,14 +30,20 @@ const REDACT_PATHS: string[] = [
   // Security questions / KYC / Compatibility
   "answers",
   "*.answers",
+  "answers.*",
   "responses",
   "*.responses",
+  "responses.*",
+  "questionnaire",
+  "*.questionnaire",
+  "questionnaire.*",
   "ciphertext",
   "*.ciphertext",
 ];
 
 export type LoggerOptions = {
   level?: pino.LevelWithSilent;
+  destination?: pino.DestinationStream;
 };
 
 /**
@@ -50,7 +56,7 @@ export function createLogger(name: string, opts: LoggerOptions = {}) {
 
   const isNextRuntime = typeof process.env["NEXT_RUNTIME"] !== "undefined";
   const transport: pino.TransportSingleOptions | undefined =
-    isDev && !isNextRuntime
+    isDev && !isNextRuntime && !opts.destination
       ? {
           target: "pino-pretty",
           options: {
@@ -61,17 +67,20 @@ export function createLogger(name: string, opts: LoggerOptions = {}) {
         }
       : undefined;
 
-  return pino(
-    {
-      name,
-      level,
-      redact: {
-        paths: REDACT_PATHS,
-        censor: "[REDACTED]",
-      },
+  const loggerConfig = {
+    name,
+    level,
+    redact: {
+      paths: REDACT_PATHS,
+      censor: "[REDACTED]",
     },
-    transport ? pino.transport(transport) : undefined,
-  );
+  };
+
+  if (opts.destination) {
+    return pino(loggerConfig, opts.destination);
+  }
+
+  return pino(loggerConfig, transport ? pino.transport(transport) : undefined);
 }
 
 /**

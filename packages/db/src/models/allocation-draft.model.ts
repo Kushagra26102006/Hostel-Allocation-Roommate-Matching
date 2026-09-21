@@ -59,21 +59,26 @@ const allocationDraftSchema = new Schema<AllocationDraftDocument>(
       enum: ALL_STATUSES,
       default: "DRAFT_READY",
       index: true,
-      validate: {
-        validator: function (this: IAllocationDraft, val: string) {
-          // Rule 1: A dry-run draft can NEVER be approved or published
-          if (this.dry_run && ["APPROVED", "PUBLISHED", "published"].includes(val)) {
-            return false;
-          }
-          // Layer b: Database validation rejects status PUBLISHED when approval_id is missing
-          if (val === "PUBLISHED" || val === "published") {
-            return Boolean(this.approval_id);
-          }
-          return true;
+      validate: [
+        {
+          validator: function (this: IAllocationDraft, val: string) {
+            if (this.dry_run && ["APPROVED", "PUBLISHED", "published"].includes(val)) {
+              return false;
+            }
+            return true;
+          },
+          message: "Database validation failed: a dry-run draft cannot be approved or published",
         },
-        message:
-          "Database validation failed: a dry-run draft cannot be approved or published, and status PUBLISHED requires approval_id",
-      },
+        {
+          validator: function (this: IAllocationDraft, val: string) {
+            if (val === "PUBLISHED" || val === "published") {
+              return Boolean(this.approval_id);
+            }
+            return true;
+          },
+          message: "Database validation failed: status PUBLISHED requires approval_id",
+        },
+      ],
     },
     version_number: {
       type: Number,

@@ -14,6 +14,7 @@ import { setupNotificationWorker } from "./notification-processor.js";
 import { setupAppealEscalationWorker } from "./appeal-escalation-processor.js";
 import { setupReportWorker } from "./report-processor.js";
 import { setupSimulationWorker } from "./simulator-processor.js";
+import { setupAuditVerifierWorker } from "./audit-verifier-processor.js";
 
 // ── 1. Validate environment (fail fast) ───────────────────────────────────────
 const env = parseEnv(workerEnvSchema, process.env);
@@ -59,6 +60,9 @@ log.info("Report background worker & weekly scheduled digest registered");
 const { worker: simulationWorker, queue: simulationQueue } = setupSimulationWorker(redis);
 log.info("What-If Simulation worker registered");
 
+const { worker: auditWorker, queue: auditQueue } = setupAuditVerifierWorker(redis);
+log.info("Audit chain verifier worker registered (nightly cryptographic check)");
+
 // ── 5. Signal readiness ───────────────────────────────────────────────────────
 log.info({ pid: process.pid }, "worker ready");
 
@@ -66,6 +70,8 @@ log.info({ pid: process.pid }, "worker ready");
 async function shutdown(signal: string): Promise<void> {
   log.info({ signal }, "Shutting down worker...");
   try {
+    await auditWorker.close();
+    await auditQueue.close();
     await simulationWorker.close();
     await simulationQueue.close();
     await scheduledWorker.close();
