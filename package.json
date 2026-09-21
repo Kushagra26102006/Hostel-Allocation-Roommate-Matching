@@ -18,6 +18,8 @@
     "i18n:check": "pnpm --filter @hostelhub/web i18n:check",
     "openapi:check": "tsx scripts/check-openapi-diff.ts",
     "openapi:update": "tsx scripts/check-openapi-diff.ts --update",
+    "permissions:generate": "tsx scripts/generate-permissions-doc.ts",
+    "permissions:check": "tsx scripts/generate-permissions-doc.ts --check",
     "prepare": "husky",
     "seed:synthetic": "pnpm --filter @hostelhub/db exec tsx src/seed/synthetic.ts",
     "infra:up": "docker compose up -d",

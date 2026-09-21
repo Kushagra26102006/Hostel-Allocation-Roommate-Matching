@@ -70,6 +70,9 @@ jobs:
       - name: OpenAPI Contract Diff Check
         run: pnpm openapi:check
 
+      - name: Permissions Matrix Check
+        run: pnpm permissions:check
+
       - name: Run i18n Translation Check
         run: pnpm i18n:check
 
