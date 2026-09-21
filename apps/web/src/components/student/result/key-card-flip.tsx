@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import confetti from "canvas-confetti";
 import { Sparkles, Building, BedDouble, ShieldCheck, CheckCircle2, RotateCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CompatibilityRing } from "./compatibility-ring";
@@ -38,9 +37,10 @@ export function KeyCardFlip({
 
   const numericTarget = parseInt(roomNumber.replace(/\D/g, ""), 10) || 101;
 
-  const triggerConfetti = React.useCallback(() => {
+  const triggerConfetti = React.useCallback(async () => {
     if (shouldReduceMotion) return;
     try {
+      const confetti = (await import("canvas-confetti")).default;
       // Dual cannon burst
       confetti({
         particleCount: 80,

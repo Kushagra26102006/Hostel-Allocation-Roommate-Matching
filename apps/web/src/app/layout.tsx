@@ -104,6 +104,9 @@ export const viewport: Viewport = {
 
 import { PwaRegister } from "@/components/pwa/pwa-register";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
+import { SkipLink } from "@/components/a11y/skip-link";
+import { RouteAnnouncer } from "@/components/a11y/route-announcer";
+import { WebVitalsReporter } from "@/components/a11y/web-vitals-reporter";
 
 // ── Root layout ───────────────────────────────────────────────────────────────
 export default function RootLayout({
@@ -124,9 +127,18 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
+          <SkipLink />
+          <RouteAnnouncer />
+          <WebVitalsReporter />
           <SessionProvider>
             <QueryProvider>
-              {children}
+              <main
+                id="main-content"
+                tabIndex={-1}
+                className="outline-none focus:outline-none min-h-screen"
+              >
+                {children}
+              </main>
               <PwaRegister />
               <InstallPrompt />
               <Toaster richColors position="bottom-right" />

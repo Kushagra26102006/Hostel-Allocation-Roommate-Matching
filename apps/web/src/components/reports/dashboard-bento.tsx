@@ -227,6 +227,21 @@ export function BentoDashboard({
           </p>
         </div>
 
+        {/* Screen Reader Navigation Note for Charts and Bento Reports */}
+        <div
+          className="sr-only"
+          role="note"
+          aria-label="Screen reader guide for analytics dashboard"
+        >
+          <p>
+            Residential Analytics and Fairness Dashboard. This page includes statistical summaries,
+            occupancy benchmarks, and quota equity distributions. All graphical charts have
+            accompanying semantic HTML data tables with captions and row/column headers accessible
+            directly to screen readers, or visually toggleable via the &quot;Data Tables&quot;
+            button in the header toolbar.
+          </p>
+        </div>
+
         <div className="flex flex-wrap items-center gap-3">
           {/* Year-on-Year Comparison Toggle */}
           <div className="flex items-center space-x-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 px-3 py-2">
@@ -436,8 +451,8 @@ export function BentoDashboard({
             </div>
           </CardHeader>
           <CardContent>
-            {!showDataTables ? (
-              <div className="h-72 w-full">
+            {!showDataTables && (
+              <div className="h-72 w-full" aria-hidden="true">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={yoyChartData}
@@ -463,54 +478,50 @@ export function BentoDashboard({
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table
-                  className="w-full text-sm text-left border-collapse"
-                  aria-label="Year on Year Metric Comparison"
-                >
-                  <caption className="sr-only">Year on Year Residential Metrics Comparison</caption>
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-800 text-xs uppercase font-semibold text-slate-500">
-                      <th className="py-2.5 px-3">Metric</th>
-                      <th className="py-2.5 px-3">{initialYearOnYear.previous_year}</th>
-                      <th className="py-2.5 px-3">{initialYearOnYear.current_year}</th>
-                      <th className="py-2.5 px-3">Variance</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {initialYearOnYear.metrics.map((m) => (
-                      <tr
-                        key={m.key}
-                        className="border-b border-slate-100 dark:border-slate-800/60"
-                      >
-                        <td className="py-2 px-3 font-medium text-slate-800 dark:text-slate-200">
-                          {m.label}
-                        </td>
-                        <td className="py-2 px-3 text-slate-600 dark:text-slate-400">
-                          {m.previous_value}
-                        </td>
-                        <td className="py-2 px-3 font-bold text-slate-900 dark:text-slate-100">
-                          {m.current_value}
-                        </td>
-                        <td className="py-2 px-3">
-                          <span
-                            className={`font-semibold ${
-                              m.delta_percentage >= 0
-                                ? "text-emerald-600 dark:text-emerald-400"
-                                : "text-amber-600 dark:text-amber-400"
-                            }`}
-                          >
-                            {m.delta_percentage > 0 ? "+" : ""}
-                            {m.delta_percentage}%
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
             )}
+            <div className={showDataTables ? "overflow-x-auto" : "sr-only"}>
+              <table
+                className="w-full text-sm text-left border-collapse"
+                aria-label="Year on Year Metric Comparison"
+              >
+                <caption className="sr-only">Year on Year Residential Metrics Comparison</caption>
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-800 text-xs uppercase font-semibold text-slate-500">
+                    <th className="py-2.5 px-3">Metric</th>
+                    <th className="py-2.5 px-3">{initialYearOnYear.previous_year}</th>
+                    <th className="py-2.5 px-3">{initialYearOnYear.current_year}</th>
+                    <th className="py-2.5 px-3">Variance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {initialYearOnYear.metrics.map((m) => (
+                    <tr key={m.key} className="border-b border-slate-100 dark:border-slate-800/60">
+                      <td className="py-2 px-3 font-medium text-slate-800 dark:text-slate-200">
+                        {m.label}
+                      </td>
+                      <td className="py-2 px-3 text-slate-600 dark:text-slate-400">
+                        {m.previous_value}
+                      </td>
+                      <td className="py-2 px-3 font-bold text-slate-900 dark:text-slate-100">
+                        {m.current_value}
+                      </td>
+                      <td className="py-2 px-3">
+                        <span
+                          className={`font-semibold ${
+                            m.delta_percentage >= 0
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-amber-600 dark:text-amber-400"
+                          }`}
+                        >
+                          {m.delta_percentage > 0 ? "+" : ""}
+                          {m.delta_percentage}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -815,8 +826,8 @@ export function BentoDashboard({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {!showDataTables ? (
-                <div className="h-56 w-full mt-2">
+              {!showDataTables && (
+                <div className="h-56 w-full mt-2" aria-hidden="true">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={quotaChartData}
@@ -843,7 +854,8 @@ export function BentoDashboard({
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-              ) : (
+              )}
+              <div className={showDataTables ? "overflow-x-auto" : "sr-only"}>
                 <table
                   className="w-full text-xs text-left border-collapse"
                   aria-label="Fairness by Quota Category"
@@ -877,7 +889,7 @@ export function BentoDashboard({
                     ))}
                   </tbody>
                 </table>
-              )}
+              </div>
 
               {/* Compatibility & Parity Notes */}
               <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
@@ -909,8 +921,8 @@ export function BentoDashboard({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {!showDataTables ? (
-                <div className="h-48 w-full mt-1">
+              {!showDataTables && (
+                <div className="h-48 w-full mt-1" aria-hidden="true">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={rankChartData}
@@ -925,7 +937,8 @@ export function BentoDashboard({
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-              ) : (
+              )}
+              <div className={showDataTables ? "overflow-x-auto" : "sr-only"}>
                 <table
                   className="w-full text-xs text-left border-collapse"
                   aria-label="Preference Satisfaction Distribution"
@@ -957,7 +970,7 @@ export function BentoDashboard({
                     ))}
                   </tbody>
                 </table>
-              )}
+              </div>
             </CardContent>
           </Card>
 

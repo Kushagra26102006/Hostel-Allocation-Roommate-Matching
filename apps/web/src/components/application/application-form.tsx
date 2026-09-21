@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormErrorSummary, type FormErrorItem } from "@/components/ui/form-error-summary";
 import { OfflineSyncBanner } from "@/components/application/offline-sync-banner";
 import { ConflictResolutionDialog } from "@/components/application/conflict-resolution-dialog";
 import {
@@ -129,6 +130,7 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
     null,
   );
   const [lastSavedTime, setLastSavedTime] = useState<string>("");
+  const [summaryErrors, setSummaryErrors] = useState<FormErrorItem[]>([]);
 
   const {
     register,
@@ -514,15 +516,24 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
     if (currentStep === 0) {
       const profileResult = profileSchema.safeParse(formValues.profile);
       if (!profileResult.success) {
+        const errs: FormErrorItem[] = profileResult.error.errors.map((e) => ({
+          fieldId: String(e.path[0]),
+          message: e.message,
+        }));
+        setSummaryErrors(errs);
         setShakeStep(true);
         setTimeout(() => setShakeStep(false), 600);
         return;
       }
     }
+    setSummaryErrors([]);
     setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
   };
 
-  const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
+  const prevStep = () => {
+    setSummaryErrors([]);
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+  };
 
   if (submissionReceipt) {
     return (
@@ -619,6 +630,7 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
       >
         <Card className="border-border/60 bg-surface/80 backdrop-blur-md shadow-xl">
           <CardContent className="pt-6 space-y-6">
+            <FormErrorSummary errors={summaryErrors} className="mb-4" />
             <AnimatePresence mode="wait">
               {currentStep === 0 && (
                 <motion.div
@@ -920,12 +932,13 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
                 variant="outline"
                 onClick={prevStep}
                 disabled={currentStep === 0}
+                className="min-h-[44px] px-5"
               >
                 Back
               </Button>
 
               {currentStep < STEPS.length - 1 ? (
-                <Button type="button" onClick={nextStep}>
+                <Button type="button" onClick={nextStep} className="min-h-[44px] px-5">
                   Continue
                 </Button>
               ) : (
@@ -933,7 +946,7 @@ export function ApplicationForm({ cycleId, initialApplication }: ApplicationForm
                   type="button"
                   onClick={onSubmit}
                   disabled={isSubmitting}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold min-h-[44px] px-6"
                 >
                   {isSubmitting ? (
                     <>

@@ -79,6 +79,9 @@ export const BedMap: React.FC<BedMapProps> = ({
     "all",
   );
 
+  // View mode toggle: spatial grid vs accessible semantic table
+  const [viewMode, setViewMode] = React.useState<"grid" | "table">("grid");
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -294,6 +297,22 @@ export const BedMap: React.FC<BedMapProps> = ({
           {srAnnouncement}
         </div>
 
+        {/* Screen-reader pass notes and keyboard instructions */}
+        <div
+          className="sr-only"
+          role="note"
+          aria-label="Screen reader navigation notes for hostel bed map"
+        >
+          <p>
+            Hostel bed map for Floor {currentFloor?.floorNumber}. This view provides spatial bed
+            allocation status across rooms. Visual users can drag and drop student cards between
+            beds. For keyboard and screen reader users: activate each bed chip&apos;s action
+            dropdown menu using Enter or Space to move students, view match explanations, or open
+            the Warden Override dialog. Alternatively, activate the &quot;Accessible Table
+            View&quot; button in the toolbar for sequential tabular navigation.
+          </p>
+        </div>
+
         {/* Floor Selection & Quick Stats Bar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card p-4 rounded-xl border shadow-sm">
           <div className="flex items-center gap-2">
@@ -363,6 +382,23 @@ export const BedMap: React.FC<BedMapProps> = ({
                 Accessible
               </button>
             </div>
+
+            {/* View Mode Switcher: Grid vs Semantic Table */}
+            <div className="flex items-center gap-1 border-l pl-2 ml-1 text-xs">
+              <button
+                type="button"
+                onClick={() => setViewMode((v) => (v === "grid" ? "table" : "grid"))}
+                aria-pressed={viewMode === "table"}
+                className={cn(
+                  "px-2.5 py-1 rounded-md font-medium transition-colors border",
+                  viewMode === "table"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted/50 hover:bg-muted text-muted-foreground border-border",
+                )}
+              >
+                {viewMode === "table" ? "Show Grid View" : "Accessible Table View"}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -398,91 +434,175 @@ export const BedMap: React.FC<BedMapProps> = ({
           </span>
         </div>
 
-        {/* Spatial Room Grid */}
-        <div
-          role="grid"
-          aria-label={`Bed Map for Floor ${currentFloor?.floorNumber || 1}`}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-        >
-          {filteredRooms.map((room) => {
-            const isFull = room.occupiedCount >= room.capacity;
-            return (
-              <div
-                key={room.id}
-                role="row"
-                aria-label={`Room ${room.roomNumber}, ${room.roomType}, ${room.occupiedCount} of ${room.capacity} occupied`}
-                className="bg-card rounded-xl border p-3.5 flex flex-col justify-between shadow-sm hover:border-primary/40 transition-colors"
-              >
-                {/* Room Header */}
+        {viewMode === "table" ? (
+          <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+            <table className="w-full text-left text-xs border-collapse">
+              <caption className="p-3 text-sm font-semibold text-foreground border-b text-left bg-muted/20">
+                Floor {currentFloor?.floorNumber || 1} Bed Allocations Tabular View (
+                {filteredRooms.length} rooms)
+              </caption>
+              <thead>
+                <tr className="border-b bg-muted/50 text-muted-foreground font-medium">
+                  <th scope="col" className="p-3">
+                    Room
+                  </th>
+                  <th scope="col" className="p-3">
+                    Type
+                  </th>
+                  <th scope="col" className="p-3">
+                    Bed No
+                  </th>
+                  <th scope="col" className="p-3">
+                    Status
+                  </th>
+                  <th scope="col" className="p-3">
+                    Occupant
+                  </th>
+                  <th scope="col" className="p-3">
+                    Roll No
+                  </th>
+                  <th scope="col" className="p-3">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {filteredRooms.flatMap((room) =>
+                  room.beds.map((bed) => (
+                    <tr key={bed.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="p-3 font-semibold text-foreground">Room {room.roomNumber}</td>
+                      <td className="p-3 uppercase text-muted-foreground">{room.roomType}</td>
+                      <td className="p-3 font-mono font-medium">Bed {bed.bedNo}</td>
+                      <td className="p-3">
+                        <span className="capitalize">{bed.status}</span>
+                      </td>
+                      <td className="p-3 font-medium text-foreground">
+                        {bed.assignment ? bed.assignment.studentName : "—"}
+                      </td>
+                      <td className="p-3 text-muted-foreground font-mono">
+                        {bed.assignment ? bed.assignment.rollNumber : "—"}
+                      </td>
+                      <td className="p-3">
+                        {bed.assignment ? (
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => onViewExplanation?.(bed.assignment!)}
+                              className="px-2.5 py-1 rounded text-xs bg-muted hover:bg-muted/80 text-foreground border min-h-[36px]"
+                            >
+                              Explanation
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveRequestedFromMenu(bed, room)}
+                              className="px-2.5 py-1 rounded text-xs bg-amber-500/20 text-amber-500 hover:bg-amber-500/30 border border-amber-500/30 min-h-[36px]"
+                            >
+                              Move
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleMoveRequestedFromMenu(bed, room)}
+                            className="px-2.5 py-1 rounded text-xs bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30 border border-emerald-500/30 min-h-[36px]"
+                          >
+                            Assign Bed
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  )),
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          /* Spatial Room Grid */
+          <div
+            role="grid"
+            aria-label={`Bed Map for Floor ${currentFloor?.floorNumber || 1}`}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+          >
+            {filteredRooms.map((room) => {
+              const isFull = room.occupiedCount >= room.capacity;
+              return (
                 <div
-                  role="rowheader"
-                  className="flex items-center justify-between border-b pb-2 mb-3"
+                  key={room.id}
+                  role="row"
+                  aria-label={`Room ${room.roomNumber}, ${room.roomType}, ${room.occupiedCount} of ${room.capacity} occupied`}
+                  className="bg-card rounded-xl border p-3.5 flex flex-col justify-between shadow-sm hover:border-primary/40 transition-colors"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-foreground">
-                      Room {room.roomNumber}
-                    </span>
-                    <span className="text-[11px] text-muted-foreground uppercase font-medium px-1.5 py-0.5 bg-muted rounded">
-                      {room.roomType}
-                    </span>
-                    {room.accessible && (
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] text-sky-600 border-sky-300 py-0 gap-1"
-                      >
-                        <Accessibility className="w-2.5 h-2.5" /> Accessible
-                      </Badge>
-                    )}
-                  </div>
-                  <span
-                    className={cn(
-                      "text-xs font-mono font-semibold",
-                      isFull
-                        ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-amber-600 dark:text-amber-400",
-                    )}
+                  {/* Room Header */}
+                  <div
+                    role="rowheader"
+                    className="flex items-center justify-between border-b pb-2 mb-3"
                   >
-                    {room.occupiedCount}/{room.capacity}
-                  </span>
-                </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-foreground">
+                        Room {room.roomNumber}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground uppercase font-medium px-1.5 py-0.5 bg-muted rounded">
+                        {room.roomType}
+                      </span>
+                      {room.accessible && (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] text-sky-600 border-sky-300 py-0 gap-1"
+                        >
+                          <Accessibility className="w-2.5 h-2.5" /> Accessible
+                        </Badge>
+                      )}
+                    </div>
+                    <span
+                      className={cn(
+                        "text-xs font-mono font-semibold",
+                        isFull
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-amber-600 dark:text-amber-400",
+                      )}
+                    >
+                      {room.occupiedCount}/{room.capacity}
+                    </span>
+                  </div>
 
-                {/* Beds in Room */}
-                <div className="grid grid-cols-2 gap-2">
-                  {room.beds.map((bed) => {
-                    const isConflict = conflictTarget?.bedId === bed.id;
-                    const conflictReason = isConflict ? conflictTarget.reason : undefined;
+                  {/* Beds in Room */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {room.beds.map((bed) => {
+                      const isConflict = conflictTarget?.bedId === bed.id;
+                      const conflictReason = isConflict ? conflictTarget.reason : undefined;
 
-                    return (
-                      <BedChip
-                        key={bed.id}
-                        bed={bed}
-                        room={{
-                          id: room.id,
-                          roomNumber: room.roomNumber,
-                          roomType: room.roomType,
-                          capacity: room.capacity,
-                          accessible: room.accessible,
-                        }}
-                        isTargetConflict={isConflict}
-                        {...(conflictReason ? { conflictReason } : {})}
-                        onMoveRequested={(b) =>
-                          handleMoveRequestedFromMenu(b, {
+                      return (
+                        <BedChip
+                          key={bed.id}
+                          bed={bed}
+                          room={{
                             id: room.id,
                             roomNumber: room.roomNumber,
                             roomType: room.roomType,
                             capacity: room.capacity,
                             accessible: room.accessible,
-                          })
-                        }
-                        onViewExplanation={onViewExplanation}
-                      />
-                    );
-                  })}
+                          }}
+                          isTargetConflict={isConflict}
+                          {...(conflictReason ? { conflictReason } : {})}
+                          onMoveRequested={(b) =>
+                            handleMoveRequestedFromMenu(b, {
+                              id: room.id,
+                              roomNumber: room.roomNumber,
+                              roomType: room.roomType,
+                              capacity: room.capacity,
+                              accessible: room.accessible,
+                            })
+                          }
+                          onViewExplanation={onViewExplanation}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
         {filteredRooms.length === 0 && (
           <div className="text-center py-12 border-2 border-dashed rounded-xl">

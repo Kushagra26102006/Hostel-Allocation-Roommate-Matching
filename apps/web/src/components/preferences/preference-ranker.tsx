@@ -64,6 +64,8 @@ function SortableHostelCard({ hostel, rank, total, onMoveUp, onMoveDown }: Sorta
       ref={setNodeRef}
       style={style}
       layout
+      role="listitem"
+      aria-roledescription="sortable hostel preference"
       transition={{ type: "spring", stiffness: 350, damping: 25 }}
       className={cn(
         "rounded-2xl border bg-surface/90 backdrop-blur-md p-4 shadow-md transition-shadow",
@@ -79,7 +81,7 @@ function SortableHostelCard({ hostel, rank, total, onMoveUp, onMoveDown }: Sorta
           {...attributes}
           {...listeners}
           aria-label={`Drag to reorder ${hostel.name}`}
-          className="p-2 hover:bg-surface/80 rounded-lg text-muted cursor-grab active:cursor-grabbing"
+          className="min-h-[44px] min-w-[44px] p-2 hover:bg-surface/80 rounded-lg text-muted cursor-grab active:cursor-grabbing flex items-center justify-center"
         >
           <GripVertical className="w-5 h-5" />
         </button>
@@ -92,7 +94,12 @@ function SortableHostelCard({ hostel, rank, total, onMoveUp, onMoveDown }: Sorta
         {/* Photo Thumbnail / Placeholder */}
         <div className="w-16 h-16 rounded-xl bg-surface/60 border border-border/40 overflow-hidden flex-shrink-0 flex items-center justify-center text-xs text-muted font-mono">
           {hostel.photoUrl ? (
-            <img src={hostel.photoUrl} alt={hostel.name} className="w-full h-full object-cover" />
+            <img
+              src={hostel.photoUrl}
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-cover"
+            />
           ) : (
             "HOSTEL"
           )}
@@ -120,28 +127,28 @@ function SortableHostelCard({ hostel, rank, total, onMoveUp, onMoveDown }: Sorta
         </div>
 
         {/* Accessible Keyboard Controls & Buttons */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <Button
             type="button"
             variant="outline"
             size="icon"
-            className="h-8 w-8"
+            className="min-h-[44px] min-w-[44px] h-11 w-11"
             disabled={rank === 1}
             onClick={onMoveUp}
-            aria-label={`Move ${hostel.name} up`}
+            aria-label={`Move ${hostel.name} up, currently rank ${rank}`}
           >
-            <ArrowUp className="w-3.5 h-3.5" />
+            <ArrowUp className="w-4 h-4" />
           </Button>
           <Button
             type="button"
             variant="outline"
             size="icon"
-            className="h-8 w-8"
+            className="min-h-[44px] min-w-[44px] h-11 w-11"
             disabled={rank === total}
             onClick={onMoveDown}
-            aria-label={`Move ${hostel.name} down`}
+            aria-label={`Move ${hostel.name} down, currently rank ${rank}`}
           >
-            <ArrowDown className="w-3.5 h-3.5" />
+            <ArrowDown className="w-4 h-4" />
           </Button>
         </div>
       </div>
@@ -242,7 +249,7 @@ export function PreferenceRanker({
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Aria-Live Announcements for Screen Readers */}
-      <div aria-live="polite" className="sr-only">
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
         {announcement}
       </div>
 
@@ -276,7 +283,7 @@ export function PreferenceRanker({
       {/* Drag and Drop Sortable Context */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-3">
+          <div className="space-y-3" role="list" aria-label="Preference ranked hostels">
             {items.map((hostel, idx) => (
               <SortableHostelCard
                 key={hostel.id}

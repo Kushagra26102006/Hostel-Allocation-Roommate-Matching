@@ -22,6 +22,23 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  /* WCAG 2.2 AA Focus Visible styling — high contrast and never hidden by sticky headers */
+  :focus-visible {
+    outline: 2px solid hsl(var(--brand-500, 239 84% 67%)) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.25) !important;
+  }
+
+  /* Target Size utility (WCAG 2.2 Criterion 2.5.8 Target Size Minimum) */
+  .min-target-size {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   body {
