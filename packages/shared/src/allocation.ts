@@ -1,5 +1,8 @@
 export const ALLOCATION_QUEUE_NAME = "allocation";
 export const LETTERS_QUEUE_NAME = "allocation-letters";
+export const NOTIFICATIONS_QUEUE_NAME = "notifications";
+export const APPEAL_ESCALATION_QUEUE_NAME = "appeal-escalation";
+export const DEFAULT_SLA_WORKING_DAYS = 3;
 
 export function getAllocationEventChannel(runId: string): string {
   return `allocation:run:${runId}:events`;
@@ -11,6 +14,10 @@ export function getAllocationCancelKey(runId: string): string {
 
 export function getLetterProgressChannel(draftId: string): string {
   return `letters:draft:${draftId}:progress`;
+}
+
+export function getUserNotificationChannel(userId: string): string {
+  return `user:${userId}:notifications`;
 }
 
 export interface LettersJobPayload {

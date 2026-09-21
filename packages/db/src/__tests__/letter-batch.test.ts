@@ -269,14 +269,14 @@ describe("Prompt 22: Publication Letters, Resumable Batch & Student Reveal", () 
     expect(allLetters).toHaveLength(3);
 
     // Mark first letter as 'generated'
-    allLetters[0].status = "generated";
-    allLetters[0].generated_at = new Date();
-    await allLetters[0].save();
+    allLetters[0]!.status = "generated";
+    allLetters[0]!.generated_at = new Date();
+    await allLetters[0]!.save();
 
     // Mark second letter as 'generated'
-    allLetters[1].status = "generated";
-    allLetters[1].generated_at = new Date();
-    await allLetters[1].save();
+    allLetters[1]!.status = "generated";
+    allLetters[1]!.generated_at = new Date();
+    await allLetters[1]!.save();
 
     // The third letter is still 'pending'
 
@@ -288,7 +288,7 @@ describe("Prompt 22: Publication Letters, Resumable Batch & Student Reveal", () 
     // It should ONLY process the 1 remaining ungenerated letter!
     expect(chunks).toHaveLength(1);
     expect(chunks[0]).toHaveLength(1);
-    expect(chunks[0][0]._id.toString()).toBe(allLetters[2]._id.toString());
+    expect(chunks[0]![0]!._id.toString()).toBe(allLetters[2]!._id.toString());
     expect(progress.generated).toBe(2);
     expect(progress.pending).toBe(1);
     expect(progress.total).toBe(3);

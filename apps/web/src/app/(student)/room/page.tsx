@@ -28,6 +28,7 @@ export default function StudentRoomPage() {
   const [isRoomChangeOpen, setIsRoomChangeOpen] = React.useState<boolean>(false);
   const [isAppealOpen, setIsAppealOpen] = React.useState<boolean>(false);
   const [isDownloading, setIsDownloading] = React.useState<boolean>(false);
+  const [, setIsRevealed] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     let isMounted = true;

@@ -323,3 +323,53 @@ Tracks milestones for the HostelHub project.
    - `PromotionTimeline` visual audit trail of recent automated and manual promotions.
    - `ReconcileModal` displaying capacity vs active recount with 0-drift verification.
    - `VacateBedModal` to simulate vacancy triggers live.
+
+---
+
+## Milestone 10 & 11 — Room Changes, Atomic Swaps & Appeals (Prompt 24) ✅
+
+**Date:** 2026-09-21  
+**Status:** Complete  
+**Commit target:** `feat(changes): room change requests and appeals`
+
+### What was done
+
+1. **Pure Domain (`packages/domain/src/changes/`)**:
+   - `validateRoomChange`: Strict revalidation of all hard constraints (`HC3`–`HC11`), including capacity, gender policy, accessibility requirements, quota buckets, programme cohorts, fee tiers, and roommate deal-breaker conflicts.
+   - `validateSwap`: Bidirectional validation of unit exchanges across rooms and hostels. One side failing cancels the entire transaction atomically.
+   - `calculateSlaDueDate`, `isSlaBreach`, `getWorkingDaysRemaining`: Pure SLA calculation engine skipping weekends and configurable holidays.
+   - 21 Vitest domain tests in `packages/domain/src/__tests__/changes/changes-domain.test.ts` (100% pass).
+
+2. **Database Layer (`packages/db/src/`)**:
+   - Models:
+     - `RoomChangeRequestModel`: Assignment ID, reason, evidence keys, target bed, status, warden decision with reason, constraint audit flags.
+     - `SwapRequestModel`: Bidirectional participant tracking, acceptance flags, validation outcomes, cancellation reasons.
+     - `AppealModel`: Statement, evidence, SLA due date, escalation timestamps, dual-tier decision records (warden and chief warden).
+   - Services:
+     - `RoomChangeService`: Lifecycle management, student isolation, constraint revalidation on approval, tamper-evident hash chain audit logging.
+     - `SwapService`: Proposal, acceptance, atomic completion/rollback, cancellation.
+     - `AppealService`: Submission, SLA deadline tracking, multi-tier routing (`warden_review` -> `chief_warden_review`), and scheduled auto-escalation.
+   - 20 DB workflow integration tests in `packages/db/src/__tests__/` (100% pass).
+
+3. **Background Worker (`apps/worker/src/`)**:
+   - `appeal-escalation-processor.ts`: Hourly BullMQ repeatable job for SLA breach escalation, notifying both roles and logging audit events.
+
+4. **Web API (`apps/web/src/app/api/v1/`)**:
+   - Authenticated, tenant-scoped REST endpoints with Auth.js v5:
+     - `/api/v1/room-changes`: POST (submit request) & GET (list)
+     - `/api/v1/room-changes/[id]`: GET (detail)
+     - `/api/v1/room-changes/[id]/decide`: POST (warden approve/reject)
+     - `/api/v1/swaps`: POST (propose) & GET (list)
+     - `/api/v1/swaps/[id]/accept`: POST (counterpart accepts, atomic execute)
+     - `/api/v1/swaps/[id]/cancel`: POST (cancellation)
+     - `/api/v1/appeals`: POST (submit appeal) & GET (list)
+     - `/api/v1/appeals/[id]`: GET (detail with stored explanation & SLA info)
+     - `/api/v1/appeals/[id]/decide`: POST (multi-tier review decision)
+   - 8 Vitest API route tests in `apps/web/src/__tests__/room-changes-api.test.ts` (100% pass).
+
+5. **UI Components & Dashboard Pages (`apps/web/src/`)**:
+   - `Timeline`, `StatusChip`, `SlaBadge` (`apps/web/src/components/changes/timeline.tsx`) with dark-mode zinc aesthetics and Framer Motion step animations.
+   - Student room changes page (`/room/changes`) with request status tracker and submission modal.
+   - Student room swap page (`/room/swap`) with counterpart selection and accept/cancel controls.
+   - Student appeals page (`/room/appeal`) with SLA countdown, stored allocation explanation, and status tracking.
+   - Warden decision panels for room changes (`/staff/warden/room-changes`) and appeals (`/staff/warden/appeals`) with SLA urgency sorting and decision modals requiring written reasons.

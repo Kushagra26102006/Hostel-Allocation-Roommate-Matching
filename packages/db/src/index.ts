@@ -257,3 +257,62 @@ export {
 } from "./models/allocation-letter.model.js";
 
 export { LetterService, LetterServiceError } from "./services/letter.service.js";
+
+// Prompt 23: Notification Hub Models and Service
+export {
+  NotificationModel,
+  type NotificationDocument,
+  type NotificationCategory,
+} from "./models/notification.model.js";
+
+export {
+  NotificationPreferenceModel,
+  type NotificationPreferenceDocument,
+} from "./models/notification-preference.model.js";
+
+export {
+  NotificationDeliveryModel,
+  type NotificationDeliveryDocument,
+} from "./models/notification-delivery.model.js";
+
+export {
+  PushSubscriptionModel,
+  type PushSubscriptionDocument,
+} from "./models/push-subscription.model.js";
+
+export {
+  NotificationService,
+  type CreateInAppNotificationParams,
+  type UserPreferencesDto,
+} from "./services/notification.service.js";
+
+// Prompt 24: Room Change, Swaps & Appeals
+export {
+  RoomChangeRequestModel,
+  type IRoomChangeRequest,
+  type RoomChangeRequestDocument,
+  type RoomChangeRequestStatus,
+  type IRoomChangeDecidedBy,
+} from "./models/room-change-request.model.js";
+
+export {
+  SwapRequestModel,
+  type ISwapRequest,
+  type SwapRequestDocument,
+  type SwapRequestStatus,
+} from "./models/swap-request.model.js";
+
+export {
+  AppealModel,
+  type IAppeal,
+  type AppealDocument,
+  type AppealModelStatus,
+  type AppealModelOutcome,
+  type IAppealDecision,
+} from "./models/appeal.model.js";
+
+export { RoomChangeService, RoomChangeServiceError } from "./services/room-change.service.js";
+
+export { SwapService, SwapServiceError } from "./services/swap.service.js";
+
+export { AppealService, AppealServiceError } from "./services/appeal.service.js";

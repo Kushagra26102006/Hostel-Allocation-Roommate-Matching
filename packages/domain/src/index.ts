@@ -24,3 +24,5 @@ export * from "./allocation/index.js";
 export * from "./review/index.js";
 export * from "./waitlist/index.js";
 export * from "./publication/index.js";
+export * from "./notifications/index.js";
+export * from "./changes/index.js";

@@ -10,6 +10,8 @@ import { parseEnv, workerEnvSchema, createLogger } from "@hostelhub/shared";
 import { setupWindowScheduler } from "./window-scheduler.js";
 import { setupAllocationWorker } from "./allocation-processor.js";
 import { setupLetterWorker } from "./letter-processor.js";
+import { setupNotificationWorker } from "./notification-processor.js";
+import { setupAppealEscalationWorker } from "./appeal-escalation-processor.js";
 
 // ── 1. Validate environment (fail fast) ───────────────────────────────────────
 const env = parseEnv(workerEnvSchema, process.env);
@@ -33,7 +35,7 @@ const redis = new Redis(env.REDIS_URL, {
 await redis.connect();
 log.info("Redis connected");
 
-// ── 4. Setup BullMQ Window Scheduler & Allocation Worker ───────────────────
+// ── 4. Setup BullMQ Window Scheduler & Background Processors ───────────────
 const { queue, worker } = await setupWindowScheduler(redis);
 log.info("Window scheduler registered and running");
 
@@ -43,6 +45,12 @@ log.info("Allocation background worker registered and listening for jobs");
 const letterWorker = setupLetterWorker(redis);
 log.info("Letter background worker registered and listening for batch jobs");
 
+const notificationWorker = setupNotificationWorker(redis);
+log.info("Notification hub worker registered and listening for domain events");
+
+const { worker: escalationWorker, queue: escalationQueue } = setupAppealEscalationWorker(redis);
+log.info("Appeal escalation worker registered (hourly SLA check)");
+
 // ── 5. Signal readiness ───────────────────────────────────────────────────────
 log.info({ pid: process.pid }, "worker ready");
 
@@ -50,6 +58,9 @@ log.info({ pid: process.pid }, "worker ready");
 async function shutdown(signal: string): Promise<void> {
   log.info({ signal }, "Shutting down worker...");
   try {
+    await escalationWorker.close();
+    await escalationQueue.close();
+    await notificationWorker.close();
     await letterWorker.close();
     await allocationWorker.close();
     await worker.close();

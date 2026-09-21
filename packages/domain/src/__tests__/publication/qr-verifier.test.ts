@@ -46,14 +46,14 @@ describe("Prompt 22: Ed25519 QR Token Generation & Verification", () => {
     const parts = token.split(".");
 
     // Case 1: Tampered signature byte
-    const tamperedSig = parts[2].slice(0, -4) + (parts[2].endsWith("A") ? "B" : "A");
+    const tamperedSig = parts[2]!.slice(0, -4) + (parts[2]!.endsWith("A") ? "B" : "A");
     const tamperedTokenSig = `${parts[0]}.${parts[1]}.${tamperedSig}`;
     const res1 = await verifyVerificationToken(tamperedTokenSig, { [kid]: publicKeyPem });
     expect(res1.valid).toBe(false);
     expect(res1.reason).toBe("tampered");
 
     // Case 2: Tampered payload (e.g. changed letterId or assignment hash)
-    const decodedPayload = JSON.parse(base64UrlDecode(parts[1]));
+    const decodedPayload = JSON.parse(base64UrlDecode(parts[1]!));
     decodedPayload.lid = "different-letter-id";
     const forgedPayloadBase64 = Buffer.from(JSON.stringify(decodedPayload)).toString("base64url");
     const tamperedPayloadToken = `${parts[0]}.${forgedPayloadBase64}.${parts[2]}`;
@@ -95,7 +95,7 @@ describe("Prompt 22: Ed25519 QR Token Generation & Verification", () => {
   it("TEST REQUIREMENT: Verification response and token payload reveal NO personal data", async () => {
     const token = signVerificationToken(samplePayload, privateKeyPem, kid);
     const [, encodedPayload] = token.split(".");
-    const decodedPayloadObj = JSON.parse(base64UrlDecode(encodedPayload));
+    const decodedPayloadObj = JSON.parse(base64UrlDecode(encodedPayload!));
 
     // Must NOT contain personal identifiable properties
     expect(decodedPayloadObj).not.toHaveProperty("studentName");

@@ -34,6 +34,20 @@ const baseSchema = z.object({
   ED25519_PRIVATE_KEY: z.string().optional(),
   ED25519_PUBLIC_KEY: z.string().optional(),
   ED25519_PUBLIC_KEYS_JSON: z.string().optional(),
+
+  // Notification Hub Providers & Webhooks
+  EMAIL_PROVIDER: z.enum(["mailpit", "resend", "brevo"]).default("mailpit"),
+  RESEND_API_KEY: z.string().optional(),
+  BREVO_API_KEY: z.string().optional(),
+  VAPID_PUBLIC_KEY: z.string().optional(),
+  VAPID_PRIVATE_KEY: z.string().optional(),
+  VAPID_SUBJECT: z.string().default("mailto:notifications@hostelhub.internal"),
+  SMS_PROVIDER: z.enum(["console", "twilio"]).default("console"),
+  TWILIO_ACCOUNT_SID: z.string().optional(),
+  TWILIO_AUTH_TOKEN: z.string().optional(),
+  TWILIO_FROM_NUMBER: z.string().optional(),
+  SLACK_WEBHOOK_URL: z.string().optional(),
+  DISCORD_WEBHOOK_URL: z.string().optional(),
 });
 
 // ── Feature flags shared by all apps ─────────────────────────────────────────
