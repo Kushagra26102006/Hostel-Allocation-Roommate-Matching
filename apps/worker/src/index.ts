@@ -12,6 +12,7 @@ import { setupAllocationWorker } from "./allocation-processor.js";
 import { setupLetterWorker } from "./letter-processor.js";
 import { setupNotificationWorker } from "./notification-processor.js";
 import { setupAppealEscalationWorker } from "./appeal-escalation-processor.js";
+import { setupReportWorker } from "./report-processor.js";
 
 // ── 1. Validate environment (fail fast) ───────────────────────────────────────
 const env = parseEnv(workerEnvSchema, process.env);
@@ -51,6 +52,9 @@ log.info("Notification hub worker registered and listening for domain events");
 const { worker: escalationWorker, queue: escalationQueue } = setupAppealEscalationWorker(redis);
 log.info("Appeal escalation worker registered (hourly SLA check)");
 
+const { reportWorker, scheduledWorker, reportQueue, scheduledQueue } = setupReportWorker(redis);
+log.info("Report background worker & weekly scheduled digest registered");
+
 // ── 5. Signal readiness ───────────────────────────────────────────────────────
 log.info({ pid: process.pid }, "worker ready");
 
@@ -58,6 +62,10 @@ log.info({ pid: process.pid }, "worker ready");
 async function shutdown(signal: string): Promise<void> {
   log.info({ signal }, "Shutting down worker...");
   try {
+    await scheduledWorker.close();
+    await scheduledQueue.close();
+    await reportWorker.close();
+    await reportQueue.close();
     await escalationWorker.close();
     await escalationQueue.close();
     await notificationWorker.close();

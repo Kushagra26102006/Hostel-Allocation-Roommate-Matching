@@ -49,6 +49,31 @@ export function requirePermission(
 }
 
 /**
+ * Returns true if the specified role is strictly read-only across the system.
+ * The Dean is strictly read-only across all modules.
+ */
+export function isReadOnlyRole(role: UserRole): boolean {
+  return role === "dean";
+}
+
+/**
+ * Asserts that a user is permitted to perform mutation/write operations.
+ * Throws ForbiddenError if user only has read-only roles (e.g. Dean).
+ */
+export function assertNotReadOnly(user: SessionUser | null | undefined): void {
+  if (!user) {
+    throw new UnauthorizedError("User is not authenticated.");
+  }
+
+  const hasWriteRole = user.roles.some((r) => !isReadOnlyRole(r));
+  if (!hasWriteRole) {
+    throw new ForbiddenError(
+      "The Dean role is strictly read-only. Write and mutation operations are prohibited.",
+    );
+  }
+}
+
+/**
  * Object-level policy helper: canAccessApplication
  *
  * Rules:

@@ -20,6 +20,7 @@ import {
   UserCog,
   FileClock,
   ListOrdered,
+  BarChart3,
 } from "lucide-react";
 import type { Role } from "@/stores/role-store";
 
@@ -177,6 +178,15 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     description: "Trigger Gale-Shapley solver and review Pareto optimality graphs",
   },
   {
+    id: "chief-reports",
+    titleKey: "nav.chiefReports",
+    fallbackTitle: "Reports & Fairness",
+    href: "/staff/reports",
+    icon: BarChart3,
+    roles: ["chief_warden", "warden", "hostel_admin"],
+    description: "Occupancy heat map, preference satisfaction, overrides, and fairness breakdown",
+  },
+  {
     id: "chief-inventory",
     titleKey: "nav.chiefInventory",
     fallbackTitle: "Campus Inventory",
@@ -252,6 +262,16 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     icon: LayoutDashboard,
     roles: ["dean"],
     description: "University residential governance, grievance metrics, and safety score",
+  },
+  {
+    id: "dean-reports",
+    titleKey: "nav.deanReports",
+    fallbackTitle: "Reports & Fairness",
+    href: "/staff/reports",
+    icon: BarChart3,
+    roles: ["dean"],
+    description:
+      "Read-only analytics, preference satisfaction, Gini coefficient, and executive exports",
   },
   {
     id: "dean-policies",

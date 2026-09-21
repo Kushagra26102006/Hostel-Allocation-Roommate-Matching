@@ -373,3 +373,61 @@ Tracks milestones for the HostelHub project.
    - Student room swap page (`/room/swap`) with counterpart selection and accept/cancel controls.
    - Student appeals page (`/room/appeal`) with SLA countdown, stored allocation explanation, and status tracking.
    - Warden decision panels for room changes (`/staff/warden/room-changes`) and appeals (`/staff/warden/appeals`) with SLA urgency sorting and decision modals requiring written reasons.
+
+---
+
+## Milestone 13 — Reports, Analytics & Fairness Dashboard (Prompt 25) ✅
+
+**Date:** 2026-09-21  
+**Status:** Complete  
+**Commit target:** `feat(reports): analytics and fairness dashboard`
+
+### What was done
+
+1. **Pure Domain (`packages/domain/src/reports/`)**:
+   - `privacy-suppression.ts`: Strict differential privacy masking threshold ($1 \le N < 5$ masked as `"< 5"`, `count: null`, `is_suppressed: true`), ensuring small groups cannot be deanonymized in any breakdown.
+   - `fairness-calculator.ts`: Pure mathematical formulas for:
+     - Gini coefficient of preference satisfaction scores ($O(n \log n)$).
+     - Category parity gap between quota buckets.
+     - Priority inversion detector asserting invariant $0$ inversions.
+     - Roommate compatibility statistics (mean and minimum).
+   - 16 Vitest domain unit tests across `fairness.test.ts` and `suppression.test.ts` (100% pass).
+
+2. **Database Layer & Aggregation (`packages/db/src/`)**:
+   - `ReportReadModelModel`: Pre-aggregated read model schema indexed by `(institution_id, cycle_id, report_type)` for $< 3$s sub-second dashboard queries.
+   - `ReportService`: Complete implementation of all 8 required reports:
+     - Occupancy by hostel, block, and room type with 3-level drilldown.
+     - Preference satisfaction (1st choice rate, average satisfied rank).
+     - Override analysis (by warden, category, reason).
+     - Waitlist movement (waitlisted, promoted, median wait time).
+     - Cycle time (apply to publish, stage-by-stage durations).
+     - Accessibility compliance (candidate vs accommodated, 0 violations).
+     - Year-on-year comparative delta.
+     - Fairness report per run with quota breakdowns, Gini, parity gap, zero inversions, compatibility metrics.
+   - Multi-format report export engine: Synchronous and background-ready streaming for CSV, XLSX (via ExcelJS), and self-contained executive vector PDF.
+   - 10 integration tests in `packages/db/src/__tests__/reports-reconciliation.test.ts` reconciling counts with raw synthetic database entities.
+
+3. **Background Worker & Scheduled Digest (`apps/worker/src/`)**:
+   - `report-processor.ts`:
+     - BullMQ worker for long-running asynchronous report generation jobs with completion in-app notification.
+     - Weekly scheduled executive PDF digest generator for Dean and Chief Warden (cron: `0 8 * * 1`), dispatching executive reports directly to notification queues.
+
+4. **Web API & Policy Layer (`apps/web/src/`)**:
+   - `policy.ts`: Strict read-only enforcement for Dean role (`isReadOnlyRole`, `assertNotReadOnly`), preventing write mutations across all staff endpoints.
+   - Endpoints:
+     - `/api/v1/reports/[type]`: Pre-aggregated read model retrieval with privacy suppression.
+     - `/api/v1/reports/[type]/export`: Direct download or async BullMQ background job queueing.
+     - `/api/v1/reports/refresh`: Read model re-computation endpoint (strictly 403 Forbidden for Dean).
+   - 7 policy unit tests in `apps/web/src/__tests__/dean-read-only.test.ts` verifying that Dean is strictly read-only.
+
+5. **Bento UI & Accessibility (`apps/web/src/`)**:
+   - `BentoDashboard` (`apps/web/src/components/reports/dashboard-bento.tsx`):
+     - Interactive Bento grid using Recharts with smooth data transitions.
+     - KPI top ribbon (occupancy, 1st choice rate, Gini, inversions certified 0, cycle time).
+     - Interactive Occupancy Heat Map with 3-tier drilldown (Hostels $\to$ Blocks $\to$ Rooms) and live capacity badges.
+     - Quota fairness breakdown chart, preference satisfaction distribution, and YoY comparison toggle.
+     - Search filter state persistence in URL search parameters (`?hostel=...&yoy=...`).
+     - Reduced motion support disabling entrance animations for accessibility (`useReducedMotion`).
+     - Screen reader accessible data table alternatives on every chart with toggleable view.
+   - `/staff/reports`: Staff portal route pre-fetching read models and rendering the executive Bento dashboard.
+   - Navigation updated with dedicated "Reports & Fairness" destination across all staff roles.

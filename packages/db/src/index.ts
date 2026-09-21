@@ -316,3 +316,12 @@ export { RoomChangeService, RoomChangeServiceError } from "./services/room-chang
 export { SwapService, SwapServiceError } from "./services/swap.service.js";
 
 export { AppealService, AppealServiceError } from "./services/appeal.service.js";
+
+// Prompt 25: Reports, Analytics & Fairness
+export {
+  ReportReadModelModel,
+  type IReportReadModel,
+  type ReportReadModelDocument,
+} from "./models/report-read-model.model.js";
+
+export { ReportService, type ReportFilterOptions } from "./services/report.service.js";

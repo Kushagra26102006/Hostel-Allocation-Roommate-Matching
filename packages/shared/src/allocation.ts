@@ -2,7 +2,30 @@ export const ALLOCATION_QUEUE_NAME = "allocation";
 export const LETTERS_QUEUE_NAME = "allocation-letters";
 export const NOTIFICATIONS_QUEUE_NAME = "notifications";
 export const APPEAL_ESCALATION_QUEUE_NAME = "appeal-escalation";
+export const REPORTS_QUEUE_NAME = "reports";
+export const REPORTS_SCHEDULED_QUEUE_NAME = "reports-scheduled";
 export const DEFAULT_SLA_WORKING_DAYS = 3;
+
+export interface ReportJobPayload {
+  reportType:
+    | "occupancy"
+    | "preference_satisfaction"
+    | "override_analysis"
+    | "waitlist_movement"
+    | "cycle_time"
+    | "accessibility_compliance"
+    | "year_on_year"
+    | "fairness";
+  format: "csv" | "xlsx" | "pdf";
+  institutionId: string;
+  cycleId?: string | undefined;
+  requestedByUserId: string;
+}
+
+export interface ScheduledSummaryPayload {
+  institutionId: string;
+  cycleId?: string | undefined;
+}
 
 export function getAllocationEventChannel(runId: string): string {
   return `allocation:run:${runId}:events`;

@@ -26,3 +26,4 @@ export * from "./waitlist/index.js";
 export * from "./publication/index.js";
 export * from "./notifications/index.js";
 export * from "./changes/index.js";
+export * from "./reports/index.js";

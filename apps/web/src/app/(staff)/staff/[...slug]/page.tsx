@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   Building,
@@ -46,6 +47,11 @@ export default async function StaffModulePage({ params }: PageProps) {
     navItem?.fallbackTitle ??
     slug[slug.length - 1]?.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ??
     "Staff Destination";
+
+  // ── 0. REPORTS & ANALYTICS REDIRECT ───────────────────────────────────────
+  if (slug.includes("analytics") || slug.includes("reports")) {
+    redirect("/staff/reports");
+  }
 
   // ── 1. INVENTORY & ROOM HEATMAP MODULE ─────────────────────────────────────
   if (slug.includes("inventory") || slug.includes("rooms")) {
