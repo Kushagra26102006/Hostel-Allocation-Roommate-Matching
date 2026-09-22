@@ -31,6 +31,7 @@ import { HostelModel } from "../models/hostel.model.js";
 import { ApplicationModel } from "../models/application.model.js";
 import { AuditService } from "./audit.service.js";
 import { VersionConflictError } from "../repository/errors.js";
+import { getHostelWalkingMinutesMap } from "./walking-distance.service.js";
 
 export interface WorkflowActor {
   id: string;
@@ -324,11 +325,12 @@ export class DraftWorkflowService {
       ...(feeCategoryVal ? { feeCategoryRequirement: feeCategoryVal } : {}),
     };
 
+    const walkingMinutesMap = await getHostelWalkingMinutesMap(draft.institution_id);
     const toHostelDomain: Hostel = {
       id: toHostel._id.toString(),
       name: toHostel.name,
       genderPolicy: toHostel.gender_policy as GenderPolicy,
-      walkingMinutes: 5,
+      walkingMinutes: walkingMinutesMap.get(toHostel._id.toString()) ?? 15,
     };
 
     const validationContext: OverrideValidationContext = {

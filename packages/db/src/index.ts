@@ -352,3 +352,9 @@ export {
   type SimulationActor,
   type ScenarioOptions,
 } from "./services/simulator.service.js";
+
+// Walking Distance Service
+export {
+  getHostelWalkingMinutesMap,
+  precomputeOfflineWalkingDistances,
+} from "./services/walking-distance.service.js";

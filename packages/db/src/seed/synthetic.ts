@@ -10,6 +10,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 for (const candidate of [
   path.resolve(process.cwd(), ".env"),
+  path.resolve(process.cwd(), "../../.env"),
+  path.resolve(__dirname, "../../../../.env"),
   path.resolve(__dirname, "../../../.env"),
   path.resolve(__dirname, "../../.env"),
 ]) {

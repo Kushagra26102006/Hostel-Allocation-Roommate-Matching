@@ -1,5 +1,5 @@
 import { apiHandler } from "@/lib/api/handler.js";
-import { HostelRepository } from "@hostelhub/db";
+import { connectDb, HostelRepository } from "@hostelhub/db";
 import { getAllCachedDistances } from "@/lib/routing/distance-precomputer.js";
 
 /**
@@ -20,8 +20,26 @@ export const GET = apiHandler(
     summary: "Get hostel and academic block locations with cached walking distances",
   },
   async ({ institution_id }) => {
+    await connectDb();
+    let instId = institution_id;
+    if (!instId) {
+      const { InstitutionModel } = await import("@hostelhub/db");
+      const defaultInst = await InstitutionModel.findOne({ status: "active" }).select("_id").lean();
+      if (defaultInst) {
+        instId = defaultInst._id.toString();
+      }
+    }
+
+    if (!instId) {
+      return {
+        hostels: [],
+        academicBlocks: [],
+        distances: [],
+      };
+    }
+
     // Load hostels with location data via repository
-    const hostelRepo = new HostelRepository(institution_id);
+    const hostelRepo = new HostelRepository(instId);
     const hostels = await hostelRepo.find({
       status: "active",
     });
@@ -38,7 +56,7 @@ export const GET = apiHandler(
       }));
 
     // Load academic blocks
-    const blocks = await getAcademicBlocks(institution_id);
+    const blocks = await getAcademicBlocks(instId);
 
     const academicBlocks = blocks.map((b) => ({
       id: b._id.toString(),
@@ -49,7 +67,7 @@ export const GET = apiHandler(
     }));
 
     // Load cached walking distances
-    const distances = await getAllCachedDistances(institution_id);
+    const distances = await getAllCachedDistances(instId);
 
     return {
       hostels: hostelLocations,

@@ -30,16 +30,16 @@ export interface PolicyDocumentChunk {
 
 export interface AssistantRequest {
   messages: AssistantMessage[];
-  contextDocuments?: PolicyDocumentChunk[];
-  studentExplanation?: StudentExplanationContext;
-  temperature?: number;
-  maxTokens?: number;
+  contextDocuments?: PolicyDocumentChunk[] | undefined;
+  studentExplanation?: StudentExplanationContext | undefined;
+  temperature?: number | undefined;
+  maxTokens?: number | undefined;
 }
 
 export interface AssistantResponse {
   content: string;
   provider: string;
-  citations?: string[];
+  citations?: string[] | undefined;
   latencyMs: number;
 }
 

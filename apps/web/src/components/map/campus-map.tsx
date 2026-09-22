@@ -210,6 +210,7 @@ export function CampusMap() {
     const initMap = async () => {
       try {
         const leaflet = await import("leaflet");
+        // @ts-expect-error - CSS module declaration
         await import("leaflet/dist/leaflet.css");
         L = leaflet;
         setMapReady(true);
@@ -309,7 +310,10 @@ export function CampusMap() {
         </div>`,
       );
 
-      marker.on("click", () => setSelectedHostel(hostel));
+      marker.on("click", () => {
+        setSelectedHostel(hostel);
+        setSelectedBlock(null);
+      });
     }
 
     // Add academic block markers
@@ -319,14 +323,38 @@ export function CampusMap() {
         title: block.name,
       }).addTo(map);
 
+      const blockDistances = mapData.distances.filter((d) => d.academicBlockId === block.id);
+      const blockDistanceHtml = blockDistances
+        .map((d) => {
+          const hostel = mapData.hostels.find((h) => h.id === d.hostelId);
+          return hostel
+            ? `<div style="display:flex;justify-content:space-between;gap:12px;padding:2px 0">
+                <span>${hostel.name}</span>
+                <span style="color:#3b82f6;font-weight:600">${d.walkingMinutes} min</span>
+              </div>`
+            : "";
+        })
+        .join("");
+
       marker.bindPopup(
-        `<div>
+        `<div style="min-width:180px">
           <h3 style="margin:0 0 2px 0;font-size:14px;font-weight:700">${block.name}</h3>
-          <span style="font-size:12px;color:#6b7280">${block.shortCode}</span>
+          <span style="font-size:12px;color:#6b7280;display:inline-block;margin-bottom:6px">${block.shortCode}</span>
+          ${
+            blockDistanceHtml
+              ? `<div style="border-top:1px solid #e5e7eb;padding-top:6px;margin-top:4px;font-size:12px">
+            <div style="font-weight:600;margin-bottom:4px;color:#6b7280">🚶 Walking from hostels:</div>
+            ${blockDistanceHtml}
+          </div>`
+              : ""
+          }
         </div>`,
       );
 
-      marker.on("click", () => setSelectedBlock(block));
+      marker.on("click", () => {
+        setSelectedBlock(block);
+        setSelectedHostel(null);
+      });
     }
 
     // Draw route lines if a hostel is selected
@@ -335,7 +363,7 @@ export function CampusMap() {
         const block = mapData.academicBlocks.find((b) => b.id === dist.academicBlockId);
         if (!block) continue;
 
-        L.polyline(
+        const line = L.polyline(
           [
             [selectedHostel.lat, selectedHostel.lng],
             [block.lat, block.lng],
@@ -343,10 +371,40 @@ export function CampusMap() {
           {
             color: getHostelColor(selectedHostel.genderPolicy),
             weight: 3,
-            opacity: 0.6,
+            opacity: 0.7,
             dashArray: "8 4",
           },
         ).addTo(map);
+
+        line.bindTooltip(`${dist.walkingMinutes} min walk (${Math.round(dist.distanceMeters)}m)`, {
+          sticky: true,
+        });
+      }
+    }
+
+    // Draw route lines if an academic block is selected
+    if (selectedBlock) {
+      for (const dist of mapData.distances.filter((d) => d.academicBlockId === selectedBlock.id)) {
+        const hostel = mapData.hostels.find((h) => h.id === dist.hostelId);
+        if (!hostel) continue;
+
+        const line = L.polyline(
+          [
+            [hostel.lat, hostel.lng],
+            [selectedBlock.lat, selectedBlock.lng],
+          ],
+          {
+            color: getHostelColor(hostel.genderPolicy),
+            weight: 3,
+            opacity: 0.7,
+            dashArray: "8 4",
+          },
+        ).addTo(map);
+
+        line.bindTooltip(
+          `${hostel.name}: ${dist.walkingMinutes} min walk (${Math.round(dist.distanceMeters)}m)`,
+          { sticky: true },
+        );
       }
     }
 

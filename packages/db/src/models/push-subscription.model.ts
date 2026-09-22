@@ -1,4 +1,4 @@
-import { Schema, model, models, type Document, type Types, type Model } from "mongoose";
+import mongoose, { Schema, model, type Document, type Types, type Model } from "mongoose";
 
 export interface PushSubscriptionDocument extends Document {
   _id: Types.ObjectId;
@@ -41,5 +41,5 @@ const PushSubscriptionSchema = new Schema<PushSubscriptionDocument>(
 );
 
 export const PushSubscriptionModel: Model<PushSubscriptionDocument> =
-  (models?.["PushSubscription"] as Model<PushSubscriptionDocument>) ||
+  (mongoose.models?.["PushSubscription"] as Model<PushSubscriptionDocument>) ||
   model<PushSubscriptionDocument>("PushSubscription", PushSubscriptionSchema);

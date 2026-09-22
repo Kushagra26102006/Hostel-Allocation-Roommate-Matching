@@ -45,7 +45,7 @@ services:
 
   # ── MinIO ─────────────────────────────────────────────────────────────────────
   minio:
-    image: minio/minio:latest
+    image: quay.io/minio/minio:latest
     container_name: hostelhub-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
@@ -68,7 +68,7 @@ services:
 
   # One-shot service that creates the "hostelhub" bucket after MinIO is healthy
   createbuckets:
-    image: minio/mc:latest
+    image: quay.io/minio/mc:latest
     container_name: hostelhub-minio-init
     depends_on:
       minio:
@@ -96,6 +96,7 @@ services:
   # ── ClamAV Antivirus Daemon ───────────────────────────────────────────────────
   clamav:
     image: clamav/clamav:stable_base
+    platform: linux/amd64
     container_name: hostelhub-clamav
     restart: unless-stopped
     ports:

@@ -10,7 +10,9 @@ import { AllocationCycleModel } from "./models/allocation-cycle.model.js";
 import { ApplicationModel } from "./models/application.model.js";
 import { PreferenceModel } from "./models/preference.model.js";
 import { CompatibilityResponseModel } from "./models/compatibility-response.model.js";
+import { AcademicBlockModel } from "./models/academic-block.model.js";
 import { AuditService } from "./services/audit.service.js";
+import { precomputeOfflineWalkingDistances } from "./services/walking-distance.service.js";
 import { encryptPayload } from "@hostelhub/shared";
 
 export interface SeedResult {
@@ -144,30 +146,40 @@ export async function seedDatabase(uri?: string): Promise<SeedResult> {
     name: string;
     gender_policy: GenderPolicy;
     address: string;
+    location: { lat: number; lng: number };
   }> = [
     {
       name: "Aryabhata Hall (Block A)",
       gender_policy: "male",
       address: "North Campus Sector 1, Academic Zone",
+      location: { lat: 29.8628, lng: 77.895 },
     },
     {
       name: "Gargi Residence (Block B)",
       gender_policy: "female",
       address: "South Campus Sector 2, Lake Road",
+      location: { lat: 29.8668, lng: 77.8958 },
     },
     {
       name: "Ramanujan Tower (Block C)",
       gender_policy: "coed",
       address: "East Campus Sector 3, Innovation Enclave",
+      location: { lat: 29.8644, lng: 77.8962 },
     },
     {
       name: "Kalpana Chawla Hall (Block D)",
       gender_policy: "female",
       address: "West Campus Sector 4, Sports Arena Road",
+      location: { lat: 29.8658, lng: 77.8945 },
     },
   ];
 
   const hostelDocs: Types.ObjectId[] = [];
+  const seededHostelObjects: Array<{
+    _id: Types.ObjectId;
+    name: string;
+    location: { lat: number; lng: number };
+  }> = [];
   for (const hc of hostelConfigs) {
     const h = await HostelModel.findOneAndUpdate(
       { institution_id: institutionId, name: hc.name },
@@ -177,13 +189,64 @@ export async function seedDatabase(uri?: string): Promise<SeedResult> {
           gender_policy: hc.gender_policy,
           address: hc.address,
           status: "active",
+          location: hc.location,
         },
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
-    hostelDocs.push(h._id as Types.ObjectId);
+    const id = h._id as Types.ObjectId;
+    hostelDocs.push(id);
+    seededHostelObjects.push({ _id: id, name: hc.name, location: hc.location });
   }
-  console.log(`✓ Seeded ${hostelDocs.length} Hostels for NIT-DEMO`);
+  console.log(`✓ Seeded ${hostelDocs.length} Hostels with coordinates for NIT-DEMO`);
+
+  // 3b. Seed Academic Blocks
+  const academicBlockConfigs = [
+    {
+      name: "Computer Science & Engineering",
+      short_code: "CSE",
+      location: { lat: 29.8648, lng: 77.897 },
+    },
+    { name: "Electrical Engineering", short_code: "ECE", location: { lat: 29.8655, lng: 77.8965 } },
+    { name: "Main Central Library", short_code: "LIB", location: { lat: 29.865, lng: 77.8955 } },
+    { name: "Administrative Complex", short_code: "ADM", location: { lat: 29.8645, lng: 77.895 } },
+    { name: "Lecture Hall Complex", short_code: "LHC", location: { lat: 29.866, lng: 77.8975 } },
+  ];
+
+  const seededBlocks: Array<{
+    _id: Types.ObjectId;
+    name: string;
+    short_code: string;
+    location: { lat: number; lng: number };
+  }> = [];
+  for (const abc of academicBlockConfigs) {
+    const b = await AcademicBlockModel.findOneAndUpdate(
+      { institution_id: institutionId, short_code: abc.short_code },
+      {
+        $set: {
+          name: abc.name,
+          short_code: abc.short_code,
+          location: abc.location,
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+    seededBlocks.push({
+      _id: b._id as Types.ObjectId,
+      name: abc.name,
+      short_code: abc.short_code,
+      location: abc.location,
+    });
+  }
+  console.log(`✓ Seeded ${seededBlocks.length} Academic Blocks for NIT-DEMO`);
+
+  // 3c. Pre-compute and cache walking distances offline
+  const cachedPairs = await precomputeOfflineWalkingDistances(
+    institutionId,
+    seededHostelObjects,
+    seededBlocks,
+  );
+  console.log(`✓ Pre-computed and cached ${cachedPairs} walking distance pairs`);
 
   // 4. Seed Blocks for each hostel
   const blockDocs: Array<{ id: Types.ObjectId; hostelId: Types.ObjectId; name: string }> = [];

@@ -11,6 +11,7 @@ import {
   RoomModel,
   HostelModel,
   ApplicationModel,
+  getHostelWalkingMinutesMap,
 } from "@hostelhub/db";
 import {
   validateOverride,
@@ -201,11 +202,12 @@ export const POST = apiHandler(
       accessible: toRoom.accessible,
     };
 
+    const walkingMinutesMap = await getHostelWalkingMinutesMap(institution_id);
     const toHostelDomain: DomainHostel = {
       id: toHostel._id.toString(),
       name: toHostel.name,
       genderPolicy: toHostel.gender_policy as GenderPolicy,
-      walkingMinutes: 5,
+      walkingMinutes: walkingMinutesMap.get(toHostel._id.toString()) ?? 15,
     };
 
     const validationInput: OverrideInput = {

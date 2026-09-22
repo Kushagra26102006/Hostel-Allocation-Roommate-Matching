@@ -1,4 +1,4 @@
-import { Schema, model, models, type Document, type Types, type Model } from "mongoose";
+import mongoose, { Schema, model, type Document, type Types, type Model } from "mongoose";
 import type { NotificationChannel, QuietHoursConfig } from "@hostelhub/domain";
 
 export interface NotificationPreferenceDocument extends Document {
@@ -51,5 +51,5 @@ const NotificationPreferenceSchema = new Schema<NotificationPreferenceDocument>(
 );
 
 export const NotificationPreferenceModel: Model<NotificationPreferenceDocument> =
-  (models?.["NotificationPreference"] as Model<NotificationPreferenceDocument>) ||
+  (mongoose.models?.["NotificationPreference"] as Model<NotificationPreferenceDocument>) ||
   model<NotificationPreferenceDocument>("NotificationPreference", NotificationPreferenceSchema);

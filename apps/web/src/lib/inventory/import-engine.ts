@@ -503,7 +503,7 @@ export async function executeInventoryImport(
 
   // After successful import, trigger walking distance pre-computation (fire-and-forget).
   // This populates the cache used by the engine D-score without blocking the import response.
-  void import("@/lib/routing/distance-precomputer.js")
+  void import("../routing/distance-precomputer.js")
     .then(({ precomputeWalkingDistances }) => precomputeWalkingDistances(instObjectId))
     .then((precomputeResult) => {
       console.info(

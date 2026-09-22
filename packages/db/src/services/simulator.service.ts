@@ -33,6 +33,7 @@ import { ApplicationModel } from "../models/application.model.js";
 import { PreferenceModel } from "../models/preference.model.js";
 import { GroupModel } from "../models/group.model.js";
 import { WeightsVersionModel } from "../models/weights-version.model.js";
+import { getHostelWalkingMinutesMap } from "./walking-distance.service.js";
 import { AllocationRunModel } from "../models/allocation-run.model.js";
 import { AllocationDraftModel } from "../models/allocation-draft.model.js";
 import {
@@ -87,30 +88,32 @@ export class SimulatorService {
     const instId = new Types.ObjectId(institutionId);
     const cycleId = new Types.ObjectId(cycleIdStr);
 
-    const [cycle, hostelDocs, roomDocs, bedDocs, appDocs, prefDocs, groupDocs] = await Promise.all([
-      AllocationCycleModel.findById(cycleId).exec(),
-      HostelModel.find({ institution_id: instId }).lean(),
-      RoomModel.find({ institution_id: instId }).lean(),
-      BedModel.find({
-        institution_id: instId,
-        status: { $in: ["available", "reserved", "held"] },
-      }).lean(),
-      ApplicationModel.find({
-        institution_id: instId,
-        cycle_id: cycleId,
-        status: { $in: ["submitted", "under_review", "approved"] },
-      })
-        .populate<{ student_id: { _id: Types.ObjectId; name?: string; roll_number?: string } }>(
-          "student_id",
-        )
-        .lean(),
-      PreferenceModel.find({ institution_id: instId }).lean(),
-      GroupModel.find({
-        institution_id: instId,
-        cycle_id: cycleId,
-        status: "confirmed",
-      }).lean(),
-    ]);
+    const [cycle, hostelDocs, roomDocs, bedDocs, appDocs, prefDocs, groupDocs, walkingMinutesMap] =
+      await Promise.all([
+        AllocationCycleModel.findById(cycleId).exec(),
+        HostelModel.find({ institution_id: instId }).lean(),
+        RoomModel.find({ institution_id: instId }).lean(),
+        BedModel.find({
+          institution_id: instId,
+          status: { $in: ["available", "reserved", "held"] },
+        }).lean(),
+        ApplicationModel.find({
+          institution_id: instId,
+          cycle_id: cycleId,
+          status: { $in: ["submitted", "under_review", "approved"] },
+        })
+          .populate<{ student_id: { _id: Types.ObjectId; name?: string; roll_number?: string } }>(
+            "student_id",
+          )
+          .lean(),
+        PreferenceModel.find({ institution_id: instId }).lean(),
+        GroupModel.find({
+          institution_id: instId,
+          cycle_id: cycleId,
+          status: "confirmed",
+        }).lean(),
+        getHostelWalkingMinutesMap(institutionId),
+      ]);
 
     if (!cycle) {
       throw new Error(`Allocation cycle not found: ${cycleIdStr}`);
@@ -126,7 +129,7 @@ export class SimulatorService {
         id: hId,
         name: h.name,
         genderPolicy: h.gender_policy,
-        walkingMinutes: 5,
+        walkingMinutes: walkingMinutesMap.get(hId) ?? 15,
       });
     }
 

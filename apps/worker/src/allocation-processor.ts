@@ -17,6 +17,7 @@ import {
   PreferenceModel,
   GroupModel,
   CompatibilityReader,
+  getHostelWalkingMinutesMap,
 } from "@hostelhub/db";
 import {
   allocate,
@@ -146,26 +147,28 @@ export async function buildSnapshotAndUnits(
   const institutionId = new Types.ObjectId(institutionIdStr);
   const cycleId = new Types.ObjectId(cycleIdStr);
 
-  const [cycle, hostelDocs, roomDocs, bedDocs, appDocs, prefDocs, groupDocs] = await Promise.all([
-    AllocationCycleModel.findById(cycleId).exec(),
-    HostelModel.find({ institution_id: institutionId }).exec(),
-    RoomModel.find({ institution_id: institutionId }).exec(),
-    BedModel.find({
-      institution_id: institutionId,
-      status: { $in: ["available", "reserved"] },
-    }).exec(),
-    ApplicationModel.find({
-      institution_id: institutionId,
-      cycle_id: cycleId,
-      status: { $in: ["submitted", "under_review", "approved"] },
-    }).exec(),
-    PreferenceModel.find({ institution_id: institutionId }).exec(),
-    GroupModel.find({
-      institution_id: institutionId,
-      cycle_id: cycleId,
-      status: "confirmed",
-    }).exec(),
-  ]);
+  const [cycle, hostelDocs, roomDocs, bedDocs, appDocs, prefDocs, groupDocs, walkingMinutesMap] =
+    await Promise.all([
+      AllocationCycleModel.findById(cycleId).exec(),
+      HostelModel.find({ institution_id: institutionId }).exec(),
+      RoomModel.find({ institution_id: institutionId }).exec(),
+      BedModel.find({
+        institution_id: institutionId,
+        status: { $in: ["available", "reserved"] },
+      }).exec(),
+      ApplicationModel.find({
+        institution_id: institutionId,
+        cycle_id: cycleId,
+        status: { $in: ["submitted", "under_review", "approved"] },
+      }).exec(),
+      PreferenceModel.find({ institution_id: institutionId }).exec(),
+      GroupModel.find({
+        institution_id: institutionId,
+        cycle_id: cycleId,
+        status: "confirmed",
+      }).exec(),
+      getHostelWalkingMinutesMap(institutionId),
+    ]);
 
   if (!cycle) {
     throw new Error(`AllocationCycle not found: ${cycleIdStr}`);
@@ -174,11 +177,12 @@ export async function buildSnapshotAndUnits(
   // 1. Hostels map
   const hostels = new Map<string, Hostel>();
   for (const h of hostelDocs) {
-    hostels.set(h._id.toString(), {
-      id: h._id.toString(),
+    const hId = h._id.toString();
+    hostels.set(hId, {
+      id: hId,
       name: h.name,
       genderPolicy: h.gender_policy,
-      walkingMinutes: 5,
+      walkingMinutes: walkingMinutesMap.get(hId) ?? 15,
     });
   }
 
