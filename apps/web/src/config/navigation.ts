@@ -22,6 +22,7 @@ import {
   ListOrdered,
   BarChart3,
   Sparkles,
+  Box,
 } from "lucide-react";
 import type { Role } from "@/stores/role-store";
 
@@ -99,6 +100,17 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     roles: ["student"],
     isBottomTab: false,
     description: "Hostel dues, mess security deposit, and payment receipts",
+  },
+  {
+    id: "student-explorer",
+    titleKey: "nav.explorer",
+    fallbackTitle: "3D Explorer",
+    href: "/explorer",
+    icon: Box,
+    roles: ["student", "warden", "chief_warden", "hostel_admin", "sys_admin"],
+    isBottomTab: false,
+    badge: "3D",
+    description: "Interactive 3D building model, floor cutaway, and room occupancy view",
   },
 
   // ── Warden Destinations ───────────────────────────────────────────────────

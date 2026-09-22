@@ -21,7 +21,10 @@ export function FeatureBentoGrid() {
   const messages = getMessages();
   const copy = messages.features;
 
-  const cardIcons: Record<string, React.ElementType> = {
+  const cardIcons: Record<
+    string,
+    React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>
+  > = {
     "ranked-preferences": ListOrdered,
     "explainable-results": Sparkles,
     "private-by-design": Lock,

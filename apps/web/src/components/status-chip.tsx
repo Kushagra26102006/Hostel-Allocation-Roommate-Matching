@@ -8,7 +8,11 @@ export type StatusType = "online" | "offline" | "pending" | "warning" | "error" 
 
 const STATUS_CONFIG: Record<
   StatusType,
-  { icon: React.ElementType; label: string; className: string }
+  {
+    icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
+    label: string;
+    className: string;
+  }
 > = {
   online: {
     icon: Wifi,

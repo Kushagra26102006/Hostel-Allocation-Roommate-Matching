@@ -38,6 +38,11 @@ describe("Permissions Matrix (Table-driven Authorization)", () => {
     "cycles:manage",
     "policy:rules",
     "document:verify",
+    "checkin:manage",
+    "checkin:acknowledge",
+    "payment:own",
+    "payment:manage",
+    "payment:read",
     "analytics:read",
     "audit:read",
     "drafts:read",
@@ -58,6 +63,8 @@ describe("Permissions Matrix (Table-driven Authorization)", () => {
       "result:own",
       "room_change:request",
       "appeal:submit",
+      "checkin:acknowledge",
+      "payment:own",
     ]);
 
     // 2. Warden capabilities
@@ -68,6 +75,8 @@ describe("Permissions Matrix (Table-driven Authorization)", () => {
       "allocation:publish_own",
       "waitlist:manage_own",
       "decisions:manage_own",
+      "checkin:manage",
+      "payment:manage",
     ]);
 
     // 3. Chief Warden has all warden capabilities + escalated approvals
@@ -83,10 +92,17 @@ describe("Permissions Matrix (Table-driven Authorization)", () => {
       "policy:rules",
       "allocation:run",
       "document:verify",
+      "checkin:manage",
+      "payment:manage",
     ]);
 
     // 5. Dean has read-only analytics, audit and drafts
-    expect(ROLE_PERMISSIONS.dean).toEqual(["analytics:read", "audit:read", "drafts:read"]);
+    expect(ROLE_PERMISSIONS.dean).toEqual([
+      "analytics:read",
+      "audit:read",
+      "drafts:read",
+      "payment:read",
+    ]);
 
     // 6. Sys Admin
     expect(ROLE_PERMISSIONS.sys_admin).toEqual([
@@ -97,6 +113,8 @@ describe("Permissions Matrix (Table-driven Authorization)", () => {
       "api_keys:manage",
       "webhooks:manage",
       "audit:read",
+      "checkin:manage",
+      "payment:manage",
     ]);
   });
 

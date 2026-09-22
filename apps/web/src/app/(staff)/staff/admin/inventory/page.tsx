@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Building2, Layers, BarChart3 } from "lucide-react";
+import { Building2, Layers, BarChart3, Box } from "lucide-react";
 import { InventoryManager } from "@/components/inventory/inventory-manager";
 import { ImportWizard } from "@/components/inventory/import-wizard";
 import { OccupancyHeatMap } from "@/components/inventory/occupancy-heatmap";
+import { BuildingExplorer } from "@/components/explorer/building-explorer";
 
 export default function AdminInventoryPage() {
-  const [activeTab, setActiveTab] = React.useState<"tree" | "heatmap">("tree");
+  const [activeTab, setActiveTab] = React.useState<"tree" | "heatmap" | "explorer">("tree");
   const [isWizardOpen, setIsWizardOpen] = React.useState(false);
 
   return (
@@ -52,14 +53,27 @@ export default function AdminInventoryPage() {
             <BarChart3 className="h-4 w-4" />
             Occupancy Heat Map
           </button>
+          <button
+            onClick={() => setActiveTab("explorer")}
+            className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
+              activeTab === "explorer"
+                ? "bg-card text-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Box className="h-4 w-4" />
+            3D Explorer
+          </button>
         </div>
       </div>
 
       {/* Main Content Area */}
       {activeTab === "tree" ? (
         <InventoryManager onOpenImportWizard={() => setIsWizardOpen(true)} />
-      ) : (
+      ) : activeTab === "heatmap" ? (
         <OccupancyHeatMap />
+      ) : (
+        <BuildingExplorer />
       )}
 
       {/* 4-Step Import Wizard Modal */}

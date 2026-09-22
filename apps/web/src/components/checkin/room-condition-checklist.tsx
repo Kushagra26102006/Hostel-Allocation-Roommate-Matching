@@ -24,7 +24,12 @@ interface RoomConditionChecklistProps {
 
 const CONDITION_CONFIG: Record<
   ChecklistCondition,
-  { label: string; color: string; activeClass: string; icon: React.ElementType }
+  {
+    label: string;
+    color: string;
+    activeClass: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }
 > = {
   good: {
     label: "Good",
