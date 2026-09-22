@@ -14,9 +14,18 @@ import {
   MapPin,
   QrCode,
   Lock,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { KeyCardFlip } from "@/components/student/result/key-card-flip";
 import { RoomChangeDialog } from "@/components/student/result/room-change-dialog";
 import { AppealDialog } from "@/components/student/result/appeal-dialog";
@@ -29,6 +38,9 @@ export default function StudentRoomPage() {
   const [isAppealOpen, setIsAppealOpen] = React.useState<boolean>(false);
   const [isDownloading, setIsDownloading] = React.useState<boolean>(false);
   const [, setIsRevealed] = React.useState<boolean>(false);
+  const [isAcknowledged, setIsAcknowledged] = React.useState<boolean>(false);
+  const [isAcknowledgeOpen, setIsAcknowledgeOpen] = React.useState<boolean>(false);
+  const [ackNote, setAckNote] = React.useState<string>("");
 
   React.useEffect(() => {
     let isMounted = true;
@@ -364,6 +376,82 @@ export default function StudentRoomPage() {
               </div>
             </div>
           </div>
+
+          {/* Room Condition & Inspection Checklist Card */}
+          <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 sm:p-6 backdrop-blur-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">
+                    Room Condition & Inventory Checklist
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Baseline handover inspection recorded at gate check-in
+                  </p>
+                </div>
+              </div>
+
+              {isAcknowledged ? (
+                <Badge
+                  variant="outline"
+                  className="bg-emerald-950/40 text-emerald-400 border-emerald-800 gap-1 text-[11px]"
+                >
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>Acknowledged</span>
+                </Badge>
+              ) : (
+                <Badge
+                  variant="outline"
+                  className="bg-amber-950/40 text-amber-400 border-amber-800 text-[11px]"
+                >
+                  Pending Resident Sign-Off
+                </Badge>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
+              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
+                <span className="text-[10px] text-slate-400 block">Bed Frame & Mattress</span>
+                <span className="font-semibold text-emerald-400">Good Condition</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
+                <span className="text-[10px] text-slate-400 block">Study Table & Chair</span>
+                <span className="font-semibold text-emerald-400">Good Condition</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
+                <span className="text-[10px] text-slate-400 block">Wardrobe & Keys</span>
+                <span className="font-semibold text-emerald-400">Keys Handed Over</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
+                <span className="text-[10px] text-slate-400 block">Ceiling Fan & Lights</span>
+                <span className="font-semibold text-sky-400">Operational</span>
+              </div>
+            </div>
+
+            {!isAcknowledged ? (
+              <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <p className="text-sky-300">
+                  Please review and confirm that the inventory recorded matches your room fixtures.
+                </p>
+                <Button
+                  size="sm"
+                  onClick={() => setIsAcknowledgeOpen(true)}
+                  className="bg-sky-500 hover:bg-sky-600 text-white text-xs font-semibold shrink-0"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                  Acknowledge Checklist
+                </Button>
+              </div>
+            ) : (
+              <p className="text-[11px] text-slate-400 italic">
+                ✓ Confirmed by resident. Any discrepancies at check-out will be compared against
+                this baseline.
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -381,6 +469,84 @@ export default function StudentRoomPage() {
         assignmentId={allocation.assignmentId}
         hostelName={allocation.hostel.name}
       />
+
+      {/* Room Condition Acknowledgement Dialog */}
+      <Dialog open={isAcknowledgeOpen} onOpenChange={setIsAcknowledgeOpen}>
+        <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-sky-400" />
+              Resident Room Inventory Sign-Off
+            </DialogTitle>
+            <DialogDescription className="text-slate-400 text-xs">
+              Confirming this record establishes the baseline inventory condition for room{" "}
+              {allocation.hostel.roomNumber}. Any damages or missing fixtures identified upon
+              check-out will be assessed against this report.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800 text-xs space-y-1.5">
+              <div className="flex justify-between text-slate-300">
+                <span>Room Number:</span>
+                <span className="font-semibold text-white">
+                  {allocation.hostel.roomNumber} ({allocation.hostel.bedNo})
+                </span>
+              </div>
+              <div className="flex justify-between text-slate-300">
+                <span>Handover Status:</span>
+                <span className="font-semibold text-emerald-400">All Items Inspected</span>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300">
+                Resident Notes or Pre-existing Flaws (Optional)
+              </label>
+              <textarea
+                value={ackNote}
+                onChange={(e) => setAckNote(e.target.value)}
+                placeholder="E.g., Small paint scratch on closet interior corner..."
+                className="w-full h-20 px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsAcknowledgeOpen(false)}
+              className="border-slate-800 text-slate-400 text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={async () => {
+                try {
+                  const checkInRecordId = (data as unknown as { checkInRecordId?: string })
+                    ?.checkInRecordId;
+                  if (checkInRecordId) {
+                    await fetch(`/api/v1/check-in/${checkInRecordId}/acknowledge`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ student_notes: ackNote }),
+                    });
+                  }
+                } catch {
+                  // Fallback
+                }
+                setIsAcknowledged(true);
+                setIsAcknowledgeOpen(false);
+              }}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
+            >
+              Confirm Handover & Sign Off
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

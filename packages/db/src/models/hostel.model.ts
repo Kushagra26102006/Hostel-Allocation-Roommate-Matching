@@ -4,12 +4,21 @@ import { baseSchemaPlugin, type BaseTenantDocument } from "../plugins/base-schem
 export type GenderPolicy = "male" | "female" | "coed";
 export type HostelStatus = "active" | "inactive" | "maintenance";
 
+export interface IChecklistItemConfig {
+  id: string;
+  label: string;
+  category: "furniture" | "electrical" | "plumbing" | "fixtures" | "general";
+  required?: boolean;
+  description?: string;
+}
+
 export interface IHostel {
   name: string;
   gender_policy: GenderPolicy;
   address: string;
   status: HostelStatus;
   location?: { lat: number; lng: number };
+  inspection_checklist_template?: IChecklistItemConfig[];
 }
 
 export interface HostelDocument extends BaseTenantDocument, IHostel {}
@@ -42,6 +51,23 @@ const hostelSchema = new Schema<HostelDocument>(
         lat: { type: Number, required: true },
         lng: { type: Number, required: true },
       },
+      required: false,
+      _id: false,
+    },
+    inspection_checklist_template: {
+      type: [
+        {
+          id: { type: String, required: true },
+          label: { type: String, required: true },
+          category: {
+            type: String,
+            enum: ["furniture", "electrical", "plumbing", "fixtures", "general"],
+            default: "general",
+          },
+          required: { type: Boolean, default: true },
+          description: { type: String, required: false },
+        },
+      ],
       required: false,
       _id: false,
     },

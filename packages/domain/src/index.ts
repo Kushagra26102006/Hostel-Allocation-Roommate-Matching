@@ -29,3 +29,4 @@ export * from "./changes/index.js";
 export * from "./reports/index.js";
 export * from "./simulator/index.js";
 export * from "./routing/distance.js";
+export * from "./inspection/index.js";

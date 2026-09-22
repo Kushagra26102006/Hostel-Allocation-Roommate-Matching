@@ -39,6 +39,9 @@ export type Capability =
   | "cycles:manage"
   | "policy:rules"
   | "document:verify"
+  // Check-in and inspection capabilities
+  | "checkin:manage"
+  | "checkin:acknowledge"
   // Dean capabilities
   | "analytics:read"
   | "audit:read"
@@ -58,6 +61,7 @@ const STUDENT_CAPABILITIES: readonly Capability[] = [
   "result:own",
   "room_change:request",
   "appeal:submit",
+  "checkin:acknowledge",
 ] as const;
 
 const WARDEN_CAPABILITIES: readonly Capability[] = [
@@ -67,6 +71,7 @@ const WARDEN_CAPABILITIES: readonly Capability[] = [
   "allocation:publish_own",
   "waitlist:manage_own",
   "decisions:manage_own",
+  "checkin:manage",
 ] as const;
 
 const CHIEF_WARDEN_CAPABILITIES: readonly Capability[] = [
@@ -83,6 +88,7 @@ const HOSTEL_ADMIN_CAPABILITIES: readonly Capability[] = [
   "policy:rules",
   "allocation:run",
   "document:verify",
+  "checkin:manage",
 ] as const;
 
 const DEAN_CAPABILITIES: readonly Capability[] = [
@@ -99,6 +105,7 @@ const SYS_ADMIN_CAPABILITIES: readonly Capability[] = [
   "api_keys:manage",
   "webhooks:manage",
   "audit:read",
+  "checkin:manage",
 ] as const;
 
 export const ROLE_PERMISSIONS: Record<UserRole, readonly Capability[]> = {

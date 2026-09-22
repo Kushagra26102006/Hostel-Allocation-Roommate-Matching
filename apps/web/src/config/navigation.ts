@@ -122,6 +122,15 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     description: "Inspect provisional algorithm matches and approve medical grounds",
   },
   {
+    id: "warden-check-in",
+    titleKey: "nav.wardenCheckIn",
+    fallbackTitle: "Gate Check-In & Keys",
+    href: "/staff/warden/check-in",
+    icon: QrCode,
+    roles: ["warden", "chief_warden"],
+    description: "Verify digital QR gate passes, record room inspections, and issue biometric keys",
+  },
+  {
     id: "warden-waitlist",
     titleKey: "nav.wardenWaitlist",
     fallbackTitle: "Waiting List & Promotion",

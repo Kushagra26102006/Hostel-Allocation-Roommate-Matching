@@ -358,3 +358,22 @@ export {
   getHostelWalkingMinutesMap,
   precomputeOfflineWalkingDistances,
 } from "./services/walking-distance.service.js";
+
+// Prompt O3: QR Check-In & Room Inspection Checklist
+export {
+  CheckInRecordModel,
+  type CheckInStatus,
+  type ChecklistItemCondition,
+  type IChecklistItemDoc,
+  type IChecklistDiffDoc,
+  type ICheckInRecord,
+  type CheckInRecordDocument,
+} from "./models/check-in-record.model.js";
+
+export {
+  CheckInService,
+  CheckInServiceError,
+  type VerifyCheckInResult,
+  type RecordCheckInInput,
+  type RecordCheckOutInput,
+} from "./services/check-in.service.js";

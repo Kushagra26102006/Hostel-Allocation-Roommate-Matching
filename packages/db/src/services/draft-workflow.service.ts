@@ -38,6 +38,7 @@ export interface WorkflowActor {
   email: string;
   role: UserRole;
   hostelId?: string | undefined; // If warden, assigned hostel
+  name?: string | undefined;
 }
 
 export class WorkflowError extends Error {
