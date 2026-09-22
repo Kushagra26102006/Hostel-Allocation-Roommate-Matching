@@ -9,7 +9,7 @@
  * contain personal data (no student name, roll number, or room number).
  */
 
-import crypto from "node:crypto";
+import crypto from "crypto";
 import type {
   VerificationTokenHeader,
   VerificationTokenPayload,

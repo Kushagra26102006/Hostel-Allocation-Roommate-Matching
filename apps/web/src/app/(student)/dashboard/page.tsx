@@ -171,22 +171,30 @@ export default async function StudentDashboardPage() {
           </div>
         </GlassCard>
 
-        <GlassCard className="p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted">
-              Fee Status
-            </span>
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400">
-              <CreditCard className="h-4 w-4" />
-            </span>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-              Dues Cleared
+        <Link href="/payments" className="block transition-transform hover:-translate-y-0.5">
+          <GlassCard className="p-5 hover:border-violet-500/40">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted flex items-center gap-1.5">
+                <span>Fee Status</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-500">
+                  TEST
+                </span>
+              </span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400">
+                <CreditCard className="h-4 w-4" />
+              </span>
             </div>
-            <div className="text-xs text-muted mt-1">Receipt #NIT-2026-FEE-409</div>
-          </div>
-        </GlassCard>
+            <div className="mt-3">
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                Dues Cleared
+              </div>
+              <div className="text-xs text-muted mt-1 flex items-center justify-between">
+                <span>Receipt #NIT-2026-FEE-409</span>
+                <span className="text-primary font-semibold">Manage &rarr;</span>
+              </div>
+            </div>
+          </GlassCard>
+        </Link>
       </div>
 
       {/* 3. Stepper: Allocation Journey */}

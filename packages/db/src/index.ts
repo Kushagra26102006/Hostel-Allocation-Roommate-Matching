@@ -377,3 +377,28 @@ export {
   type RecordCheckInInput,
   type RecordCheckOutInput,
 } from "./services/check-in.service.js";
+
+// Prompt O4: Payments Sandbox, Receipts & Refund Details
+export {
+  PaymentOrderModel,
+  type IPaymentOrder,
+  type PaymentOrderDocument,
+  type PaymentOrderStatus,
+  type PaymentFeeType,
+  type IWebhookEventRecord,
+} from "./models/payment-order.model.js";
+
+export {
+  RefundAccountModel,
+  type IRefundAccount,
+  type RefundAccountDocument,
+} from "./models/refund-account.model.js";
+
+export {
+  PaymentService,
+  PaymentServiceError,
+  type CreatePaymentOrderInput,
+  type VerifyPaymentInput,
+  type WebhookEventPayload,
+  type UnpaidResidentItem,
+} from "./services/payment.service.js";

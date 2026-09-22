@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatPrometheus, type MetricsPayload } from "../app/api/v1/metrics/route";
+import { formatPrometheus, type MetricsPayload } from "../lib/metrics-collector";
 
 describe("Metrics Endpoint & Formatter", () => {
   const sampleMetrics: MetricsPayload = {

@@ -15,7 +15,10 @@ import {
   Bed,
   DoorClosed,
   Loader2,
+  CreditCard,
+  Lock,
 } from "lucide-react";
+import { TestModeBanner } from "@/components/payments/test-mode-banner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -145,6 +148,51 @@ export default function WardenCheckInPage() {
   const [offlineQueue, setOfflineQueue] = useState<OfflineQueueItem[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
 
+  // Prompt O4: Unpaid Student Policy & Warden Flags
+  interface UnpaidResidentItem {
+    student_id?: string;
+    studentName?: string;
+    rollNumber?: string;
+    roomNumber?: string;
+    bedNo?: string;
+    balanceDuePaise: number;
+    policyFlag: "warning" | "hold";
+  }
+
+  const [unpaidPolicy, setUnpaidPolicy] = useState<"warning" | "hold">("warning");
+  const [isUnpaidModalOpen, setIsUnpaidModalOpen] = useState(false);
+  const [unpaidResidents, setUnpaidResidents] = useState<UnpaidResidentItem[]>([]);
+  const [isLoadingUnpaid, setIsLoadingUnpaid] = useState(false);
+  const [scannedStudentPayment, setScannedStudentPayment] = useState<{
+    balanceDuePaise: number;
+    isFullyPaid: boolean;
+    policyFlag: "none" | "warning" | "hold";
+  } | null>(null);
+
+  const fetchUnpaidResidents = async () => {
+    setIsLoadingUnpaid(true);
+    try {
+      const firstRecordHostel = records[0]?.hostel_id;
+      const hostelId =
+        typeof firstRecordHostel === "object" &&
+        firstRecordHostel !== null &&
+        "_id" in firstRecordHostel
+          ? String((firstRecordHostel as { _id: unknown })._id)
+          : "000000000000000000000001";
+      const res = await fetch(
+        `/api/v1/payments/unpaid?hostel_id=${hostelId}&policy=${unpaidPolicy}`,
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setUnpaidResidents(data.unpaid_residents || []);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsLoadingUnpaid(false);
+    }
+  };
+
   // Recent Records Table
   const [records, setRecords] = useState<CheckInRecordRow[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -227,6 +275,17 @@ export default function WardenCheckInPage() {
         condition: t.defaultCondition ?? "good",
       }));
       setChecklistItems(initialItems);
+
+      // Prompt O4: Check student payment status for unpaid policy
+      try {
+        const payRes = await fetch(`/api/v1/payments/summary?policy=${unpaidPolicy}`);
+        if (payRes.ok) {
+          const payData = await payRes.json();
+          setScannedStudentPayment(payData.summary);
+        }
+      } catch {
+        setScannedStudentPayment(null);
+      }
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Error verifying pass code");
     } finally {
@@ -237,6 +296,11 @@ export default function WardenCheckInPage() {
   // Submit Check-In
   const handleConfirmCheckIn = async () => {
     if (!verifyData) return;
+
+    if (unpaidPolicy === "hold" && scannedStudentPayment && !scannedStudentPayment.isFullyPaid) {
+      alert("Cannot check in resident: Institutional policy is set to HOLD for unpaid dues.");
+      return;
+    }
 
     const payload = {
       token_or_code: verifyData.letter.token || verifyData.letter.letterNumber,
@@ -402,9 +466,12 @@ export default function WardenCheckInPage() {
               <QrCode className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                Warden Gate Pass & Check-In Station
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  Warden Gate Pass & Check-In Station
+                </h1>
+                <TestModeBanner compact />
+              </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Digital QR verification, room inspection checklist, and key issuance
               </p>
@@ -412,8 +479,50 @@ export default function WardenCheckInPage() {
           </div>
         </div>
 
-        {/* Connectivity & Offline Sync Status */}
-        <div className="flex items-center gap-3">
+        {/* Connectivity, Policy & Scan Actions */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Unpaid Policy Toggle */}
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 px-1.5">
+              Fee Policy:
+            </span>
+            <button
+              type="button"
+              onClick={() => setUnpaidPolicy("warning")}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                unpaidPolicy === "warning"
+                  ? "bg-amber-500 text-black shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              Warning Only
+            </button>
+            <button
+              type="button"
+              onClick={() => setUnpaidPolicy("hold")}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                unpaidPolicy === "hold"
+                  ? "bg-red-600 text-white shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              Hold Key
+            </button>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              void fetchUnpaidResidents();
+              setIsUnpaidModalOpen(true);
+            }}
+            className="gap-1.5 text-xs border-amber-300 text-amber-700 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20"
+          >
+            <CreditCard className="w-3.5 h-3.5" />
+            <span>Unpaid Dues</span>
+          </Button>
+
           <div
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
               isOnline
@@ -508,6 +617,44 @@ export default function WardenCheckInPage() {
             </div>
           </div>
 
+          {/* Prompt O4: Student Payment Status & Policy Alert */}
+          {scannedStudentPayment && !scannedStudentPayment.isFullyPaid && (
+            <div
+              className={`p-4 rounded-2xl border ${
+                unpaidPolicy === "hold"
+                  ? "bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-300"
+                  : "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300"
+              } space-y-1.5`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 font-bold text-sm">
+                  {unpaidPolicy === "hold" ? (
+                    <>
+                      <Lock className="w-4 h-4 text-red-500 shrink-0" />
+                      <span>UNPAID HOLD ENFORCED — KEY ISSUANCE BLOCKED</span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
+                      <span>OUTSTANDING FEE WARNING (POLICY: WARNING ONLY)</span>
+                    </>
+                  )}
+                </div>
+                <Badge
+                  variant="outline"
+                  className="text-[11px] font-mono font-bold bg-background/80"
+                >
+                  Due: ₹ {(scannedStudentPayment.balanceDuePaise / 100).toFixed(2)}
+                </Badge>
+              </div>
+              <p className="text-xs opacity-90">
+                {unpaidPolicy === "hold"
+                  ? "Warden Policy is set to HOLD. The student must settle pending hostel fees before room keys can be issued."
+                  : "Warden Policy is set to WARNING. Please remind the student to clear their pending balance through the student portal."}
+              </p>
+            </div>
+          )}
+
           {verifyData.existingRecord ? (
             <div className="p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 space-y-2">
               <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-semibold text-sm">
@@ -550,7 +697,14 @@ export default function WardenCheckInPage() {
                   <LogOut className="w-4 h-4" />
                   <span>Perform Check-Out Inspection</span>
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => setVerifyData(null)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setVerifyData(null);
+                    setScannedStudentPayment(null);
+                  }}
+                >
                   Close
                 </Button>
               </div>
@@ -577,20 +731,47 @@ export default function WardenCheckInPage() {
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-2">
-                <Button variant="outline" onClick={() => setVerifyData(null)}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setVerifyData(null);
+                    setScannedStudentPayment(null);
+                  }}
+                >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleConfirmCheckIn}
-                  disabled={isSubmitting}
-                  className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  disabled={
+                    isSubmitting ||
+                    (unpaidPolicy === "hold" &&
+                      !!scannedStudentPayment &&
+                      !scannedStudentPayment.isFullyPaid)
+                  }
+                  className={`gap-2 text-white ${
+                    unpaidPolicy === "hold" &&
+                    scannedStudentPayment &&
+                    !scannedStudentPayment.isFullyPaid
+                      ? "bg-slate-400 cursor-not-allowed hover:bg-slate-400"
+                      : "bg-emerald-600 hover:bg-emerald-700"
+                  }`}
                 >
                   {isSubmitting ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : unpaidPolicy === "hold" &&
+                    scannedStudentPayment &&
+                    !scannedStudentPayment.isFullyPaid ? (
+                    <Lock className="w-4 h-4" />
                   ) : (
                     <UserCheck className="w-4 h-4" />
                   )}
-                  <span>Confirm Check-In & Issue Room Keys</span>
+                  <span>
+                    {unpaidPolicy === "hold" &&
+                    scannedStudentPayment &&
+                    !scannedStudentPayment.isFullyPaid
+                      ? "Blocked by Unpaid Hold Policy"
+                      : "Confirm Check-In & Issue Room Keys"}
+                  </span>
                 </Button>
               </div>
             </div>
@@ -862,6 +1043,82 @@ export default function WardenCheckInPage() {
               Confirm No-Show & Vacate Bed
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Prompt O4: Unpaid Residents Modal */}
+      <Dialog open={isUnpaidModalOpen} onOpenChange={setIsUnpaidModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-lg font-bold flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-amber-500" />
+                <span>Flagged Unpaid Residents</span>
+              </DialogTitle>
+              <Badge
+                variant="outline"
+                className={
+                  unpaidPolicy === "hold"
+                    ? "bg-red-500/15 text-red-600 border-red-500/30 font-bold"
+                    : "bg-amber-500/15 text-amber-600 border-amber-500/30 font-bold"
+                }
+              >
+                Active Policy: {unpaidPolicy.toUpperCase()}
+              </Badge>
+            </div>
+            <DialogDescription className="text-xs">
+              Students assigned to this hostel with outstanding fee balances. Configurable policy
+              flags them for warning or hold during digital check-in.
+            </DialogDescription>
+          </DialogHeader>
+
+          {isLoadingUnpaid ? (
+            <div className="flex items-center justify-center p-8 text-xs text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              <span>Loading unpaid residents...</span>
+            </div>
+          ) : unpaidResidents.length === 0 ? (
+            <div className="text-center p-8 text-xs text-muted-foreground">
+              No unpaid residents found for this hostel. All assigned students are cleared!
+            </div>
+          ) : (
+            <div className="divide-y divide-border border rounded-xl overflow-hidden text-xs">
+              <div className="grid grid-cols-4 p-3 bg-muted/40 font-semibold text-muted-foreground">
+                <span>Student</span>
+                <span>Room & Bed</span>
+                <span>Balance Due</span>
+                <span className="text-right">Policy Status</span>
+              </div>
+              {unpaidResidents.map((r, idx) => (
+                <div key={idx} className="grid grid-cols-4 p-3 items-center hover:bg-muted/20">
+                  <div>
+                    <span className="font-bold block text-foreground">{r.studentName}</span>
+                    <span className="text-[11px] text-muted-foreground font-mono">
+                      {r.rollNumber}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Room {r.roomNumber}</span>
+                    <span className="text-[11px] text-muted-foreground block">{r.bedNo}</span>
+                  </div>
+                  <div className="font-semibold text-amber-600 dark:text-amber-400">
+                    ₹ {(r.balanceDuePaise / 100).toFixed(2)}
+                  </div>
+                  <div className="text-right">
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        r.policyFlag === "hold"
+                          ? "bg-red-500/15 text-red-600 border border-red-500/30"
+                          : "bg-amber-500/15 text-amber-600 border border-amber-500/30"
+                      }`}
+                    >
+                      {r.policyFlag.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
