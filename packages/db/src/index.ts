@@ -402,3 +402,43 @@ export {
   type WebhookEventPayload,
   type UnpaidResidentItem,
 } from "./services/payment.service.js";
+
+// Prompt O6: Public API Keys and Signed Webhooks
+export {
+  ApiKeyModel,
+  type IApiKey,
+  type ApiKeyDocument,
+  type ApiKeyScope,
+} from "./models/api-key.model.js";
+
+export {
+  WebhookModel,
+  WEBHOOK_EVENTS,
+  type IWebhook,
+  type WebhookDocument,
+  type WebhookEventType,
+  type WebhookStatus,
+} from "./models/webhook.model.js";
+
+export {
+  WebhookDeliveryLogModel,
+  type IWebhookDeliveryLog,
+  type WebhookDeliveryLogDocument,
+} from "./models/webhook-delivery-log.model.js";
+
+export { ApiKeyRepository } from "./repository/api-key.repository.js";
+export { WebhookRepository } from "./repository/webhook.repository.js";
+export { WebhookDeliveryLogRepository } from "./repository/webhook-delivery-log.repository.js";
+
+export {
+  ApiKeyService,
+  type CreateApiKeyOptions,
+  type CreateApiKeyResult,
+  type VerifyApiKeyResult,
+} from "./services/api-key.service.js";
+
+export {
+  WebhookDispatcherService,
+  type DispatchResult,
+  type WebhookDispatcherOptions,
+} from "./services/webhook-dispatcher.service.js";
