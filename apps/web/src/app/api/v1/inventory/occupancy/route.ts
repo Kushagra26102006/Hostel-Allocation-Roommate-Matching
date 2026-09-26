@@ -1,5 +1,6 @@
 import { apiHandler } from "@/lib/api/handler.js";
 import { getOccupancyMetrics } from "@/lib/inventory/occupancy.js";
+import { connectDb, InstitutionRepository } from "@hostelhub/db";
 
 const STAFF_ROLES = new Set(["warden", "chief_warden", "hostel_admin", "dean", "sys_admin"]);
 
@@ -35,6 +36,8 @@ export const GET = apiHandler(
       "Returns public occupancy summary for unauthenticated users and students, or detailed breakdowns by hostel, block, and room type for staff.",
   },
   async ({ req, institution_id }) => {
+    await connectDb();
+
     // Attempt to inspect optional session without failing if unauthenticated
     let isStaff = false;
     try {
@@ -48,7 +51,16 @@ export const GET = apiHandler(
       isStaff = false;
     }
 
-    const tenantId = institution_id || req.headers.get("x-institution-id");
+    let tenantId = institution_id || req.headers.get("x-institution-id");
+    if (!tenantId) {
+      const institutionRepo = new InstitutionRepository();
+      const allInsts = await institutionRepo.findAll();
+      const defaultInst = allInsts.find((inst) => inst.status === "active") || allInsts[0];
+      if (defaultInst) {
+        tenantId = defaultInst._id.toString();
+      }
+    }
+
     const data = await getOccupancyMetrics(tenantId, isStaff);
 
     // Map hostels for backwards compatibility with LiveOccupancyStrip

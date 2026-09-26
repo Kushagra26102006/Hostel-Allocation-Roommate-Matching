@@ -266,14 +266,30 @@ export function PolicyAssistantWidget() {
     <div className="fixed bottom-6 right-6 z-50" id="policy-assistant-widget">
       {/* Floating Action Button */}
       {!isOpen && (
-        <Button
-          onClick={() => setIsOpen(true)}
-          aria-label="Open AI Policy Assistant (Ctrl+Shift+H)"
-          id="assistant-fab"
-          className="h-14 w-14 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white shadow-xl shadow-sky-500/25 flex items-center justify-center transition-all hover:scale-105 focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2"
-        >
-          <Sparkles className="h-6 w-6 animate-pulse" />
-        </Button>
+        <div className="relative group">
+          {/* Ambient Glow */}
+          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-indigo-500 via-brand-500 to-cyan-400 opacity-60 blur-md group-hover:opacity-100 transition-opacity duration-300 animate-pulse" />
+
+          {/* Trigger Button with Hover Label */}
+          <button
+            type="button"
+            onClick={() => setIsOpen(true)}
+            aria-label="Open HostelHub AI Assistant (Ctrl+Shift+H)"
+            id="assistant-fab"
+            className="relative flex items-center gap-2 h-12 rounded-full bg-gradient-to-r from-indigo-600 via-brand-600 to-cyan-500 px-3.5 text-white shadow-xl shadow-brand-500/30 transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+          >
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 backdrop-blur-xs">
+              <Sparkles className="h-4 w-4 animate-spin-slow text-white" />
+            </div>
+            <span className="font-heading text-xs font-bold tracking-tight text-white pr-1">
+              HostelHub AI
+            </span>
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-300 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-300" />
+            </span>
+          </button>
+        </div>
       )}
 
       {/* Chat Window Dialog */}

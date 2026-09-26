@@ -1,169 +1,335 @@
-# HostelHub (P03) — Autonomous Campus Housing & Allocation Platform
+# Hostel Allocation & Roommate Matching
 
-[![CI/CD Pipeline](https://github.com/hostelhub/hostelhub/actions/workflows/ci.yml/badge.svg)](https://github.com/hostelhub/hostelhub/actions)
+[![Build Status](https://img.shields.io/badge/Build-Passing-emerald.svg)](#build-commands)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5%20Strict-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15%20App%20Router-black.svg)](https://nextjs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-7.0%20ReplicaSet-green.svg)](https://www.mongodb.com/)
+[![Redis](https://img.shields.io/badge/Redis-7.0%20BullMQ-red.svg)](https://redis.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **HostelHub** is a production-grade, explainable, and cryptographically tamper-evident residential allocation platform designed for large universities (5,000–10,000+ residents). Built with a mathematical Gale-Shapley matching engine, Multi-Criteria Decision Analysis (MCDA), AES-256-GCM encrypted roommate surveys, and a SHA-256 forward-linked audit hash chain, HostelHub eliminates human favouritism while delivering an installable, accessible PWA experience.
+> A modern, mathematical, and cryptographically verifiable residential hostel allocation and roommate compatibility platform for higher education institutions (5,000–10,000+ residents). Built with a Gale-Shapley stable matching engine, Multi-Criteria Decision Analysis (MCDA), AES-256-GCM encrypted questionnaire responses, and a SHA-256 forward-linked audit hash chain.
 
 ---
 
-## 📸 Key Features & Visual Overview
+## Table of Contents
 
-- **Installable Progressive Web App (PWA):** Offline application drafting with IndexedDB persistence, background synchronization, and Web Push notifications.
+- [Project Overview](#project-overview)
+- [Key Features](#key-features)
+- [Technology Stack](#technology-stack)
+- [Repository Structure](#repository-structure)
+- [System Requirements](#system-requirements)
+- [Local Setup & Quick Start](#local-setup--quick-start)
+- [Environment Variables](#environment-variables)
+- [MongoDB Setup](#mongodb-setup)
+- [Redis Setup](#redis-setup)
+- [MinIO / S3 Setup](#minios3-setup)
+- [Docker Setup](#docker-setup)
+- [Development Commands](#development-commands)
+- [Build Commands](#build-commands)
+- [Testing Commands](#testing-commands)
+- [Production Deployment Instructions](#production-deployment-instructions)
+- [Security Notes & Vulnerability Reporting](#security-notes--vulnerability-reporting)
+- [License](#license)
+
+---
+
+## Project Overview
+
+Hostel Allocation & Roommate Matching eliminates manual bias, student dissatisfaction, and administrative bottlenecks in university dorm distribution. It combines:
+
+1. **Mathematical Determinism:** Multi-Criteria Decision Analysis (MCDA) and stable roommate allocation (Gale-Shapley variant) ensuring fair, Pareto-optimal distributions.
+2. **Explainable Matching:** Transparent scoring based on synchronized sleep habits, study quietness, room tidiness, and climate preferences.
+3. **Cryptographic Integrity:** End-to-end AES-256-GCM encrypted lifestyle questionnaires, public Ed25519 digital signature passes, and immutable audit logs.
+4. **Premium Dark Campus SaaS UI:** High-contrast responsive interface with 3D key-cards, animated compatibility gauges, interactive SVG floor cutaways, and offline-capable PWA support.
+
+---
+
+## Key Features
+
+- **Interactive Room & Bed Allotment:** 3D digital key-card pass with NFC chip rendering, animated room reveal, confetti celebrations, and verified allotment certificate downloads.
+- **AI-Driven Roommate Compatibility Portal:** Lifestyle alignment across 6 dimensions (Sleep, Study, Cleanliness, Noise, AC, Policy) with mutual deal-breaker guarantees.
+- **Maker-Checker Four-Layer Publishing Gate:** Prevents unauthorized publication across the UI, service, API, and schema levels.
+- **Offline PWA Architecture:** Background synchronization, IndexedDB drafts, and Web Push notifications.
+- **Public Ed25519 QR Verification:** Security desk verification of cryptographically signed room passes without requiring database access.
+- **Real-Time Automated Waitlist:** Instant bed reassignment upon student cancellation with BullMQ job queuing.
 - **Multilingual Support:** Complete localization in English (`en`), Hindi (`hi`), and Punjabi (`pa`).
-- **Interactive Bed Map & Review Console:** Visual room occupancy heat maps, accessible bed indicators, and optimistic concurrency version conflict resolution (`If-Match`).
-- **Maker-Checker Four-Layer Publishing Gate:** Prevents unauthorized publication at the UI, service, API, and database schema levels.
-- **Public Ed25519 QR Verification:** Gatekeepers can verify digitally signed student allotment letters without database credentials.
-- **Dynamic Waitlist & Bed Vacating:** Automatic candidate selection and real-time room occupancy reconciliation.
 
 ---
 
-## ⚡ One-Command Local Setup
+## Technology Stack
 
-### Prerequisites
+| Layer             | Technologies                                                                                              |
+| :---------------- | :-------------------------------------------------------------------------------------------------------- |
+| **Frontend**      | Next.js 15 (App Router), React 19, TypeScript 5.5, Tailwind CSS, Framer Motion, Lucide Icons              |
+| **Backend / API** | Node.js 20+, Next.js Route Handlers, Zod Validation, OpenRouteService                                     |
+| **Database**      | MongoDB 7.0 (Single-node Replica Set `rs0` with Change Streams and Multi-Document Transactions), Mongoose |
+| **Queue / Cache** | Redis 7.0, BullMQ background job processing                                                               |
+| **Storage**       | MinIO / AWS S3 (S3-compatible object storage)                                                             |
+| **Security**      | NextAuth v5, AES-256-GCM, Ed25519 signatures, Argon2id, ClamAV antivirus daemon                           |
+| **Tooling & CI**  | pnpm workspaces, Vitest, Playwright, Docker & Docker Compose, ESLint Flat Config, Prettier                |
 
-- **Node.js:** `>= 20.0.0`
+---
+
+## Repository Structure
+
+```
+.
+├── apps/
+│   ├── web/                     # Next.js 15 App Router web application & API
+│   │   ├── src/app/             # Application routes ((student), (staff), api/v1)
+│   │   ├── src/components/      # Reusable UI & design system components
+│   │   └── Dockerfile           # Standalone production container definition
+│   └── worker/                  # BullMQ background job worker
+│       ├── src/                 # Queue workers (allocations, notifications, emails)
+│       └── Dockerfile           # Production worker container definition
+├── packages/
+│   ├── domain/                  # Pure mathematical matching solver & entities (Zero DB dependencies)
+│   ├── db/                      # Mongoose models, tenant repository, and audit service
+│   └── shared/                  # RBAC permissions matrix, constants, cipher utilities
+├── infra/                       # Infrastructure configuration & Mongo replica set scripts
+├── docs/                        # Architecture Decision Records (ADRs) & specifications
+├── docker-compose.yml           # Local backing services (Mongo, Redis, MinIO, Mailpit, ClamAV)
+├── package.json                 # Monorepo workspace scripts
+└── pnpm-workspace.yaml          # pnpm workspace definition
+```
+
+---
+
+## System Requirements
+
+- **Node.js:** `>= 20.0.0 LTS`
 - **pnpm:** `>= 9.0.0`
-- **Docker & Docker Compose:** Running locally
+- **Docker & Docker Compose:** Required for backing services
+- **Memory:** Minimum 4 GB RAM recommended for local simulation
 
-### Quick Start
+---
+
+## Local Setup & Quick Start
+
+### 1. Clone the Repository
 
 ```bash
-# 1. Clone repository & install dependencies
-git clone https://github.com/hostelhub/hostelhub.git
-cd hostelhub
+git clone https://github.com/Kushagra26102006/Hostel-Allocation-Roommate-Matching.git
+cd Hostel-Allocation-Roommate-Matching
+```
+
+### 2. Install Dependencies
+
+```bash
 pnpm install
+```
 
-# 2. Start backing services (MongoDB, Redis, MinIO, ClamAV)
+### 3. Configure Environment Variables
+
+```bash
+cp .env.example .env
+```
+
+Review `.env` and set your preferred configuration (development defaults work out of the box with the local Docker containers).
+
+### 4. Start Infrastructure Containers
+
+```bash
 pnpm run infra:up
+```
 
-# 3. Seed deterministic test data (Seed 42)
+This starts:
+
+- MongoDB 7.0 (`localhost:27017` as replica set `rs0`)
+- Redis 7.0 (`localhost:6379`)
+- MinIO (`localhost:9000` / Console `localhost:9001`)
+- Mailpit (`localhost:1025` SMTP / `localhost:8025` Web UI)
+- ClamAV (`localhost:3310`)
+
+### 5. Seed Synthetic Campus Data
+
+```bash
 pnpm run seed:synthetic --seed 42 --applicants 100 --beds 100 --reset
+```
 
-# 4. Start Next.js development server
+### 6. Start Development Servers
+
+In one terminal, start the Next.js web application:
+
+```bash
 pnpm run dev
+```
+
+In a second terminal, start the background worker:
+
+```bash
+pnpm --filter @hostelhub/worker dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 📜 All Monorepo Scripts Reference
+## Environment Variables
 
-| Script                      | Command                                           | Purpose                                                       |
-| :-------------------------- | :------------------------------------------------ | :------------------------------------------------------------ |
-| `pnpm dev`                  | `pnpm --filter @hostelhub/web dev`                | Starts Next.js development server on port 3000                |
-| `pnpm build`                | `pnpm -r build`                                   | Compiles all packages and applications                        |
-| `pnpm lint`                 | `eslint .`                                        | Runs ESLint flat config across the entire monorepo            |
-| `pnpm typecheck`            | `pnpm -r typecheck`                               | Runs `tsc --noEmit` across all 5 workspace projects           |
-| `pnpm test`                 | `pnpm -r test`                                    | Runs unit and integration test suites via Vitest              |
-| `pnpm test:e2e`             | `pnpm --filter @hostelhub/web test:e2e`           | Runs Playwright critical journeys J1 to J10                   |
-| `pnpm bench:allocation`     | `tsx scripts/bench-allocation.ts`                 | Executes 8,000 × 8,000 allocation performance benchmark       |
-| `pnpm seed:synthetic`       | `tsx packages/db/src/seed/synthetic.ts`           | Deterministic synthetic generator with fixed seed             |
-| `pnpm permissions:generate` | `tsx scripts/generate-permissions-doc.ts`         | Generates `docs/roles-permissions.md` from code               |
-| `pnpm permissions:check`    | `tsx scripts/generate-permissions-doc.ts --check` | CI check verifying permission docs match `permissions.ts`     |
-| `pnpm openapi:check`        | `tsx scripts/check-openapi-diff.ts`               | Verifies OpenAPI contract specification parity                |
-| `pnpm i18n:check`           | `pnpm --filter @hostelhub/web i18n:check`         | Verifies translation key completeness across `en`, `hi`, `pa` |
-| `pnpm infra:up`             | `docker compose up -d`                            | Launches MongoDB, Redis, MinIO, and ClamAV containers         |
-| `pnpm infra:down`           | `docker compose down`                             | Stops background infrastructure containers                    |
+All configuration is externalized via environment variables. See [`.env.example`](.env.example) for a complete template.
+
+| Variable                | Description                                                   | Default / Example                                    |
+| :---------------------- | :------------------------------------------------------------ | :--------------------------------------------------- |
+| `NODE_ENV`              | Application environment (`development` / `production`)        | `development`                                        |
+| `APP_URL`               | Base canonical application URL                                | `http://localhost:3000`                              |
+| `AUTH_SECRET`           | 32+ character entropy string for NextAuth session encryption  | Generate with `openssl rand -hex 32`                 |
+| `MASTER_ENCRYPTION_KEY` | 32+ character master key for AES-256-GCM questionnaire cipher | Generate with `openssl rand -hex 32`                 |
+| `ENCRYPTION_KEY_ID`     | Identifier for active encryption key version                  | `key-v1`                                             |
+| `MONGODB_URI`           | MongoDB connection URI with replicaSet query parameter        | `mongodb://localhost:27017/hostelhub?replicaSet=rs0` |
+| `REDIS_URL`             | Redis instance URL                                            | `redis://localhost:6379`                             |
+| `S3_ENDPOINT`           | S3-compatible storage endpoint URL                            | `http://localhost:9000`                              |
+| `S3_REGION`             | S3 region identifier                                          | `us-east-1`                                          |
+| `S3_ACCESS_KEY`         | S3 API access key                                             | Configured securely in deployment                    |
+| `S3_SECRET_KEY`         | S3 API secret key                                             | Configured securely in deployment                    |
+| `S3_BUCKET`             | Destination S3 bucket name                                    | `hostelhub`                                          |
+| `SMTP_HOST`             | Outbound mail server hostname                                 | `localhost`                                          |
+| `SMTP_PORT`             | Outbound mail server port                                     | `1025`                                               |
 
 ---
 
-## 🏛️ Monorepo Architecture
+## MongoDB Setup
 
+Hostel Allocation & Roommate Matching relies on MongoDB multi-document transactions and change streams, which require a **replica set**.
+
+- **Local Development:** The provided `docker-compose.yml` automatically initializes a single-node replica set named `rs0`.
+- **Production:** Use MongoDB Atlas (M10+) or a self-hosted replica set with TLS enabled. Ensure the connection string includes `?replicaSet=<name>&retryWrites=true&w=majority`.
+
+---
+
+## Redis Setup
+
+Redis provides caching and powers BullMQ queues for asynchronous matching, document generation, and email/SMS dispatch.
+
+- **Local Development:** Accessible on `localhost:6379` via Docker.
+- **Production:** Use Redis 7+ standalone or Redis Cluster with password authentication: `rediss://:password@host:6379`.
+
+---
+
+## MinIO / S3 Setup
+
+All student identity documents, medical certificates, and generated PDF allotment letters are stored in S3-compatible storage.
+
+- **Local Development:** MinIO runs at `http://localhost:9000` (Console: `http://localhost:9001`). The `createbuckets` service automatically creates the `hostelhub` bucket on first startup.
+- **Production:** Compatible with AWS S3, Cloudflare R2, Google Cloud Storage, or self-hosted MinIO clusters.
+
+---
+
+## Docker Setup
+
+### Validating Configuration
+
+```bash
+docker compose config
 ```
-hostelhub/
-├── apps/
-│   ├── web/                     # Next.js 15 App Router frontend & API routes
-│   │   ├── e2e/                 # Playwright E2E test suites (Journeys J1–J10)
-│   │   └── src/                 # React Server/Client Components, hooks, API handlers
-│   └── worker/                  # BullMQ background job worker runtime
-├── packages/
-│   ├── domain/                  # Pure mathematical matching solver & domain entities
-│   ├── db/                      # Mongoose models, tenant repository, and audit service
-│   └── shared/                  # RBAC permissions matrix, constants, cipher utilities
-├── docs/                        # Complete technical documentation set
-│   ├── adr/                     # Architecture Decision Records (ADRs 0001–0007)
-│   ├── api/                     # API reference guide and OpenAPI contract
-│   ├── engine/                  # Algorithm specification and 8,000 benchmark report
-│   ├── runbooks/                # Deployment, backup/restore, on-call runbooks
-│   └── user-guides/             # Student quickstart and warden/admin operational guides
-└── scripts/                     # CI gates, benchmark runners, doc generators
+
+### Starting Services
+
+```bash
+docker compose up -d
 ```
 
-### Dependency Flow
+### Stopping Services
 
-```
-[apps/web]    ──depends on──► [packages/domain] ◄──depends on── [packages/db]
-      │                               ▲                                ▲
-      ▼                               │                                │
-[packages/shared] ◄───────────────────┴────────────────────────────────┘
+```bash
+docker compose down
 ```
 
-- **`packages/domain`** has zero database or external runtime dependencies.
-- All database operations are strictly multi-tenant isolated via `institution_id`.
+### Resetting Volumes
+
+```bash
+docker compose down -v
+```
 
 ---
 
-## 📚 Complete Documentation Set
+## Development Commands
 
-- **Architecture Decision Records (ADRs):**
-  - [ADR 0001: Technology Stack Choice](docs/adr/0001-stack-choice.md)
-  - [ADR 0002: Allocation Engine Design & Determinism](docs/adr/0002-engine-design-determinism.md)
-  - [ADR 0003: Cryptographic Storage & Key Rotation](docs/adr/0003-encryption-key-rotation.md)
-  - [ADR 0004: Cryptographic Audit Hash Chain](docs/adr/0004-audit-hash-chain.md)
-  - [ADR 0005: Notification Architecture & Delivery](docs/adr/0005-notification-design.md)
-  - [ADR 0006: Deployment Architecture & Container Strategy](docs/adr/0006-deployment-choices.md)
-  - [ADR 0007: Free-Service Integrations & Data Transmission Register](docs/adr/0007-free-service-integrations.md)
-- **API & Contracts:**
-  - [API Integration Guide](docs/api/README.md)
-  - [OpenAPI 3.1 Specification JSON](docs/openapi.json)
-- **Data Model & Schema:**
-  - [Entity Relationship Diagram & Database Constraints](docs/data-model.md)
-- **Matching Engine:**
-  - [Algorithm Specification & Constraint Formulation](docs/engine/specification.md)
-  - [8,000 × 8,000 Allocation Benchmark Report](docs/engine/benchmark-report.md)
-- **Security & Authorization:**
-  - [Role-Based Access Control (RBAC) Matrix](docs/roles-permissions.md)
-  - [Security Hardening & Evidence Report](docs/security-report.md)
-  - [Privacy Policy & Third-Party Disclosure Register](docs/privacy.md)
-- **User Guides:**
-  - [Student Quick-Start Guide](docs/user-guides/student-quickstart.md)
-  - [Warden & Administrator Operations Guide](docs/user-guides/warden-admin-guide.md)
-- **Operations & Runbooks:**
-  - [Deployment & Rollback Runbook](docs/runbooks/deployment.md)
-  - [Backup & Restore Runbook](docs/runbooks/backup-restore.md)
-  - [Incident Response & Security Runbook](docs/runbooks/incident-response.md)
-  - [On-Call Engineering Reference](docs/runbooks/on-call.md)
-- **Handover & Operational Continuity:**
-  - [Known Issues & Technical Debt Register](docs/known-issues.md)
-  - [60–90 Minute Live Handover Demonstration Script](docs/handover-walkthrough.md)
-  - [Accessibility (WCAG 2.2 AA) & Performance Audit](docs/a11y-perf-report.md)
+| Command                               | Description                                                              |
+| :------------------------------------ | :----------------------------------------------------------------------- |
+| `pnpm dev`                            | Starts the Next.js development server on port 3000                       |
+| `pnpm --filter @hostelhub/worker dev` | Starts the BullMQ worker in development mode                             |
+| `pnpm run lint`                       | Runs ESLint across all monorepo packages                                 |
+| `pnpm run typecheck`                  | Runs TypeScript typecheck (`tsc --noEmit`) across all workspace packages |
+| `pnpm run test`                       | Runs the Vitest test suites across all packages                          |
+| `pnpm run bench:allocation`           | Executes the 8,000 × 8,000 resident matching algorithm benchmark         |
+| `pnpm run format`                     | Runs Prettier across the codebase                                        |
 
 ---
 
-## 👥 Default Demo Credentials (Seed 42)
+## Build Commands
 
-| Persona / Role              | Email                  | Password               | Scope                                                |
-| :-------------------------- | :--------------------- | :--------------------- | :--------------------------------------------------- |
-| **Student**                 | `student.demo@nit.edu` | `Password123!`         | Own application, results, questionnaire, appeals     |
-| **Warden**                  | `warden.demo@nit.edu`  | `Password123!` _(MFA)_ | Kaveri Hostel bed review, overrides, waitlist        |
-| **Chief Warden**            | `chief.warden@nit.edu` | `Password123!` _(MFA)_ | All campus hostels, Maker-Checker approvals, publish |
-| **Hostel Admin**            | `admin.hostel@nit.edu` | `Password123!` _(MFA)_ | Inventory CSV imports, cycle setup, matching trigger |
-| **Dean of Student Welfare** | `dean.welfare@nit.edu` | `Password123!` _(MFA)_ | Macro analytics, audit hash chain verification       |
-| **System Administrator**    | `sysadmin@nit.edu`     | `Password123!` _(MFA)_ | Optimization weights, system flags, API keys         |
+Build all monorepo packages and apps:
+
+```bash
+pnpm run build
+```
+
+This builds:
+
+1. `@hostelhub/shared` -> `dist/`
+2. `@hostelhub/domain` -> `dist/`
+3. `@hostelhub/db` -> `dist/`
+4. `@hostelhub/worker` -> `dist/`
+5. `@hostelhub/web` -> Next.js production build (`.next/standalone`)
 
 ---
 
-## 🔒 Security & Vulnerability Reporting
+## Testing Commands
 
-Please report security issues directly to `security@hostelhub.edu`. See [`docs/runbooks/incident-response.md`](docs/runbooks/incident-response.md) for vulnerability handling runbooks.
+Run all automated unit and integration tests:
+
+```bash
+pnpm run test
+```
+
+Run tests for a specific workspace:
+
+```bash
+pnpm --filter @hostelhub/domain test
+pnpm --filter @hostelhub/db test
+pnpm --filter @hostelhub/web test
+pnpm --filter @hostelhub/worker test
+```
 
 ---
 
-## 📄 License
+## Production Deployment Instructions
 
-This repository is licensed under the [MIT License](LICENSE).
+### 1. Containerized Deployment (Recommended)
+
+1. Build production Docker images:
+   ```bash
+   docker build -f apps/web/Dockerfile -t hostelhub-web:latest .
+   docker build -f apps/worker/Dockerfile -t hostelhub-worker:latest .
+   ```
+2. Deploy the containers with your container orchestrator (Kubernetes, AWS ECS, Docker Swarm, or Railway/Render).
+3. Inject production environment variables via Kubernetes Secrets or your cloud secrets manager.
+
+### 2. Standard Node.js Process Manager (PM2 / Systemd)
+
+1. Set `NODE_ENV=production`.
+2. Build the workspace: `pnpm run build`.
+3. Start the Next.js standalone server:
+   ```bash
+   node apps/web/.next/standalone/apps/web/server.js
+   ```
+4. Start the worker process:
+   ```bash
+   node apps/worker/dist/index.js
+   ```
+
+---
+
+## Security Notes & Vulnerability Reporting
+
+- **Zero Plaintext Storage:** Questionnaires are encrypted with AES-256-GCM using per-institution encryption keys.
+- **Audit Hash Chain:** Allocation transitions and approvals are logged in a forward-linked SHA-256 audit log.
+- **No Production Secrets:** No secrets, database passwords, or private keys are tracked in version control.
+- **Vulnerability Disclosure:** Please report security issues directly to the repository maintainer or institution security administrator.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

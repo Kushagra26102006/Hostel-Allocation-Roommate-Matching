@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { Building2 } from "lucide-react";
+import { HostelHubLogo } from "@/components/brand/logo";
 import { Breadcrumbs } from "@/components/shell/breadcrumbs";
 import { CommandPalette } from "@/components/shell/command-palette";
 import { NotificationBell } from "@/components/shell/notifications";
@@ -16,33 +15,28 @@ interface ShellHeaderProps {
 
 export function ShellHeader({ showLogo = false }: ShellHeaderProps) {
   return (
-    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-border/60 bg-surface/80 px-4 backdrop-blur-md transition-colors sm:px-6">
-      {/* Left: Optional Brand logo (for student top-bar) + Breadcrumbs */}
-      <div className="flex items-center gap-4">
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-border/70 bg-surface/80 px-4 backdrop-blur-xl transition-all sm:px-6 shadow-xs">
+      {/* Left: Brand logo + Divider + Breadcrumbs */}
+      <div className="flex items-center gap-3 sm:gap-4">
         {showLogo && (
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 text-text"
-            aria-label="HostelHub Dashboard"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-brand text-brand-foreground shadow-sm">
-              <Building2 className="h-4 w-4" />
-            </div>
-            <span className="hidden sm:inline font-heading text-base font-bold tracking-tight text-text">
-              Hostel<span className="text-gradient">Hub</span>
-            </span>
-          </Link>
+          <>
+            <HostelHubLogo size="sm" />
+            <span className="hidden sm:inline-block h-4 w-px bg-border/80" aria-hidden="true" />
+          </>
         )}
-        <Breadcrumbs />
+        <div className="hidden sm:block">
+          <Breadcrumbs />
+        </div>
       </div>
 
-      {/* Right Tools: Command palette, UserNav, Notifications, Theme, Language */}
-      <div className="flex items-center gap-2 sm:gap-2.5">
+      {/* Right Tools: Command palette, Notifications, Language, Theme, UserNav */}
+      <div className="flex items-center gap-1.5 sm:gap-2.5">
         <CommandPalette />
-        <UserNav />
         <NotificationBell />
         <LanguageSwitcher />
         <ThemeToggle />
+        <div className="h-5 w-px bg-border/60 mx-1 hidden sm:block" aria-hidden="true" />
+        <UserNav />
       </div>
     </header>
   );

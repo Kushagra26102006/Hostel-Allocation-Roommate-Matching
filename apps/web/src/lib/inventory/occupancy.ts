@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import type { Types } from "mongoose";
 import {
   HostelRepository,
   BlockRepository,
@@ -64,15 +64,40 @@ export async function getOccupancyMetrics(
   institutionId?: string | Types.ObjectId | null,
   isStaff = false,
 ): Promise<PublicOccupancySummary | StaffOccupancyDetail> {
-  const queryFilter: Record<string, unknown> = {};
-  if (institutionId) {
-    queryFilter.institution_id =
-      typeof institutionId === "string" ? new Types.ObjectId(institutionId) : institutionId;
+  let instId = institutionId;
+  if (!instId) {
+    try {
+      const { InstitutionModel } = await import("@hostelhub/db");
+      const defaultInst = await InstitutionModel.findOne({ status: "active" }).select("_id").lean();
+      if (defaultInst) {
+        instId = defaultInst._id;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (!instId) {
+    const emptySummary: PublicOccupancySummary = {
+      totalBeds: 0,
+      occupiedBeds: 0,
+      heldBeds: 0,
+      availableBeds: 0,
+      outOfServiceBeds: 0,
+      occupancyRate: 0,
+      lastUpdated: new Date().toISOString(),
+    };
+    if (!isStaff) return emptySummary;
+    return {
+      ...emptySummary,
+      byHostel: [],
+      byRoomType: {},
+    };
   }
 
   let beds: BedDocument[] = [];
   try {
-    const bedRepo = new BedRepository(institutionId ?? undefined);
+    const bedRepo = new BedRepository(instId);
     beds = await bedRepo.find({});
   } catch (err: unknown) {
     if (err instanceof ApiProblemError) throw err;
@@ -140,7 +165,7 @@ export async function getOccupancyMetrics(
   let rooms: RoomDocument[] = [];
 
   try {
-    const inst = institutionId ?? undefined;
+    const inst = instId;
     const hostelRepo = new HostelRepository(inst);
     const blockRepo = new BlockRepository(inst);
     const roomRepo = new RoomRepository(inst);
