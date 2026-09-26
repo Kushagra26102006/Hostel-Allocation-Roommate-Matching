@@ -117,7 +117,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Web Multi-Stage Docker Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/web/Dockerfile
@@ -125,7 +125,7 @@ jobs:
           tags: hostelhub-web:latest
 
       - name: Build Worker Multi-Stage Docker Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/worker/Dockerfile
