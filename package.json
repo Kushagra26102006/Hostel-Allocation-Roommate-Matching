@@ -33,14 +33,14 @@
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "@vitest/coverage-v8": "2.1.9",
-    "eslint": "^9.9.0",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint": "^10.11.0",
+    "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.5",
     "lint-staged": "^15.2.9",
-    "prettier": "^3.3.3",
+    "prettier": "^3.9.9",
     "tsx": "^4.23.15",
-    "typescript": "^5.5.4",
-    "vitest": "^2.1.1"
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
   },
   "pnpm": {
     "overrides": {
