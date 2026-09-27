@@ -40,8 +40,8 @@ function getCspHeader(nonce: string): string {
   const isDev = process.env.NODE_ENV === "development";
   return `
     default-src 'self';
-    script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com ${isDev ? "'unsafe-eval'" : ""};
-    script-src-elem 'self' 'nonce-${nonce}' https://challenges.cloudflare.com ${isDev ? "'unsafe-eval'" : ""};
+    script-src 'self' 'nonce-${nonce}' 'unsafe-inline' https://challenges.cloudflare.com ${isDev ? "'unsafe-eval'" : ""};
+    script-src-elem 'self' 'nonce-${nonce}' 'unsafe-inline' https://challenges.cloudflare.com ${isDev ? "'unsafe-eval'" : ""};
     style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data: https://*.tile.openstreetmap.org https://images.unsplash.com https://avatars.githubusercontent.com https://lh3.googleusercontent.com https:;
     font-src 'self' data:;

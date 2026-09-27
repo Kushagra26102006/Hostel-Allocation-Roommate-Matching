@@ -5,4 +5,7 @@
  * Re-exports the API v1 metrics route for Prometheus / Grafana scraping.
  */
 
-export { GET, runtime, dynamic } from "../api/v1/metrics/route";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export { GET } from "../api/v1/metrics/route";

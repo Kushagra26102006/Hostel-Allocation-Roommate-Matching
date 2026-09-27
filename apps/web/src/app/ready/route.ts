@@ -5,4 +5,7 @@
  * Re-exports the API v1 readiness probe for load balancers and uptime monitors.
  */
 
-export { GET, runtime, dynamic } from "../api/v1/ready/route";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export { GET } from "../api/v1/ready/route";

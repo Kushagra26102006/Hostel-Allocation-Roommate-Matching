@@ -5,4 +5,7 @@
  * Re-exports the API v1 health probe for UptimeRobot / Better Stack monitoring.
  */
 
-export { GET, runtime, dynamic } from "../api/v1/health/route";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export { GET } from "../api/v1/health/route";
