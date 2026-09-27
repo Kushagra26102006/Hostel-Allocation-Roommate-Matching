@@ -25,6 +25,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { useCurrentStudent } from "@/hooks/use-current-student";
+import { useSession } from "next-auth/react";
 
 type NotificationCategory =
   "All" | "Allocation" | "Application" | "Documents" | "Room Change" | "Appeals" | "System";
@@ -42,6 +44,8 @@ interface NotificationItem {
 }
 
 export default function StudentNotificationsPage() {
+  const { data: session } = useSession();
+  const { data: student } = useCurrentStudent();
   const [selectedCategory, setSelectedCategory] = React.useState<NotificationCategory>("All");
   const [showPreferences, setShowPreferences] = React.useState(false);
   const [filterRead, setFilterRead] = React.useState<"all" | "unread">("all");
@@ -352,7 +356,9 @@ export default function StudentNotificationsPage() {
                 <Mail className="h-4.5 w-4.5 text-brand-600" />
                 <div>
                   <span className="font-bold text-foreground block">Campus Email Alerts</span>
-                  <span className="text-[11px] text-muted">aarav.sharma@campus.edu</span>
+                  <span className="text-[11px] text-muted">
+                    {student?.email || session?.user?.email || "student@campus.edu"}
+                  </span>
                 </div>
               </div>
               <input

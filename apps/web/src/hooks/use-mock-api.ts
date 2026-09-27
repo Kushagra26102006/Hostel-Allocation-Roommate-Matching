@@ -3,6 +3,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import { mockApi } from "@/lib/api/mock";
 
 export function useHostels() {
@@ -64,9 +65,30 @@ export function useSaveQuestionnaire() {
 }
 
 export function useStudentGroup() {
+  const { data: session } = useSession();
   return useQuery({
-    queryKey: ["studentGroup"],
-    queryFn: () => mockApi.getGroup(),
+    queryKey: ["studentGroup", session?.user?.id],
+    queryFn: async () => {
+      const group = await mockApi.getGroup();
+      if (!session?.user?.name) return group;
+      // Bind authenticated student as the primary user
+      const studentRoll = session.user.rollNumber || "Pending Enrollment";
+      return {
+        ...group,
+        name: `${session.user.name.split(" ")[0]}'s Roommate Group`,
+        members: group.members.map((m, idx) =>
+          idx === 0
+            ? {
+                ...m,
+                name: session.user?.name || m.name,
+                email: session.user?.email || m.email,
+                rollNo: studentRoll,
+                role: "leader",
+              }
+            : m,
+        ),
+      };
+    },
   });
 }
 
@@ -81,9 +103,54 @@ export function useInviteGroupMember() {
 }
 
 export function useAllocationResult() {
+  const { data: session } = useSession();
   return useQuery({
-    queryKey: ["allocationResult"],
-    queryFn: () => mockApi.getAllocationResult(),
+    queryKey: ["allocationResult", session?.user?.id],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/v1/student/allocation-result");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            const d = json.data;
+            return {
+              ...d,
+              hasAllocation: Boolean(d.hasAllocation),
+              studentName: session?.user?.name || "Student",
+              rollNo: session?.user?.rollNumber || "",
+              hostelName: d.hostel?.name || "Pending Allotment",
+              blockName: d.hostel?.block || "TBD",
+              floorNo: d.hostel?.floor ?? 0,
+              roomNo: d.hostel?.roomNumber || "TBD",
+              bedNo: d.hostel?.bedNo || "TBD",
+              roomType: d.hostel?.roomType || "Standard",
+              compatibilityScore: d.compatibilityPercent || 0,
+              whyThisRoom: d.whyThisRoom || "Room allocation pending automated execution.",
+              verificationToken: d.verificationToken || "",
+              roommates: d.roommates || [],
+            };
+          }
+        }
+      } catch {
+        // endpoint network error fallback
+      }
+      return {
+        hasAllocation: false,
+        status: "unallocated",
+        studentName: session?.user?.name || "Student",
+        rollNo: session?.user?.rollNumber || "",
+        hostelName: "Unallocated",
+        blockName: "N/A",
+        floorNo: 0,
+        roomNo: "N/A",
+        bedNo: "N/A",
+        roomType: "N/A",
+        compatibilityScore: 0,
+        whyThisRoom: "No active room allotment found for your account.",
+        verificationToken: "",
+        roommates: [],
+      };
+    },
   });
 }
 

@@ -442,3 +442,5 @@ export {
   type DispatchResult,
   type WebhookDispatcherOptions,
 } from "./services/webhook-dispatcher.service.js";
+
+export { StudentService, type StudentProfileDto } from "./services/student.service.js";

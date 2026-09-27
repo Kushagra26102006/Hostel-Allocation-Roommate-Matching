@@ -12,6 +12,7 @@ import {
   Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCurrentStudent } from "@/hooks/use-current-student";
 
 interface EligibilityRule {
   id: string;
@@ -27,14 +28,15 @@ interface EligibilityRule {
 }
 
 export default function StudentEligibilityPage() {
+  const { data: student } = useCurrentStudent();
+
   const rules: EligibilityRule[] = [
     {
       id: "rule-dist",
       name: "Geographic Distance Criterion (> 50 km)",
       status: "passed",
       policyRef: "Hostel Policy Clause 2.1",
-      reason:
-        "Your verified permanent address in Mumbai is 850 km from campus, exceeding the 50 km threshold. You qualify for high-priority outstation allocation.",
+      reason: `Your verified permanent address in ${student?.homeState || "Home State"} is verified beyond the 50 km local commuter boundary. You qualify for residential hostel allocation.`,
       verifiedAt: "24 Sep 2026, 11:20 AM",
       verifiedBy: "Automated GIS Distance Engine",
     },
@@ -43,8 +45,7 @@ export default function StudentEligibilityPage() {
       name: "Academic Standing & Full-Time Enrolment",
       status: "passed",
       policyRef: "Bylaw 3.4 (Merit & Progression)",
-      reason:
-        "Active enrolment in Year 3 B.Tech Computer Science with CGPA of 9.35 satisfies the minimum requirement of 6.00 with zero active course backlogs.",
+      reason: `Active enrolment in ${student?.programme || "Degree Programme"} (Year ${student?.year || 1}) satisfies the minimum academic progression requirement with zero active course backlogs.`,
       verifiedAt: "24 Sep 2026, 11:25 AM",
       verifiedBy: "Dean of Academic Affairs Registry",
     },

@@ -27,6 +27,7 @@ import { RoomChangeDialog } from "@/components/student/result/room-change-dialog
 import { AppealDialog } from "@/components/student/result/appeal-dialog";
 import { triggerIcsDownload } from "@/lib/calendar";
 import type { StudentResultData } from "@hostelhub/domain";
+import { useSession } from "next-auth/react";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,7 @@ import {
 } from "@/components/ui/dialog";
 
 export default function StudentRoomPage() {
+  const { data: session } = useSession();
   const [data, setData] = React.useState<StudentResultData | null>(null);
   const [isRoomChangeOpen, setIsRoomChangeOpen] = React.useState<boolean>(false);
   const [isAppealOpen, setIsAppealOpen] = React.useState<boolean>(false);
@@ -257,7 +259,7 @@ export default function StudentRoomPage() {
               bedNo={allocation.hostel.bedNo}
               roomType={allocation.hostel.roomType}
               score={allocation.score}
-              studentName="Aarav Sharma"
+              studentName={session?.user?.name || "Student Resident"}
               cycleName="Autumn 2026"
               onRevealed={() => setIsRevealed(true)}
             />

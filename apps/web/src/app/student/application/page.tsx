@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useCurrentStudent } from "@/hooks/use-current-student";
+import { useSession } from "next-auth/react";
 
 const STEPS = [
   "Personal Information",
@@ -34,6 +36,9 @@ const STEPS = [
 
 export default function StudentApplicationWizard() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const { data: student } = useCurrentStudent();
+
   const [currentStep, setCurrentStep] = React.useState(0);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [lastSaved, setLastSaved] = React.useState("Just now");
@@ -44,22 +49,22 @@ export default function StudentApplicationWizard() {
     hash: string;
   } | null>(null);
 
-  // Form data with persistence in localStorage
+  // Form data with persistence in localStorage and authenticated user data
   const [formData, setFormData] = React.useState({
-    fullName: "Aarav Sharma",
-    rollNo: "23CS10042",
-    email: "aarav.sharma@campus.edu",
-    phone: "+91 98765 43210",
-    homeAddress: "Flat 402, Sea View Enclave, Mumbai",
-    homeState: "Maharashtra",
-    distanceKm: "850",
+    fullName: "",
+    rollNo: "",
+    email: "",
+    phone: "",
+    homeAddress: "",
+    homeState: "",
+    distanceKm: "500",
     programme: "B.Tech Computer Science & Engineering",
     department: "Computer Science & Engineering",
-    year: "3",
-    semester: "5",
-    cgpa: "9.35",
+    year: "1",
+    semester: "1",
+    cgpa: "8.50",
     enrolmentStatus: "Regular Full-Time",
-    category: "General Merited",
+    category: "General",
     feeCleared: "yes",
     disciplinaryCleared: "yes",
     hasDisability: "no",
@@ -67,19 +72,48 @@ export default function StudentApplicationWizard() {
     preferredHostel2: "hostel-e",
     preferredHostel3: "hostel-c",
     preferredRoomType: "double_ac",
-    roommateChoice: "pair",
-    roommateRollNo: "23CS10088",
+    roommateChoice: "individual",
+    roommateRollNo: "",
     sleepSchedule: "night_owl",
     studyHabit: "quiet_silent",
     cleanliness: "meticulous",
     guestPolicy: "weekends_only",
-    specialNotes: "Require quiet study desk area with high-speed LAN port.",
+    specialNotes: "",
     honorPledge: true,
   });
 
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
-  // Load draft from localStorage on mount
+  // Sync authenticated student profile from database into form
+  React.useEffect(() => {
+    if (student) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: student.fullName || student.name || prev.fullName,
+        rollNo: student.rollNumber || prev.rollNo,
+        email: student.email || prev.email,
+        phone: student.phone || prev.phone,
+        programme: student.programme || prev.programme,
+        department: student.department || prev.department,
+        year: student.year ? String(student.year) : prev.year,
+        semester: student.semester || prev.semester,
+        cgpa: student.cgpa || prev.cgpa,
+        category: student.category || prev.category,
+        homeAddress: student.address || prev.homeAddress,
+        homeState: student.homeState || prev.homeState,
+      }));
+    } else if (session?.user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: session.user.name || prev.fullName,
+        email: session.user.email || prev.email,
+        rollNo: session.user.rollNumber || prev.rollNo,
+        phone: session.user.phone || prev.phone,
+      }));
+    }
+  }, [student, session]);
+
+  // Load draft from localStorage on mount (merging over defaults)
   React.useEffect(() => {
     try {
       const saved = localStorage.getItem("hostelhub-application-draft");
@@ -160,23 +194,37 @@ export default function StudentApplicationWizard() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateStep(7)) {
       toast.error("Please agree to the student honor pledge.");
       return;
     }
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const res = await fetch("/api/student/application", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ formData, action: "submit" }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to submit application");
+      }
       const receipt = {
-        receiptNo: `HH-2026-APP-${Math.floor(100000 + Math.random() * 900000)}`,
+        receiptNo:
+          data.data?.referenceNumber ||
+          `HH-2026-APP-${Math.floor(100000 + Math.random() * 900000)}`,
         submittedAt: new Date().toLocaleString(),
         hash: "0x8f9c2d1b7a4e5039f" + Math.floor(1000 + Math.random() * 9000),
       };
       setSubmittedReceipt(receipt);
       localStorage.removeItem("hostelhub-application-draft");
       toast.success("Hostel Application formally locked and submitted!");
-    }, 900);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to submit application");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -610,7 +658,9 @@ export default function StudentApplicationWizard() {
                           Institute Student ID Card Proof
                         </span>
                         <span className="text-[11px] text-muted">
-                          student_id_card_23cs10042.jpg &bull; 850 KB &bull; Status: Verified
+                          student_id_card_
+                          {formData.rollNo ? formData.rollNo.toLowerCase() : "verified"}.jpg &bull;
+                          850 KB &bull; Status: Verified
                         </span>
                       </div>
                     </div>

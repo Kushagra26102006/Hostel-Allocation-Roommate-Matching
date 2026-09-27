@@ -35,7 +35,7 @@ export function KeyCardFlip({
   bedNo,
   roomType,
   score,
-  studentName = "Aarav Sharma",
+  studentName = "Student Resident",
   cycleName = "Autumn 2026",
   onRevealed,
 }: KeyCardFlipProps) {

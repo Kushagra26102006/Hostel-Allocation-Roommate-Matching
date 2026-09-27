@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getPortalForRole } from "@/stores/role-store";
 import { StudentDashboardClient } from "@/components/dashboard/student-dashboard-client";
+import { connectDb, StudentService, type StudentProfileDto } from "@hostelhub/db";
 
 export const metadata: Metadata = {
   title: "Student Housing Dashboard — HostelHub",
@@ -16,21 +17,31 @@ export default async function StudentDashboardPage() {
     redirect(getPortalForRole(primaryRole));
   }
 
+  let profile: StudentProfileDto | null = null;
+  if (session?.user?.id) {
+    try {
+      await connectDb();
+      profile = await StudentService.getStudentProfile(session.user.id);
+    } catch {
+      // Non-fatal DB error fallback
+    }
+  }
+
   const student = {
-    name: session?.user?.name || "Aarav Sharma",
-    rollNo: "22BCS042",
-    programme: "BTech",
-    department: "Computer Science & Engineering",
-    semester: 5,
-    hostel: "Aryabhata Hall (Block A)",
-    tower: "Tower A",
-    room: "304",
-    bed: "Bed A-304-1",
-    floor: "3rd Floor",
+    name: profile?.fullName || session?.user?.name || "Student Resident",
+    rollNo: profile?.rollNumber || session?.user?.rollNumber || "Pending Enrollment",
+    programme: profile?.programme || "BTech Computer Science",
+    department: profile?.department || "Computer Science & Engineering",
+    semester: Number(profile?.semester?.replace(/\D/g, "")) || 1,
+    hostel: profile?.hasAllocation ? "Aryabhata Hall (Block A)" : "Unallocated",
+    tower: profile?.hasAllocation ? "Tower A" : "N/A",
+    room: profile?.hasAllocation ? "304" : "N/A",
+    bed: profile?.hasAllocation ? "Bed A-304-1" : "N/A",
+    floor: profile?.hasAllocation ? "3rd Floor" : "N/A",
     roomType: "Double Sharing (AC)",
-    roommate: "Kabir Mehta",
-    compatibility: 94,
-    status: "allocated",
+    roommate: profile?.hasAllocation ? "Kabir Mehta" : "Open",
+    compatibility: profile?.hasAllocation ? 94 : 0,
+    status: profile?.hasAllocation ? "allocated" : "unallocated",
     cycle: "Autumn 2026 Hostel Allocation Cycle",
   };
 

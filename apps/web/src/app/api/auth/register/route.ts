@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { AuditService, connectDb, InstitutionRepository, UserRepository } from "@hostelhub/db";
+import {
+  AuditService,
+  connectDb,
+  InstitutionRepository,
+  UserRepository,
+  type IUser,
+} from "@hostelhub/db";
 import { logger } from "@hostelhub/shared";
 import { checkPasswordBreached, hashPassword, validatePasswordLength } from "@/lib/auth/password";
 import { checkSlidingWindowRateLimit } from "@/lib/auth/rate-limiter";
@@ -8,11 +14,24 @@ import { verifyTurnstileToken } from "@/lib/auth/turnstile";
 
 const registerSchema = z
   .object({
-    name: z.string().trim().min(2, "Full name must be at least 2 characters").max(100),
+    name: z.string().trim().min(2, "Full name must be at least 2 characters").max(100).optional(),
+    fullName: z
+      .string()
+      .trim()
+      .min(2, "Full name must be at least 2 characters")
+      .max(100)
+      .optional(),
     email: z.string().trim().email("Please enter a valid campus email address").toLowerCase(),
     password: z.string().min(12, "Password must be at least 12 characters long").max(128),
     confirmPassword: z.string().min(12, "Password confirmation must be at least 12 characters"),
+    rollNumber: z.string().trim().max(30).optional(),
+    roll_number: z.string().trim().max(30).optional(),
+    phone: z.string().trim().max(25).optional(),
     turnstileToken: z.string().optional(),
+  })
+  .refine((data) => Boolean(data.name || data.fullName), {
+    message: "Full name is required",
+    path: ["name"],
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -64,7 +83,10 @@ export async function POST(req: Request) {
     );
   }
 
-  const { name, email, password, turnstileToken } = parsed.data;
+  const { email, password, turnstileToken } = parsed.data;
+  const finalName = (parsed.data.name || parsed.data.fullName)!.trim();
+  const finalRollNumber = (parsed.data.rollNumber || parsed.data.roll_number)?.trim();
+  const finalPhone = parsed.data.phone?.trim();
 
   logger.info({
     event: "AUTH_REGISTER_START",
@@ -191,8 +213,8 @@ export async function POST(req: Request) {
 
     // 7. Role Security: strictly enforce default "student" role (no privilege escalation)
     const userRepo = new UserRepository(institution._id);
-    const newUser = await userRepo.create({
-      name,
+    const userPayload: Partial<IUser> = {
+      name: finalName,
       email,
       passwordHash,
       roles: ["student"],
@@ -203,7 +225,11 @@ export async function POST(req: Request) {
         backupCodes: [],
       },
       hostelAssignments: [],
-    });
+    };
+    if (finalRollNumber) userPayload.roll_number = finalRollNumber;
+    if (finalPhone) userPayload.phone = finalPhone;
+
+    const newUser = await userRepo.create(userPayload);
 
     // 8. Audit Logging
     try {
@@ -223,6 +249,7 @@ export async function POST(req: Request) {
       userId: newUser._id.toString(),
       email: newUser.email,
       institutionId: institution._id.toString(),
+      rollNumber: newUser.roll_number,
     });
 
     // Response strictly excludes passwordHash
@@ -235,6 +262,8 @@ export async function POST(req: Request) {
           email: newUser.email,
           name: newUser.name,
           roles: newUser.roles,
+          rollNumber: newUser.roll_number || null,
+          phone: newUser.phone || null,
         },
       },
       { status: 201 },

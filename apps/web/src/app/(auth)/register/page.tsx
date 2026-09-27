@@ -16,6 +16,8 @@ import {
   Lock,
   Mail,
   User,
+  Hash,
+  Phone,
 } from "lucide-react";
 import { Turnstile } from "@/components/auth/turnstile";
 
@@ -23,6 +25,8 @@ export default function RegisterPage() {
   const router = useRouter();
 
   const [name, setName] = useState("");
+  const [rollNumber, setRollNumber] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -104,6 +108,8 @@ export default function RegisterPage() {
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim().toLowerCase(),
+          rollNumber: rollNumber.trim() || undefined,
+          phone: phone.trim() || undefined,
           password,
           confirmPassword,
           turnstileToken: turnstileToken ?? "1x00000000000000000000AA-test",
@@ -200,8 +206,25 @@ export default function RegisterPage() {
                     autoComplete="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Aarav Sharma"
+                    placeholder="e.g. Test Student"
                     className="w-full rounded-lg border border-input bg-surface pl-10 pr-3.5 py-2 text-sm text-foreground placeholder:text-muted focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all shadow-2xs"
+                  />
+                </div>
+              </div>
+
+              {/* Student Roll / ID Number */}
+              <div>
+                <label className="block text-xs font-semibold text-foreground/80 mb-1">
+                  Student Roll Number / Institutional ID
+                </label>
+                <div className="relative">
+                  <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                  <input
+                    type="text"
+                    value={rollNumber}
+                    onChange={(e) => setRollNumber(e.target.value)}
+                    placeholder="e.g. TEST001 or 23CS10042"
+                    className="w-full rounded-lg border border-input bg-surface pl-10 pr-3.5 py-2 text-sm text-foreground placeholder:text-muted focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all shadow-2xs font-mono"
                   />
                 </div>
               </div>
@@ -220,6 +243,23 @@ export default function RegisterPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="student@nit.edu"
+                    className="w-full rounded-lg border border-input bg-surface pl-10 pr-3.5 py-2 text-sm text-foreground placeholder:text-muted focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all shadow-2xs"
+                  />
+                </div>
+              </div>
+
+              {/* Mobile Phone Number */}
+              <div>
+                <label className="block text-xs font-semibold text-foreground/80 mb-1">
+                  Mobile Phone Number <span className="text-muted font-normal">(Optional)</span>
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 98765 43210"
                     className="w-full rounded-lg border border-input bg-surface pl-10 pr-3.5 py-2 text-sm text-foreground placeholder:text-muted focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all shadow-2xs"
                   />
                 </div>

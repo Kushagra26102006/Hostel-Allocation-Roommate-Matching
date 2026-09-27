@@ -67,11 +67,19 @@ export default function StudentRoomChangePage() {
               <h3 className="font-heading text-base font-bold text-foreground">
                 Current Residence
               </h3>
-              <span className="text-[11px] text-muted">Active Assignment</span>
+              <span className="text-[11px] text-muted">
+                {allocation?.hasAllocation ? "Active Assignment" : "Pending Allotment"}
+              </span>
             </div>
           </div>
-          <span className="rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold px-2.5 py-0.5">
-            Allotted
+          <span
+            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+              allocation?.hasAllocation
+                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                : "bg-amber-500/10 text-amber-700 dark:text-amber-300"
+            }`}
+          >
+            {allocation?.hasAllocation ? "Allotted" : "Not Allotted"}
           </span>
         </div>
 
@@ -79,23 +87,29 @@ export default function StudentRoomChangePage() {
           <div>
             <span className="text-[10px] uppercase font-bold text-muted block">Hostel</span>
             <span className="font-bold text-foreground mt-0.5 block">
-              {allocation?.hostelName || "Aryabhata Hall"}
+              {allocation?.hasAllocation ? allocation.hostelName : "Pending Allotment"}
             </span>
           </div>
           <div>
             <span className="text-[10px] uppercase font-bold text-muted block">Room &amp; Bed</span>
             <span className="font-bold text-foreground mt-0.5 block">
-              Room {allocation?.roomNo || "A-204"} &bull; {allocation?.bedNo || "Bed 1"}
+              {allocation?.hasAllocation
+                ? `Room ${allocation.roomNo} • ${allocation.bedNo}`
+                : "Not Assigned"}
             </span>
           </div>
           <div>
             <span className="text-[10px] uppercase font-bold text-muted block">Room Type</span>
-            <span className="font-bold text-foreground mt-0.5 block">Double Sharing (AC)</span>
+            <span className="font-bold text-foreground mt-0.5 block">
+              {allocation?.hasAllocation ? allocation.roomType : "Standard"}
+            </span>
           </div>
           <div>
             <span className="text-[10px] uppercase font-bold text-muted block">Block / Floor</span>
             <span className="font-bold text-foreground mt-0.5 block">
-              {allocation?.blockName || "Block A"}, Floor {allocation?.floorNo || 2}
+              {allocation?.hasAllocation
+                ? `${allocation.blockName}, Floor ${allocation.floorNo}`
+                : "N/A"}
             </span>
           </div>
         </div>

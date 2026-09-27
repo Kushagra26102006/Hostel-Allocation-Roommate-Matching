@@ -62,7 +62,7 @@ export default function StudentDocumentsPage() {
     {
       id: "doc-2",
       name: "Institutional Student Photo ID Card",
-      fileName: "student_id_card_23cs10042.jpg",
+      fileName: "student_id_card_verified.jpg",
       fileSize: "850 KB",
       fileType: "image/jpeg",
       category: "required",

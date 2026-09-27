@@ -11,35 +11,52 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { useCurrentStudent } from "@/hooks/use-current-student";
+import { useSession } from "next-auth/react";
 
 export default function StudentPrivacyCentrePage() {
+  const { data: session } = useSession();
+  const { data: student } = useCurrentStudent();
+
   const [matchingConsent, setMatchingConsent] = React.useState(true);
   const [directoryConsent, setDirectoryConsent] = React.useState(false);
   const [analyticsConsent, setAnalyticsConsent] = React.useState(true);
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
 
+  const studentName = student?.fullName || session?.user?.name || "Student Resident";
+  const studentRollNo = student?.rollNumber || session?.user?.rollNumber || "Pending Enrollment";
+  const studentEmail = student?.email || session?.user?.email || "student@campus.edu";
+  const studentPhone = student?.phone || "Not provided";
+  const studentProgramme = student?.programme || "B.Tech Computer Science & Engineering";
+  const studentHomeState = student?.homeState || "Registered State";
+  const studentCategory = student?.category || "General Tier";
+
   const studentDataRecord = {
     profile: {
-      name: "Aarav Sharma",
-      rollNo: "23CS10042",
-      programme: "B.Tech Computer Science & Engineering",
-      email: "aarav.sharma@campus.edu",
-      phone: "+91 98765 43210",
-      homeState: "Maharashtra",
+      name: studentName,
+      rollNo: studentRollNo,
+      programme: studentProgramme,
+      email: studentEmail,
+      phone: studentPhone,
+      homeState: studentHomeState,
       distanceKm: 850,
-      quotaCategory: "General Merited Tier 1",
+      quotaCategory: studentCategory,
     },
     allocation: {
       cycle: "Autumn 2026",
-      hostel: "Aryabhata Hall",
-      room: "A-204",
-      bed: "Bed 1",
-      verificationToken: "HH-2026-ALLOC-99281-A204",
+      status: student?.hasAllocation ? "Allocated" : "Pending Gale-Shapley Run",
+      hostel: student?.hasAllocation ? "Aryabhata Hall" : "Pending Allotment",
+      room: student?.hasAllocation ? "A-204" : "TBD",
+      bed: student?.hasAllocation ? "Bed 1" : "TBD",
+      verificationToken: student?.hasAllocation ? "HH-2026-ALLOC-99281-A204" : "PENDING",
     },
     documents: [
       { name: "fee_receipt_autumn_2026.pdf", sha256: "0x4b78912e...fe10" },
-      { name: "student_id_card_23cs10042.jpg", sha256: "0x89ab10ef...c291" },
-      { name: "domicile_certificate_mh.pdf", sha256: "0x12fa9081...e944" },
+      {
+        name: `student_id_card_${studentRollNo.toLowerCase().replace(/[^a-z0-9]/g, "") || "proof"}.jpg`,
+        sha256: "0x89ab10ef...c291",
+      },
+      { name: "domicile_certificate.pdf", sha256: "0x12fa9081...e944" },
     ],
     lifestyleVector: {
       isSalted: true,

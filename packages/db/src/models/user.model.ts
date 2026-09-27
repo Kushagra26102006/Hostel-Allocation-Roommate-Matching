@@ -23,6 +23,18 @@ export interface IUser {
   hostelAssignments: string[];
   status: UserStatus;
   is_synthetic?: boolean;
+  // Student Profile Fields
+  roll_number?: string;
+  phone?: string;
+  programme?: string;
+  department?: string;
+  year?: number;
+  semester?: string;
+  cgpa?: string;
+  category?: string;
+  home_state?: string;
+  address?: string;
+  emergency_contact?: string;
 }
 
 export interface UserDocument extends BaseTenantDocument, IUser {}
@@ -98,6 +110,55 @@ const userSchema = new Schema<UserDocument>(
     is_synthetic: {
       type: Boolean,
       default: false,
+    },
+    roll_number: {
+      type: String,
+      trim: true,
+      index: true,
+    },
+    phone: {
+      type: String,
+      trim: true,
+    },
+    programme: {
+      type: String,
+      trim: true,
+      default: "B.Tech Computer Science & Engineering",
+    },
+    department: {
+      type: String,
+      trim: true,
+      default: "Computer Science & Engineering",
+    },
+    year: {
+      type: Number,
+      default: 1,
+    },
+    semester: {
+      type: String,
+      trim: true,
+      default: "Semester 1",
+    },
+    cgpa: {
+      type: String,
+      trim: true,
+    },
+    category: {
+      type: String,
+      trim: true,
+      default: "General",
+    },
+    home_state: {
+      type: String,
+      trim: true,
+    },
+    address: {
+      type: String,
+      trim: true,
+    },
+    emergency_contact: {
+      type: String,
+      trim: true,
     },
   },
   {

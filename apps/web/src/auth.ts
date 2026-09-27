@@ -20,6 +20,8 @@ declare module "next-auth" {
       mfaEnabled: boolean;
       mfaPending: boolean;
       activeRole?: UserRole | undefined;
+      rollNumber?: string | undefined;
+      phone?: string | undefined;
     } & DefaultSession["user"];
   }
 
@@ -31,6 +33,8 @@ declare module "next-auth" {
     mfaEnabled?: boolean | undefined;
     mfaPending?: boolean | undefined;
     activeRole?: UserRole | undefined;
+    rollNumber?: string | undefined;
+    phone?: string | undefined;
   }
 }
 
@@ -285,6 +289,8 @@ const providers = [
         hostelAssignments: Array.from(user.hostelAssignments ?? []),
         mfaEnabled,
         mfaPending,
+        rollNumber: user.roll_number ?? undefined,
+        phone: user.phone ?? undefined,
         ...(user.roles[0] ? { activeRole: user.roles[0] } : {}),
       };
     },
@@ -388,6 +394,7 @@ export const authConfig = {
 
       if (user) {
         token["id"] = user.id;
+        token["name"] = user.name;
         token["institution_id"] = user.institution_id;
         token["roles"] = Array.isArray(user.roles) ? Array.from(user.roles) : [];
         token["hostelAssignments"] = Array.isArray(user.hostelAssignments)
@@ -396,6 +403,8 @@ export const authConfig = {
         token["mfaEnabled"] = user.mfaEnabled;
         token["mfaPending"] = user.mfaPending;
         token["activeRole"] = user.activeRole;
+        token["rollNumber"] = user.rollNumber;
+        token["phone"] = user.phone;
         token["lastCheckedAt"] = now;
       }
 
@@ -411,6 +420,9 @@ export const authConfig = {
             token["invalid"] = true;
           } else {
             token["roles"] = Array.from(dbUser.roles);
+            token["name"] = dbUser.name;
+            token["rollNumber"] = dbUser.roll_number;
+            token["phone"] = dbUser.phone;
             token["lastCheckedAt"] = now;
           }
         } catch {
@@ -427,6 +439,16 @@ export const authConfig = {
         // mfaPending can only be cleared if server-verified (e.g. verifiedViaServer flag set internally)
         if (session["verifiedViaServer"] === true) {
           token["mfaPending"] = false;
+        }
+
+        if (session["name"]) {
+          token["name"] = session["name"];
+        }
+        if (session["rollNumber"]) {
+          token["rollNumber"] = session["rollNumber"];
+        }
+        if (session["phone"]) {
+          token["phone"] = session["phone"];
         }
 
         // SERVER-VALIDATED ROLE SWITCH: Only allow switching to a role present in user's token.roles
@@ -452,6 +474,7 @@ export const authConfig = {
 
       if (token && session.user) {
         session.user.id = token["id"] as string;
+        if (token["name"]) session.user.name = token["name"] as string;
         session.user.institution_id = token["institution_id"] as string;
         session.user.roles = (token["roles"] as UserRole[]) ?? ["student"];
         session.user.hostelAssignments = (token["hostelAssignments"] as string[]) ?? [];
@@ -460,6 +483,8 @@ export const authConfig = {
           ? ((token["mfaPending"] as boolean) ?? false)
           : false;
         session.user.activeRole = (token["activeRole"] as UserRole) ?? session.user.roles[0];
+        session.user.rollNumber = token["rollNumber"] as string | undefined;
+        session.user.phone = token["phone"] as string | undefined;
       }
       return session;
     },

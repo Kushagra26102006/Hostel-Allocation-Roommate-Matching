@@ -37,9 +37,13 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { useAllocationResult, useStudentGroup, useStudentPreferences } from "@/hooks/use-mock-api";
+import { useCurrentStudent } from "@/hooks/use-current-student";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 export default function StudentDashboardPage() {
+  const { data: session } = useSession();
+  const { data: student } = useCurrentStudent();
   const { data: allocation } = useAllocationResult();
   const { data: group } = useStudentGroup();
   const { data: preferences } = useStudentPreferences();
@@ -149,6 +153,15 @@ END:VCALENDAR`;
     toast.success("Move-in schedule added to calendar (.ics exported)!");
   };
 
+  const studentFullName = student?.fullName || session?.user?.name || "Student";
+  const studentFirstName = studentFullName.split(" ")[0];
+  const studentRollNo = student?.rollNumber || session?.user?.rollNumber || "Pending Enrollment";
+  const studentProgramme = student?.programme || "B.Tech Computer Science & Engineering";
+  const studentYear = student?.year || 1;
+  const studentCategory = student?.category || "General";
+  const hasAllocation = Boolean(allocation?.hasAllocation);
+  const applicationStatus = student?.applicationStatus || "not_started";
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8 animate-in fade-in duration-200">
       {/* 1. Header Greeting & Allocation Cycle Badge */}
@@ -159,11 +172,12 @@ END:VCALENDAR`;
             <span>Academic Allocation Cycle 2026–27 (Round 1)</span>
           </div>
           <h1 className="mt-2 font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            {greeting}, <span className="text-brand-500">Aarav</span>
+            {greeting}, <span className="text-brand-500">{studentFirstName}</span> 👋
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-muted">
-            Roll No: <span className="font-mono font-semibold text-foreground">23CS10042</span>{" "}
-            &bull; Year 3 B.Tech Computer Science &bull; General Merited Tier 1
+            Roll No:{" "}
+            <span className="font-mono font-semibold text-foreground">{studentRollNo}</span> &bull;
+            Year {studentYear} {studentProgramme} &bull; {studentCategory} Tier
           </p>
         </div>
 
@@ -200,48 +214,76 @@ END:VCALENDAR`;
                 <span className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-ping" />
               </div>
               <h2 className="font-heading text-base sm:text-lg font-bold text-foreground mt-0.5">
-                Official Room Allotment Confirmed &bull; Download Your Letter
+                {hasAllocation
+                  ? "Official Room Allotment Confirmed • Download Your Letter"
+                  : applicationStatus === "submitted"
+                    ? "Application Submitted • Preferences Locked for Allocation"
+                    : applicationStatus === "draft"
+                      ? "Application In Progress • Complete & Submit"
+                      : "Application Not Started • Autumn 2026 Cycle Open"}
               </h2>
               <p className="text-xs sm:text-sm text-muted mt-1 leading-relaxed max-w-3xl">
-                Your room assignment in Aryabhata Hall is verified by the Warden Council. Download
-                your official Allotment Letter with signed QR verification before reporting to key
-                distribution.
+                {hasAllocation
+                  ? `Your room assignment in ${allocation?.hostelName || "Campus Hostel"} is verified. Download your official Allotment Letter before reporting.`
+                  : applicationStatus === "submitted"
+                    ? "Your accommodation application has been received and verified. The Gale-Shapley matching run will compute room allocations shortly."
+                    : applicationStatus === "draft"
+                      ? "You have a saved draft application. Finalize your hostel ranking and lifestyle survey before the preference lock deadline."
+                      : "Submit your student hostel application and rank your preferences to be placed in the automated matching round."}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
-            <Button
-              onClick={() => setShowLetterModal(true)}
-              className="bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold shadow-xs min-target-size"
-            >
-              <Download className="mr-1.5 h-4 w-4" />
-              <span>Get Allotment Letter</span>
-            </Button>
+            {hasAllocation ? (
+              <Button
+                onClick={() => setShowLetterModal(true)}
+                className="bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold shadow-xs min-target-size"
+              >
+                <Download className="mr-1.5 h-4 w-4" />
+                <span>Get Allotment Letter</span>
+              </Button>
+            ) : (
+              <Button
+                asChild
+                className="bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold shadow-xs min-target-size"
+              >
+                <Link href="/student/application">
+                  <span>
+                    {applicationStatus === "submitted"
+                      ? "View Application"
+                      : applicationStatus === "draft"
+                        ? "Resume Draft"
+                        : "Start Application"}
+                  </span>
+                  <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Link>
+              </Button>
+            )}
             <Button
               asChild
               variant="outline"
               size="sm"
               className="text-xs border-border/80 bg-surface/80 min-target-size"
             >
-              <Link href="/student/documents">
+              <Link href="/student/profile">
                 <FolderCheck className="mr-1.5 h-3.5 w-3.5 text-brand-600" />
-                <span>Documents</span>
+                <span>Profile</span>
               </Link>
             </Button>
           </div>
         </div>
       </div>
 
-      {/* 3. Hero Bento Section: Confirmed Allocation Hero Card */}
-      {allocation && (
+      {/* 3. Hero Bento Section: Confirmed Allocation or Pending Status */}
+      {hasAllocation && allocation ? (
         <div className="rounded-3xl border border-border/80 bg-surface overflow-hidden shadow-xs">
           <div className="grid grid-cols-1 lg:grid-cols-12">
             {/* Real Hostel Image Column (5 cols) */}
             <div className="relative aspect-[16/10] lg:aspect-auto lg:h-full lg:col-span-5 bg-surface-muted overflow-hidden">
               <SmartImage
                 src="/images/campus-hero.jpg"
-                alt="Aryabhata Hall Residence"
+                alt={`${allocation.hostelName} Residence`}
                 fill
                 priority
                 className="object-cover"
@@ -283,7 +325,7 @@ END:VCALENDAR`;
                     <span>&bull;</span>
                     <span>Floor {allocation.floorNo}</span>
                     <span>&bull;</span>
-                    <span>Double Sharing (AC Attached)</span>
+                    <span>{allocation.roomType || "Double Sharing (AC Attached)"}</span>
                     <span>&bull;</span>
                     <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
                       <ShieldCheck className="h-3.5 w-3.5" />
@@ -307,7 +349,7 @@ END:VCALENDAR`;
                       Roommate
                     </span>
                     <p className="font-heading text-sm sm:text-base font-bold text-foreground mt-0.5">
-                      92% Compatible
+                      {allocation.compatibilityScore || 92}% Compatible
                     </p>
                   </div>
                   <div className="rounded-2xl border border-border/70 bg-surface-muted/40 p-3">
@@ -324,7 +366,7 @@ END:VCALENDAR`;
                     </span>
                     <div className="flex items-center justify-between gap-1 mt-0.5">
                       <p className="font-mono text-xs font-bold text-foreground truncate">
-                        {allocation.verificationToken}
+                        {allocation.verificationToken || "HH-TOKEN-VERIFIED"}
                       </p>
                       <button
                         type="button"
@@ -389,6 +431,87 @@ END:VCALENDAR`;
                   </Button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-3xl border border-border/80 bg-surface overflow-hidden shadow-xs p-6 sm:p-8">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-3 max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
+                <Clock className="h-3.5 w-3.5" />
+                <span>
+                  {applicationStatus === "submitted"
+                    ? "Application Submitted • Allocation Run Pending"
+                    : applicationStatus === "draft"
+                      ? "Application In Progress • Not Yet Submitted"
+                      : "Application Not Started • Allocation Cycle Open"}
+                </span>
+              </div>
+              <h2 className="font-heading text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+                Autumn 2026 Room Allocation In Progress
+              </h2>
+              <p className="text-xs sm:text-sm text-muted leading-relaxed">
+                Rooms are allocated deterministically via the Gale-Shapley matching algorithm based
+                on your verified application tier, lifestyle compatibility, and ranked preferences
+                once the submission window closes.
+              </p>
+
+              {/* Status Chips */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                <div className="rounded-2xl border border-border/70 bg-surface-muted/40 p-3">
+                  <span className="text-[10px] uppercase font-bold text-muted block">
+                    Application
+                  </span>
+                  <p className="font-heading text-xs sm:text-sm font-bold text-foreground mt-0.5 capitalize">
+                    {applicationStatus.replace("_", " ")}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-border/70 bg-surface-muted/40 p-3">
+                  <span className="text-[10px] uppercase font-bold text-muted block">Profile</span>
+                  <p className="font-heading text-xs sm:text-sm font-bold text-brand-600 dark:text-brand-400 mt-0.5">
+                    {progressPercent}% Complete
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-border/70 bg-surface-muted/40 p-3">
+                  <span className="text-[10px] uppercase font-bold text-muted block">
+                    Hostel Prefs
+                  </span>
+                  <p className="font-heading text-xs sm:text-sm font-bold text-foreground mt-0.5">
+                    {preferences?.length ? `${preferences.length} Ranked` : "Pending"}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-border/70 bg-surface-muted/40 p-3">
+                  <span className="text-[10px] uppercase font-bold text-muted block">
+                    Roommate Pair
+                  </span>
+                  <p className="font-heading text-xs sm:text-sm font-bold text-foreground mt-0.5">
+                    {group?.members?.length ? "Pair Formed" : "Open"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
+              <Button
+                asChild
+                className="bg-brand-500 hover:bg-brand-600 text-white font-semibold shadow-xs min-target-size"
+              >
+                <Link href="/student/application">
+                  <span>
+                    {applicationStatus === "submitted"
+                      ? "Review Application"
+                      : "Complete Application"}
+                  </span>
+                  <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="border-border/80 min-target-size">
+                <Link href="/student/preferences">
+                  <Sliders className="mr-1.5 h-4 w-4 text-muted" />
+                  <span>Rank Preferences</span>
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -543,15 +666,25 @@ END:VCALENDAR`;
             <div className="mt-4 space-y-2 border-t border-border/50 pt-3">
               <div className="flex items-center justify-between text-xs p-1.5 rounded-lg bg-surface-muted/50">
                 <div>
-                  <span className="font-bold text-foreground block">Rohan Deshmukh</span>
-                  <span className="text-[10px] text-muted">23CS10088 &bull; Paired Peer</span>
+                  <span className="font-bold text-foreground block">
+                    {group?.members?.[1]?.name || "Rohan Deshmukh"}
+                  </span>
+                  <span className="text-[10px] text-muted">
+                    {group?.members?.[1]?.rollNo || "23CS10088"} &bull; Paired Peer
+                  </span>
                 </div>
-                <span className="text-[11px] font-bold text-emerald-600">92% Match</span>
+                <span className="text-[11px] font-bold text-emerald-600">
+                  {((group?.members?.[1] as Record<string, unknown>)
+                    ?.compatibilityScore as number) || 92}
+                  % Match
+                </span>
               </div>
               <div className="flex items-center justify-between text-xs p-1.5 rounded-lg bg-surface-muted/50">
                 <div>
-                  <span className="font-bold text-foreground block">Aarav Sharma</span>
-                  <span className="text-[10px] text-muted">23CS10042 &bull; Group Leader</span>
+                  <span className="font-bold text-foreground block">{studentFullName}</span>
+                  <span className="text-[10px] text-muted">
+                    {studentRollNo} &bull; Group Leader
+                  </span>
                 </div>
                 <span className="text-[10px] font-semibold text-brand-600">You</span>
               </div>
@@ -866,7 +999,10 @@ END:VCALENDAR`;
                 Hard Constraints Invariants (All Passed)
               </h4>
               <div className="space-y-2">
-                {allocation?.explanation.hardConstraintsChecked.map((constraint, idx) => (
+                {(
+                  ((allocation as Record<string, unknown>)?.explanation as Record<string, unknown>)
+                    ?.hardConstraintsChecked as string[]
+                )?.map((constraint: string, idx: number) => (
                   <div
                     key={idx}
                     className="flex items-start gap-2.5 p-3 rounded-xl bg-surface-muted/50 border border-border/60 text-xs"
@@ -993,14 +1129,14 @@ END:VCALENDAR`;
             <div className="text-xs space-y-3.5 leading-relaxed text-zinc-800">
               <div className="flex justify-between items-start font-mono text-[11px]">
                 <div>
-                  <strong>To:</strong> Aarav Sharma (Roll: 23CS10042)
+                  <strong>To:</strong> {studentFullName} (Roll: {studentRollNo})
                   <br />
-                  B.Tech Computer Science (Year 3)
+                  {studentProgramme} (Year {studentYear})
                 </div>
                 <div className="text-right">
                   <strong>Status:</strong> CONFIRMED ALLOCATION
                   <br />
-                  <strong>Quota:</strong> General Merited Tier 1
+                  <strong>Quota:</strong> {studentCategory} Tier
                 </div>
               </div>
 

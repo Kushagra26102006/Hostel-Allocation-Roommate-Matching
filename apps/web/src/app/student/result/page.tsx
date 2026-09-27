@@ -12,7 +12,10 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import Link from "next/link";
 import { useAllocationResult } from "@/hooks/use-mock-api";
+import { useCurrentStudent } from "@/hooks/use-current-student";
+import { useSession } from "next-auth/react";
 import {
   Sparkles,
   Download,
@@ -26,11 +29,24 @@ import {
   Copy,
   ShieldCheck,
   Wind,
+  Clock,
+  ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 
+interface RoommateInfo {
+  name?: string;
+  rollNo?: string;
+  programme?: string;
+  department?: string;
+  compatibilityScore?: number;
+  contact?: string;
+}
+
 export default function StudentAllocationResultPage() {
+  const { data: session } = useSession();
+  const { data: student } = useCurrentStudent();
   const { data: result } = useAllocationResult();
   const [isWhyDrawerOpen, setIsWhyDrawerOpen] = React.useState(false);
   const [isLetterModalOpen, setIsLetterModalOpen] = React.useState(false);
@@ -96,6 +112,54 @@ END:VCALENDAR`;
   };
 
   if (!result) return null;
+
+  if (!result.hasAllocation) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8 space-y-8 animate-in fade-in duration-200">
+        <div className="rounded-3xl border border-border/80 bg-surface p-8 sm:p-10 shadow-xs text-center space-y-6">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <Clock className="h-8 w-8" />
+          </div>
+          <div className="space-y-2 max-w-xl mx-auto">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Allocation Pending Allotment Run</span>
+            </div>
+            <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+              No Active Room Allocation Yet
+            </h1>
+            <p className="text-xs sm:text-sm text-muted leading-relaxed">
+              Hi {student?.fullName || session?.user?.name || "Student"}, your official room
+              assignment will appear here as soon as the Chief Warden runs the deterministic
+              Gale-Shapley matching engine.
+            </p>
+          </div>
+
+          <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
+            <Button
+              asChild
+              className="bg-brand-500 hover:bg-brand-600 text-white font-semibold shadow-xs min-target-size"
+            >
+              <Link href="/student/application">
+                <span>Check Application Status</span>
+                <ArrowRight className="ml-1.5 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="border-border/80 min-target-size">
+              <Link href="/student/preferences">
+                <span>View Preferences</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="border-border/80 min-target-size">
+              <Link href="/student/dashboard">
+                <span>Back to Dashboard</span>
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-8 animate-in fade-in duration-200">
@@ -271,16 +335,16 @@ END:VCALENDAR`;
               </span>
             </div>
 
-            {result.roommates.map((rm, idx) => (
+            {((result.roommates as RoommateInfo[]) || []).map((rm, idx) => (
               <div
                 key={idx}
                 className="p-4 rounded-2xl bg-surface-muted/50 border border-border/60 space-y-3"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500 text-white font-bold text-base shadow-xs">
-                    {rm.name
+                    {(rm.name || "Peer")
                       .split(" ")
-                      .map((n) => n[0])
+                      .map((n: string) => n[0])
                       .join("")}
                   </div>
                   <div>
@@ -404,7 +468,10 @@ END:VCALENDAR`;
                 Hard Constraints Verified (Zero Inversions)
               </h4>
               <div className="space-y-1.5">
-                {result.explanation.hardConstraintsChecked.map((hc, idx) => (
+                {(
+                  (((result as Record<string, unknown>).explanation as Record<string, unknown>)
+                    ?.hardConstraintsChecked as string[]) || []
+                ).map((hc: string, idx: number) => (
                   <div
                     key={idx}
                     className="flex items-start gap-2 p-2.5 rounded-xl bg-surface-muted/50 border border-border/60"
@@ -528,14 +595,20 @@ END:VCALENDAR`;
             <div className="text-xs space-y-3.5 leading-relaxed text-zinc-800">
               <div className="flex justify-between items-start font-mono text-[11px]">
                 <div>
-                  <strong>Resident:</strong> Aarav Sharma (23CS10042)
+                  <strong>Resident:</strong>{" "}
+                  {student?.fullName ||
+                    session?.user?.name ||
+                    result.studentName ||
+                    "Student Resident"}{" "}
+                  ({student?.rollNumber || session?.user?.rollNumber || result.rollNo || "N/A"}
+                  )
                   <br />
-                  B.Tech Computer Science &bull; Year 3
+                  {student?.programme || "B.Tech Computer Science"} &bull; Year {student?.year || 1}
                 </div>
                 <div className="text-right">
                   <strong>Status:</strong> CONFIRMED ALLOTMENT
                   <br />
-                  <strong>Quota:</strong> General Merited Tier 1
+                  <strong>Quota:</strong> {student?.category || "General"} Tier
                 </div>
               </div>
 

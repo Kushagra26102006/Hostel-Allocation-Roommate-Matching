@@ -34,8 +34,8 @@ export default function VerifyPage() {
       setVerifiedResult({
         valid: true,
         token: tokenInput.trim().toUpperCase(),
-        studentName: "Aarav Sharma",
-        rollNo: "23CS10042",
+        studentName: "Aditya Verma",
+        rollNo: "24CS10091",
         hostelName: "Aryabhata Hall",
         roomNo: "A-204",
         bedNo: "Bed 1 (Window Side)",

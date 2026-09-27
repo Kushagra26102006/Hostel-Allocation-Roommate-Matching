@@ -7,6 +7,8 @@ import { StatusChip } from "@/components/status-chip";
 import { PreferenceRanker, type HostelCardData } from "@/components/preferences/preference-ranker";
 import { GroupBuilder } from "@/components/preferences/group-builder";
 import { ApplicationForm } from "@/components/application/application-form";
+import { useCurrentStudent } from "@/hooks/use-current-student";
+import { useSession } from "next-auth/react";
 
 const INITIAL_HOSTELS: HostelCardData[] = [
   {
@@ -48,29 +50,34 @@ const INITIAL_HOSTELS: HostelCardData[] = [
 ];
 
 export default function StudentApplicationsPage() {
+  const { data: session } = useSession();
+  const { data: student } = useCurrentStudent();
+
   const [activeTab, setActiveTab] = useState<"overview" | "preferences" | "group" | "edit">(
     "overview",
   );
 
   const application = {
-    referenceNumber: "NIT-APP-2026-0001",
+    referenceNumber: student?.applicationReference || "NIT-APP-2026-0001",
     cycle: "Autumn 2026 Hostel Allocation Cycle",
     cycleId: "cycle-autumn-2026",
-    status: "approved" as const,
+    status: student?.applicationStatus || "approved",
     submittedAt: "September 11, 2026 • 14:32 IST",
     priorityTier: "Tier 2 — Academic Merit (CGPA 8.92)",
-    allocatedRoom: "Room 304, Tower A, Aryabhata Hall",
-    allocatedBed: "Bed A-304-1 (Window)",
+    allocatedRoom: student?.hasAllocation
+      ? "Room 304, Tower A, Aryabhata Hall"
+      : "Pending Allotment",
+    allocatedBed: student?.hasAllocation ? "Bed A-304-1 (Window)" : "Pending Allotment",
     student: {
-      fullName: "Aarav Sharma",
-      rollNo: "22BCS042",
-      programme: "BTech",
-      department: "Computer Science & Engineering",
-      semester: 5,
-      quotaBucket: "General",
-      email: "student.demo@nit.edu",
-      phone: "+91 98765 43210",
-      homeState: "Delhi NCR",
+      fullName: student?.fullName || session?.user?.name || "Student Resident",
+      rollNo: student?.rollNumber || session?.user?.rollNumber || "Pending Enrollment",
+      programme: student?.programme || "BTech",
+      department: student?.department || "Computer Science & Engineering",
+      semester: student?.year ? student.year * 2 - 1 : 1,
+      quotaBucket: student?.category || "General",
+      email: student?.email || session?.user?.email || "student@campus.edu",
+      phone: student?.phone || "+91 98765 43210",
+      homeState: student?.homeState || "Registered State",
     },
     documents: [
       { name: "Institute Student Identity Card", type: "ID Proof", status: "Verified" },

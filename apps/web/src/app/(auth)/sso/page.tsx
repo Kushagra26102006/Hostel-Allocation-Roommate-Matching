@@ -52,7 +52,7 @@ export default function SsoPage() {
             onClick={() => handleSsoLogin("student")}
             disabled={isAuthenticating}
           >
-            <span>Continue as Student (Aarav Sharma)</span>
+            <span>Continue as Student (Institutional SSO)</span>
             <ArrowRight className="h-4 w-4" />
           </Button>
 

@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { HostelHubLogo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { useCurrentStudent } from "@/hooks/use-current-student";
 
 interface StudentSidebarProps {
   className?: string;
@@ -82,6 +84,19 @@ export const STUDENT_NAV_ITEMS = [
 
 export function StudentSidebar({ className, activeItem = "roommate" }: StudentSidebarProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const { data: student } = useCurrentStudent();
+
+  const displayName = student?.fullName || session?.user?.name || "Student Resident";
+  const initials =
+    displayName
+      .split(" ")
+      .map((n) => n[0])
+      .filter(Boolean)
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "SR";
+  const roll = student?.rollNumber || session?.user?.rollNumber || "Resident";
 
   return (
     <aside
@@ -160,11 +175,11 @@ export function StudentSidebar({ className, activeItem = "roommate" }: StudentSi
       <div className="pt-4 border-t border-slate-800/80">
         <div className="p-3 rounded-2xl bg-[#071026]/80 border border-slate-800/80 flex items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-600 via-indigo-600 to-cyan-500 text-white font-bold text-xs shadow-md">
-            AS
+            {initials}
           </div>
           <div className="truncate">
-            <p className="text-xs font-bold text-white truncate">Aarav Sharma</p>
-            <p className="text-[10px] text-cyan-400 font-mono truncate">Room 304 • Tower A</p>
+            <p className="text-xs font-bold text-white truncate">{displayName}</p>
+            <p className="text-[10px] text-cyan-400 font-mono truncate">{roll}</p>
           </div>
         </div>
 
