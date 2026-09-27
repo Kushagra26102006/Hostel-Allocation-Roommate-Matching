@@ -13,8 +13,7 @@ export async function connectDatabase(uri = env.MONGODB_URI): Promise<typeof mon
     mongoose.set("strictQuery", true);
     const conn = await mongoose.connect(uri, {
       maxPoolSize: 50,
-      minPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 30000,
       socketTimeoutMS: 45000,
     });
     isConnected = true;
