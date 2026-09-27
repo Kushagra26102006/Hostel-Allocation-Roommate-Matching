@@ -1,349 +1,301 @@
 "use client";
 
 import * as React from "react";
-import { GlassCard } from "@/components/glass-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { FadeIn, FadeUp } from "@/components/ui/motion-primitives";
-import { Save, User, Lock, Key, ShieldCheck, History } from "lucide-react";
+import { useLocaleStore } from "@/stores/locale-store";
+import { useTheme } from "next-themes";
+import { User, Globe, Sun, LogOut, Save, BookOpen } from "lucide-react";
 import { toast } from "sonner";
+import { signOut } from "next-auth/react";
 
 export default function StudentProfilePage() {
-  const [activeTab, setActiveTab] = React.useState<
-    "overview" | "security" | "privacy" | "activity"
-  >("overview");
+  const { locale, setLocale } = useLocaleStore();
+  const { theme, setTheme } = useTheme();
 
   const [profile, setProfile] = React.useState({
-    name: "Aarav Sharma",
+    fullName: "Aarav Sharma",
     rollNo: "23CS10042",
     email: "aarav.sharma@campus.edu",
     phone: "+91 98765 43210",
     programme: "B.Tech Computer Science & Engineering",
-    year: "Year 3",
+    department: "Computer Science & Engineering",
+    year: "Year 3 (Junior)",
+    semester: "Semester 5",
+    cgpa: "9.35",
     homeState: "Maharashtra",
-    emergencyContact: "+91 98765 00000 (Parent)",
+    permanentAddress: "Flat 402, Sea View Enclave, Worli, Mumbai, MH - 400018",
+    emergencyContact: "Mr. Rajesh Sharma (Father) &bull; +91 98765 00000",
   });
-
-  const [privacyConsent, setPrivacyConsent] = React.useState(true);
-  const [roommateMatchingOptIn, setRoommateMatchingOptIn] = React.useState(true);
-  const [mfaEnabled, setMfaEnabled] = React.useState(true);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Profile and preferences updated successfully");
+    toast.success("Profile contact information updated successfully!");
   };
 
   return (
-    <FadeIn className="mx-auto max-w-4xl px-4 py-8 sm:px-6 space-y-8">
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 space-y-8 animate-in fade-in duration-200">
       {/* Header */}
-      <FadeUp>
-        <div className="inline-flex items-center gap-2 rounded-full border border-brand-200/80 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 dark:border-brand-800 dark:bg-brand-900/40 dark:text-brand-300">
-          <User className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400" />
-          <span>Resident Identity Management</span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand-200/80 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 dark:border-brand-800 dark:bg-brand-950/40 dark:text-brand-300">
+            <User className="h-3.5 w-3.5" />
+            <span>Verified Student Resident Record</span>
+          </div>
+          <h1 className="mt-2 font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            Student Profile & Academic Record
+          </h1>
+          <p className="mt-1 text-xs sm:text-sm text-muted">
+            Institutional student identity, verified contact coordinates, and housing eligibility
+            profile.
+          </p>
         </div>
-        <h1 className="mt-2 font-heading text-2xl font-bold sm:text-3xl text-foreground">
-          Student Profile & Settings
-        </h1>
-        <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
-          Manage your verified institutional identity, security credentials, mutual privacy consent,
-          and ledger activity.
-        </p>
-      </FadeUp>
 
-      {/* Tabs Switcher */}
-      <FadeUp
-        delay={0.05}
-        className="flex items-center gap-1.5 rounded-xl bg-surface-muted/60 p-1 border border-border/60 overflow-x-auto"
-      >
-        <button
-          onClick={() => setActiveTab("overview")}
-          className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
-            activeTab === "overview"
-              ? "bg-brand-500 text-white shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
+        <Button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          variant="outline"
+          size="sm"
+          className="text-xs text-rose-500 hover:text-rose-600 border-border/80 self-start sm:self-auto min-target-size"
         >
-          <User className="h-3.5 w-3.5" />
-          <span>Identity & Personal</span>
-        </button>
-        <button
-          onClick={() => setActiveTab("security")}
-          className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
-            activeTab === "security"
-              ? "bg-brand-500 text-white shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Lock className="h-3.5 w-3.5" />
-          <span>Security & 2FA</span>
-        </button>
-        <button
-          onClick={() => setActiveTab("privacy")}
-          className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
-            activeTab === "privacy"
-              ? "bg-brand-500 text-white shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <ShieldCheck className="h-3.5 w-3.5" />
-          <span>Consent & Privacy</span>
-        </button>
-        <button
-          onClick={() => setActiveTab("activity")}
-          className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
-            activeTab === "activity"
-              ? "bg-brand-500 text-white shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <History className="h-3.5 w-3.5" />
-          <span>Activity Audit</span>
-        </button>
-      </FadeUp>
+          <LogOut className="mr-1.5 h-3.5 w-3.5" />
+          <span>Sign Out</span>
+        </Button>
+      </div>
 
-      {/* Tab 1: Personal Details */}
-      {activeTab === "overview" && (
-        <FadeUp delay={0.08}>
-          <GlassCard className="p-6 sm:p-8">
-            <div className="flex items-center gap-4 pb-6 border-b border-border/60">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300 font-heading text-2xl font-bold border border-brand-200/60 dark:border-brand-800/60">
-                AS
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="font-heading text-lg font-bold text-foreground">{profile.name}</h2>
-                  <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                    Verified Resident
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground font-mono mt-0.5">
-                  {profile.rollNo} • {profile.programme}
-                </p>
-              </div>
+      {/* Verified Resident Identity Hero Card */}
+      <div className="rounded-3xl border border-border/80 bg-surface p-6 sm:p-7 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-700 text-white font-heading font-extrabold text-2xl shadow-md">
+              AS
             </div>
-
-            <form onSubmit={handleSave} className="mt-6 space-y-4 text-xs">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <Label className="text-xs font-bold text-foreground">
-                    Full Name (University Records)
-                  </Label>
-                  <Input
-                    value={profile.name}
-                    disabled
-                    className="mt-1.5 bg-surface-muted text-xs rounded-xl"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs font-bold text-foreground">
-                    Roll Number / Student ID
-                  </Label>
-                  <Input
-                    value={profile.rollNo}
-                    disabled
-                    className="mt-1.5 bg-surface-muted font-mono text-xs rounded-xl"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <Label className="text-xs font-bold text-foreground">University Email</Label>
-                  <Input
-                    value={profile.email}
-                    disabled
-                    className="mt-1.5 bg-surface-muted text-xs rounded-xl"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs font-bold text-foreground">Primary Mobile Number</Label>
-                  <Input
-                    value={profile.phone}
-                    onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                    className="mt-1.5 text-xs rounded-xl"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <Label className="text-xs font-bold text-foreground">Academic Programme</Label>
-                  <Input
-                    value={`${profile.programme} (${profile.year})`}
-                    disabled
-                    className="mt-1.5 bg-surface-muted text-xs rounded-xl"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs font-bold text-foreground">
-                    Emergency Contact (Guardian/Parent)
-                  </Label>
-                  <Input
-                    value={profile.emergencyContact}
-                    onChange={(e) => setProfile({ ...profile, emergencyContact: e.target.value })}
-                    className="mt-1.5 text-xs rounded-xl"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-4 border-t border-border/60">
-                <Button
-                  type="submit"
-                  className="rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold"
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Profile Changes
-                </Button>
-              </div>
-            </form>
-          </GlassCard>
-        </FadeUp>
-      )}
-
-      {/* Tab 2: Security & 2FA */}
-      {activeTab === "security" && (
-        <FadeUp delay={0.08}>
-          <GlassCard className="p-6 sm:p-8 space-y-6">
             <div>
-              <h3 className="font-heading text-base font-bold text-foreground">
-                Authentication & Cryptographic Access
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Protect your student housing account with institutional multi-factor verification.
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="font-heading text-xl font-bold text-foreground">
+                  {profile.fullName}
+                </h2>
+                <span className="rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold px-2 py-0.5">
+                  Verified Resident
+                </span>
+              </div>
+              <p className="font-mono text-xs text-muted mt-0.5">
+                Roll No: {profile.rollNo} &bull; {profile.department}
+              </p>
+              <p className="text-xs text-muted mt-0.5">
+                Current Allotment:{" "}
+                <strong className="text-foreground">Aryabhata Hall, Room A-204 (Bed 1)</strong>
               </p>
             </div>
+          </div>
 
-            <div className="rounded-2xl border border-border/80 bg-surface-muted/30 p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">
-                  <Key className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="font-heading text-sm font-bold text-foreground">
-                    Two-Factor Authentication (TOTP)
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Required for signing allocation acceptances and roommate pairings
-                  </div>
-                </div>
-              </div>
-              <Switch checked={mfaEnabled} onCheckedChange={setMfaEnabled} />
+          <div className="rounded-2xl border border-border/60 bg-surface-muted/50 p-3.5 px-4 text-left sm:text-right shrink-0">
+            <span className="text-[10px] uppercase font-bold text-muted block">Academic Merit</span>
+            <span className="font-heading text-xl font-bold text-brand-600 dark:text-brand-400 block">
+              CGPA {profile.cgpa}
+            </span>
+            <span className="text-[11px] text-muted">General Merited Tier 1</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Academic Information Details */}
+      <div className="rounded-3xl border border-border/80 bg-surface p-6 sm:p-7 shadow-xs space-y-4">
+        <div className="flex items-center gap-2 border-b border-border/60 pb-3">
+          <BookOpen className="h-4.5 w-4.5 text-brand-600" />
+          <h3 className="font-heading text-base font-bold text-foreground">
+            Academic Degree & Standing
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div className="p-3.5 rounded-2xl bg-surface-muted/40 border border-border/60">
+            <span className="text-[10px] uppercase font-bold text-muted block">
+              Degree Programme
+            </span>
+            <span className="font-bold text-foreground mt-0.5 block">{profile.programme}</span>
+          </div>
+          <div className="p-3.5 rounded-2xl bg-surface-muted/40 border border-border/60">
+            <span className="text-[10px] uppercase font-bold text-muted block">Academic Year</span>
+            <span className="font-bold text-foreground mt-0.5 block">{profile.year}</span>
+          </div>
+          <div className="p-3.5 rounded-2xl bg-surface-muted/40 border border-border/60">
+            <span className="text-[10px] uppercase font-bold text-muted block">Current Term</span>
+            <span className="font-bold text-foreground mt-0.5 block">{profile.semester}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Editable Contact Information Form */}
+      <div className="rounded-3xl border border-border/80 bg-surface p-6 sm:p-7 shadow-xs space-y-5">
+        <div className="border-b border-border/60 pb-3">
+          <h3 className="font-heading text-base font-bold text-foreground">
+            Contact & Residential Coordinates
+          </h3>
+          <p className="text-xs text-muted mt-0.5">
+            Keep your active phone and emergency contacts updated for warden notices.
+          </p>
+        </div>
+
+        <form onSubmit={handleSave} className="space-y-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Institutional Email</Label>
+              <Input
+                value={profile.email}
+                readOnly
+                className="text-xs rounded-xl bg-surface-muted/50 cursor-not-allowed font-mono"
+              />
             </div>
 
-            <div className="rounded-2xl border border-border/80 bg-surface-muted/30 p-4 space-y-3">
-              <div className="font-heading text-sm font-bold text-foreground">
-                Active Browser Sessions
-              </div>
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <div>MacBook Pro • Chrome 124 • Current Session</div>
-                <span className="text-emerald-600 font-semibold">Active Now</span>
-              </div>
-            </div>
-          </GlassCard>
-        </FadeUp>
-      )}
-
-      {/* Tab 3: Consent & Privacy */}
-      {activeTab === "privacy" && (
-        <FadeUp delay={0.08}>
-          <GlassCard className="p-6 sm:p-8 space-y-6">
-            <div>
-              <h3 className="font-heading text-base font-bold text-foreground">
-                Questionnaire Privacy & Mutual Consent
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                HostelHub encrypts your lifestyle questionnaire answers with SHA-256. Raw answers
-                are never visible to peers.
-              </p>
+            <div className="space-y-1.5">
+              <Label htmlFor="profPhone" className="text-xs font-semibold">
+                Mobile Phone Number *
+              </Label>
+              <Input
+                id="profPhone"
+                value={profile.phone}
+                onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                className="text-xs rounded-xl"
+              />
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between rounded-2xl border border-border/80 bg-surface-muted/30 p-4">
-                <div>
-                  <div className="font-heading text-sm font-bold text-foreground">
-                    Mutual Consent Roommate Discovery
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Allow students with compatible lifestyles to discover your invite code
-                  </div>
-                </div>
-                <Switch
-                  checked={roommateMatchingOptIn}
-                  onCheckedChange={setRoommateMatchingOptIn}
-                />
-              </div>
-
-              <div className="flex items-center justify-between rounded-2xl border border-border/80 bg-surface-muted/30 p-4">
-                <div>
-                  <div className="font-heading text-sm font-bold text-foreground">
-                    Anonymized Research Analytics Participation
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Contribute anonymous compatibility scores to improve university housing
-                    algorithms
-                  </div>
-                </div>
-                <Switch checked={privacyConsent} onCheckedChange={setPrivacyConsent} />
-              </div>
-            </div>
-          </GlassCard>
-        </FadeUp>
-      )}
-
-      {/* Tab 4: Activity Audit */}
-      {activeTab === "activity" && (
-        <FadeUp delay={0.08}>
-          <GlassCard className="p-6 sm:p-8 space-y-4">
-            <div>
-              <h3 className="font-heading text-base font-bold text-foreground">
-                Student Action Ledger
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Immutable record of applications, preference ranks, and consents committed by your
-                account.
-              </p>
+            <div className="sm:col-span-2 space-y-1.5">
+              <Label htmlFor="profAddress" className="text-xs font-semibold">
+                Permanent Residence Address
+              </Label>
+              <Input
+                id="profAddress"
+                value={profile.permanentAddress}
+                onChange={(e) => setProfile({ ...profile, permanentAddress: e.target.value })}
+                className="text-xs rounded-xl"
+              />
             </div>
 
-            <div className="space-y-2.5 text-xs font-mono">
-              {[
-                {
-                  action: "Allocation Letter Downloaded",
-                  date: "2026-09-24 16:10 UTC",
-                  hash: "0x3a4b...91f0",
-                },
-                {
-                  action: "Roommate Invitation Accepted (Rohan Deshmukh)",
-                  date: "2026-09-22 11:42 UTC",
-                  hash: "0x1c8e...62da",
-                },
-                {
-                  action: "Preferences Ranked (Aryabhata #1, Gargi #2)",
-                  date: "2026-09-20 09:15 UTC",
-                  hash: "0x8f2d...55c1",
-                },
-                {
-                  action: "Application Draft Submitted",
-                  date: "2026-09-18 14:02 UTC",
-                  hash: "0x992a...00ef",
-                },
-              ].map((act, i) => (
-                <div
-                  key={i}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-xl bg-surface-muted/40 p-3 border border-border/60"
-                >
-                  <div className="text-foreground font-semibold">{act.action}</div>
-                  <div className="flex items-center gap-3 text-muted-foreground text-[11px] mt-1 sm:mt-0">
-                    <span>{act.date}</span>
-                    <span className="font-bold text-brand-600 dark:text-brand-400">{act.hash}</span>
-                  </div>
-                </div>
-              ))}
+            <div className="sm:col-span-2 space-y-1.5">
+              <Label htmlFor="emergencyContact" className="text-xs font-semibold">
+                Emergency Parent / Guardian Contact *
+              </Label>
+              <Input
+                id="emergencyContact"
+                value={profile.emergencyContact}
+                onChange={(e) => setProfile({ ...profile, emergencyContact: e.target.value })}
+                className="text-xs rounded-xl"
+              />
             </div>
-          </GlassCard>
-        </FadeUp>
-      )}
-    </FadeIn>
+          </div>
+
+          <div className="flex justify-end pt-3 border-t border-border/60">
+            <Button
+              type="submit"
+              className="bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs min-target-size"
+            >
+              <Save className="mr-1.5 h-3.5 w-3.5" />
+              <span>Save Contact Updates</span>
+            </Button>
+          </div>
+        </form>
+      </div>
+
+      {/* System Settings & Language Switcher Strip */}
+      <div className="rounded-3xl border border-border/80 bg-surface p-6 sm:p-7 shadow-xs space-y-5">
+        <div className="border-b border-border/60 pb-3">
+          <h3 className="font-heading text-base font-bold text-foreground">
+            Portal Interface & Preferences
+          </h3>
+          <p className="text-xs text-muted mt-0.5">
+            Configure system language, color themes, and accessibility settings.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          {/* Language Selector */}
+          <div className="p-4 rounded-2xl bg-surface-muted/40 border border-border/60 space-y-2">
+            <div className="flex items-center gap-2">
+              <Globe className="h-4 w-4 text-brand-600" />
+              <span className="font-bold text-foreground">Interface Language</span>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5 pt-1">
+              <button
+                type="button"
+                onClick={() => setLocale("en")}
+                className={`py-2 px-1 rounded-xl text-xs font-bold transition-all min-target-size ${
+                  locale === "en"
+                    ? "bg-brand-500 text-white shadow-xs"
+                    : "bg-surface border border-border text-muted hover:text-foreground"
+                }`}
+              >
+                English
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocale("hi")}
+                className={`py-2 px-1 rounded-xl text-xs font-bold font-devanagari transition-all min-target-size ${
+                  locale === "hi"
+                    ? "bg-brand-500 text-white shadow-xs"
+                    : "bg-surface border border-border text-muted hover:text-foreground"
+                }`}
+              >
+                हिन्दी
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocale("pa")}
+                className={`py-2 px-1 rounded-xl text-xs font-bold font-gurmukhi transition-all min-target-size ${
+                  locale === "pa"
+                    ? "bg-brand-500 text-white shadow-xs"
+                    : "bg-surface border border-border text-muted hover:text-foreground"
+                }`}
+              >
+                ਪੰਜਾਬੀ
+              </button>
+            </div>
+          </div>
+
+          {/* Theme Selector */}
+          <div className="p-4 rounded-2xl bg-surface-muted/40 border border-border/60 space-y-2">
+            <div className="flex items-center gap-2">
+              <Sun className="h-4 w-4 text-brand-600" />
+              <span className="font-bold text-foreground">Color Theme</span>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5 pt-1">
+              <button
+                type="button"
+                onClick={() => setTheme("light")}
+                className={`py-2 px-1 rounded-xl text-xs font-bold transition-all min-target-size ${
+                  theme === "light"
+                    ? "bg-brand-500 text-white shadow-xs"
+                    : "bg-surface border border-border text-muted hover:text-foreground"
+                }`}
+              >
+                Light
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme("dark")}
+                className={`py-2 px-1 rounded-xl text-xs font-bold transition-all min-target-size ${
+                  theme === "dark"
+                    ? "bg-brand-500 text-white shadow-xs"
+                    : "bg-surface border border-border text-muted hover:text-foreground"
+                }`}
+              >
+                Dark
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme("system")}
+                className={`py-2 px-1 rounded-xl text-xs font-bold transition-all min-target-size ${
+                  theme === "system"
+                    ? "bg-brand-500 text-white shadow-xs"
+                    : "bg-surface border border-border text-muted hover:text-foreground"
+                }`}
+              >
+                System
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

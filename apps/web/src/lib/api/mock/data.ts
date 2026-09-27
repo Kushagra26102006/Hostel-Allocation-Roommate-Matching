@@ -310,8 +310,7 @@ export const MOCK_HOSTELS: MockHostel[] = [
       "Elevator",
       "Solar Water",
     ],
-    imageUrl:
-      "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/images/campus-hero.jpg",
   },
   {
     id: "hostel-b",
@@ -335,8 +334,7 @@ export const MOCK_HOSTELS: MockHostel[] = [
       "Music Room",
       "Laundry",
     ],
-    imageUrl:
-      "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/images/residence-hall.jpg",
   },
   {
     id: "hostel-c",
@@ -360,8 +358,7 @@ export const MOCK_HOSTELS: MockHostel[] = [
       "High-Speed Computing Lab",
       "Cafeteria",
     ],
-    imageUrl:
-      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/images/campus_building_hero.jpg",
   },
   {
     id: "hostel-d",
@@ -385,8 +382,7 @@ export const MOCK_HOSTELS: MockHostel[] = [
       "Reading Room",
       "Shuttle Stop",
     ],
-    imageUrl:
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/images/study-lounge.jpg",
   },
   {
     id: "hostel-e",
@@ -410,8 +406,7 @@ export const MOCK_HOSTELS: MockHostel[] = [
       "Badminton Court",
       "EV Charging",
     ],
-    imageUrl:
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/images/dining-hall.jpg",
   },
 ];
 
