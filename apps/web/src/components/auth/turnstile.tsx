@@ -6,7 +6,7 @@ import { ShieldCheck } from "lucide-react";
 interface TurnstileProps {
   siteKey?: string;
   onVerify: (token: string) => void;
-  onError?: () => void;
+  onError?: (errorCode?: string | number) => void;
   className?: string;
 }
 
@@ -18,7 +18,7 @@ declare global {
         params: {
           sitekey: string;
           callback: (token: string) => void;
-          "error-callback"?: () => void;
+          "error-callback"?: (errorCode?: string | number) => void;
           "expired-callback"?: () => void;
           theme?: "light" | "dark" | "auto";
         },
@@ -30,17 +30,18 @@ declare global {
   }
 }
 
-export function Turnstile({
-  siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "1x00000000000000000000AA",
-  onVerify,
-  onError,
-  className = "",
-}: TurnstileProps) {
+export function Turnstile({ siteKey, onVerify, onError, className = "" }: TurnstileProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const isRenderingRef = useRef<boolean>(false);
   const uniqueId = useId();
   const containerId = `turnstile-container-${uniqueId.replace(/:/g, "")}`;
+
+  const effectiveSiteKey =
+    (siteKey && siteKey.trim().length > 0
+      ? siteKey
+      : process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+    )?.trim() || "1x00000000000000000000AA";
 
   const [widgetLoaded, setWidgetLoaded] = useState(false);
   const [testVerified, setTestVerified] = useState(false);
@@ -55,8 +56,8 @@ export function Turnstile({
   useEffect(() => {
     let isMounted = true;
 
-    // If running in development or test, automatically verify with test token
-    if (process.env.NODE_ENV === "development") {
+    // If running in development or test without explicit NEXT_PUBLIC_TURNSTILE_SITE_KEY, automatically verify
+    if (process.env.NODE_ENV === "development" && !process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
       const timer = setTimeout(() => {
         if (!isMounted) return;
         setTestVerified(true);
@@ -92,18 +93,27 @@ export function Turnstile({
 
       isRenderingRef.current = true;
       try {
+        console.log("[Turnstile] widget render start");
+        console.log(
+          "[Turnstile] sitekey presence:",
+          Boolean(effectiveSiteKey && effectiveSiteKey.trim().length > 0),
+        );
+
         const id = window.turnstile.render(containerRef.current, {
-          sitekey: siteKey,
+          sitekey: effectiveSiteKey,
           callback: (token: string) => {
+            console.log("[Turnstile] callback token received");
             if (!isMounted) return;
             setWidgetLoaded(true);
             onVerifyRef.current(token);
           },
-          "error-callback": () => {
+          "error-callback": (errorCode?: string | number) => {
+            console.error("[Turnstile] error code:", errorCode);
             if (!isMounted) return;
-            onErrorRef.current?.();
+            onErrorRef.current?.(errorCode);
           },
           "expired-callback": () => {
+            console.warn("[Turnstile] token expired");
             if (widgetIdRef.current && window.turnstile) {
               try {
                 window.turnstile.reset(widgetIdRef.current);
@@ -114,11 +124,13 @@ export function Turnstile({
           },
           theme: "auto",
         });
+
         widgetIdRef.current = id;
+        console.log("[Turnstile] widget render success");
         setWidgetLoaded(true);
         return true;
-      } catch {
-        // Container might already be tracked by turnstile
+      } catch (err) {
+        console.error("[Turnstile] render exception:", err);
         return false;
       } finally {
         isRenderingRef.current = false;
@@ -169,7 +181,7 @@ export function Turnstile({
       }
       isRenderingRef.current = false;
     };
-  }, [siteKey]);
+  }, [effectiveSiteKey]);
 
   return (
     <div className={`flex flex-col items-center justify-center p-2 ${className}`}>
