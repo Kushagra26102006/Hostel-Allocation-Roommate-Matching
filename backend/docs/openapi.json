@@ -1,0 +1,151 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "HostelHub API",
+    "version": "1.0.0",
+    "description": "Hostel Allocation & Roommate Matching (P03) Modular Monolith Backend API"
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "API v1 Endpoint"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "CookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "access_token"
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "schemas": {
+      "ProblemDetails": {
+        "type": "object",
+        "required": ["type", "title", "status", "code", "detail"],
+        "properties": {
+          "type": { "type": "string" },
+          "title": { "type": "string" },
+          "status": { "type": "integer" },
+          "code": { "type": "string" },
+          "detail": { "type": "string" },
+          "instance": { "type": "string" },
+          "invalidParams": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "reason": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "email": { "type": "string" },
+          "name": { "type": "string" },
+          "role": {
+            "type": "string",
+            "enum": ["student", "warden", "chief_warden", "hostel_admin", "dean", "sys_admin"]
+          },
+          "institutionId": { "type": "string" },
+          "assignedHostelId": { "type": "string", "nullable": true }
+        }
+      },
+      "AllocationCycle": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "academicYear": { "type": "string" },
+          "term": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["UPCOMING", "OPEN", "CLOSED", "ALLOCATING", "REVIEW", "PUBLISHED", "ARCHIVED"]
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "User Login with password",
+        "tags": ["Auth"],
+        "responses": {
+          "200": { "description": "Successful login" },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/problem+json": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/mfa/verify": {
+      "post": {
+        "summary": "Verify TOTP MFA code for admin roles",
+        "tags": ["Auth"],
+        "responses": {
+          "200": { "description": "MFA verified" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Get authenticated user profile",
+        "tags": ["Auth"],
+        "security": [{ "BearerAuth": [] }, { "CookieAuth": [] }],
+        "responses": {
+          "200": { "description": "User profile" }
+        }
+      }
+    },
+    "/cycles/{id}/allocate": {
+      "post": {
+        "summary": "Trigger background allocation run",
+        "tags": ["Allocation"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Allocation run queued in BullMQ" }
+        }
+      }
+    },
+    "/runs/{id}/events": {
+      "get": {
+        "summary": "Server-Sent Events (SSE) live progress stream",
+        "tags": ["Allocation"],
+        "responses": {
+          "200": { "description": "SSE Event Stream" }
+        }
+      }
+    },
+    "/drafts/{id}/publish": {
+      "post": {
+        "summary": "Publish approved allocation draft",
+        "tags": ["Publication"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Published and letters queued" }
+        }
+      }
+    }
+  }
+}

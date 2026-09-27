@@ -1,0 +1,38 @@
+import { Router } from "express";
+import { authRouter } from "../modules/auth/auth.routes.js";
+import { usersRouter } from "../modules/users/users.routes.js";
+import { inventoryRouter } from "../modules/inventory/inventory.routes.js";
+import { cyclesRouter } from "../modules/cycles/cycles.routes.js";
+import { applicationsRouter } from "../modules/applications/applications.routes.js";
+import { groupsRouter } from "../modules/groups/groups.routes.js";
+import { allocationRouter } from "../modules/allocation/allocation.routes.js";
+import { reviewRouter } from "../modules/review/review.routes.js";
+import { publicationRouter } from "../modules/publication/publication.routes.js";
+import { lettersRouter } from "../modules/letters/letters.routes.js";
+import { waitlistRouter } from "../modules/waitlist/waitlist.routes.js";
+import { roomChangeRouter } from "../modules/room-change/room-change.routes.js";
+import { appealsRouter } from "../modules/appeals/appeals.routes.js";
+import { notificationsRouter } from "../modules/notifications/notifications.routes.js";
+import { reportsRouter } from "../modules/reports/reports.routes.js";
+import { auditRouter } from "../modules/audit/audit.routes.js";
+import { adminRouter } from "../modules/admin/admin.routes.js";
+
+export const apiV1Router: Router = Router();
+
+apiV1Router.use("/auth", authRouter);
+apiV1Router.use("/users", usersRouter);
+apiV1Router.use("/inventory", inventoryRouter);
+apiV1Router.use("/cycles", cyclesRouter);
+apiV1Router.use("/", applicationsRouter);
+apiV1Router.use("/groups", groupsRouter);
+apiV1Router.use("/", allocationRouter);
+apiV1Router.use("/", reviewRouter);
+apiV1Router.use("/", publicationRouter);
+apiV1Router.use("/", lettersRouter);
+apiV1Router.use("/waitlist", waitlistRouter);
+apiV1Router.use("/room-changes", roomChangeRouter);
+apiV1Router.use("/appeals", appealsRouter);
+apiV1Router.use("/notifications", notificationsRouter);
+apiV1Router.use("/reports", reportsRouter);
+apiV1Router.use("/audit", auditRouter);
+apiV1Router.use("/admin", adminRouter);
