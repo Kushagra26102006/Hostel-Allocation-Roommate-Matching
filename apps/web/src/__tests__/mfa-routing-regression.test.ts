@@ -32,7 +32,7 @@ describe("MFA Routing & Server-Side Enforcement Regression Suite", () => {
       const user = await authorizeFn(
         {
           email: "student.demo@nit.edu",
-          password: "Student@12345",
+          password: "HostelHub2026!MasterPass",
           turnstileToken: "1x00000000000000000000AA-test",
         },
         { headers: {} },

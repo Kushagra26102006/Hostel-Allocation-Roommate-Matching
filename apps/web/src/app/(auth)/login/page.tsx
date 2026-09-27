@@ -1,18 +1,30 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Lock, Mail, ArrowRight, Loader2, AlertCircle, KeyRound, UserCheck } from "lucide-react";
+import {
+  Lock,
+  Mail,
+  ArrowRight,
+  Loader2,
+  AlertCircle,
+  KeyRound,
+  UserCheck,
+  CheckCircle2,
+} from "lucide-react";
 import { Turnstile } from "@/components/auth/turnstile";
 import { getPortalForRole } from "@/stores/role-store";
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+  const registered = searchParams.get("registered") === "true";
+  const initialEmail = searchParams.get("email") ?? "";
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -98,6 +110,17 @@ export default function LoginPage() {
           University residential allocation &amp; campus governance
         </p>
       </div>
+
+      {registered && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mb-5 flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300"
+        >
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+          <span>Account created successfully! Please sign in with your password.</span>
+        </motion.div>
+      )}
 
       {error && (
         <motion.div
@@ -195,6 +218,18 @@ export default function LoginPage() {
         </svg>
         <span>Google Institutional SSO</span>
       </button>
+
+      {/* New to HostelHub? Create an account */}
+      <div className="mt-5 text-center text-xs text-muted">
+        <span>New to HostelHub? </span>
+        <Link
+          href="/register"
+          className="font-semibold text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
+        >
+          <span>Create an account</span>
+          <ArrowRight className="w-3 h-3" />
+        </Link>
+      </div>
 
       {/* Demo Quick-Fill Accounts */}
       <div className="mt-6 pt-5 border-t border-border/60">

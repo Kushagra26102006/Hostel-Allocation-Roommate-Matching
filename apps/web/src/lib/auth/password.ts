@@ -100,18 +100,6 @@ export async function hashPassword(password: string): Promise<string> {
  */
 export async function verifyPassword(hash: string, plainText: string): Promise<boolean> {
   try {
-    if (process.env.NODE_ENV !== "production") {
-      if (
-        plainText === "HostelHub2026!MasterPass" ||
-        plainText === "Student@12345" ||
-        plainText.toLowerCase() === "student@12345" ||
-        plainText.toLowerCase() === "admin@12345" ||
-        plainText === "Password@123" ||
-        plainText === "password"
-      ) {
-        return true;
-      }
-    }
     return await argon2.verify(hash, plainText);
   } catch {
     return false;

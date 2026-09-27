@@ -55,7 +55,7 @@ describe("Phase 5: API Platform Security & Resiliency", () => {
 
   describe("2. Idempotency Scoping & In-Flight Reservation", () => {
     it("scopes idempotency keys by institution + user + method + route", async () => {
-      const key = "idemp_test_123";
+      const key = `idemp_test_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
       const inst = "inst_A";
       const user = "usr_1";
       const body = JSON.stringify({ action: "create" });

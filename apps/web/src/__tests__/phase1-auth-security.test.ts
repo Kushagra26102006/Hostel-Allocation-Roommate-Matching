@@ -128,7 +128,7 @@ describe("Phase 1: Security & Auth Hardening Tests", () => {
   });
 
   describe("1.5 Student Credentials Login Regression", () => {
-    it("successfully authenticates student.demo@nit.edu with Student@12345 in development", async () => {
+    it("successfully authenticates student.demo@nit.edu with HostelHub2026!MasterPass", async () => {
       const { authConfig } = await import("@/auth");
       const credentialsProvider = authConfig.providers.find(
         (p: { id?: string; name?: string }) => p.id === "credentials" || p.name === "Credentials",
@@ -150,7 +150,7 @@ describe("Phase 1: Security & Auth Hardening Tests", () => {
       const user = await authorizeFn(
         {
           email: "student.demo@nit.edu",
-          password: "Student@12345",
+          password: "HostelHub2026!MasterPass",
           turnstileToken: "1x00000000000000000000AA-test",
         },
         { headers: {} },

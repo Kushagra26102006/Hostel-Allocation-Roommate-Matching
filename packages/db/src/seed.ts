@@ -25,7 +25,7 @@ export interface SeedResult {
 }
 
 const PASSWORD_HASH =
-  "$argon2id$v=19$m=65536,p=4,t=3$WkymmI+IR1Ib1qIcLm04Rw$keTkByJn7uRdrv7wdMA7UV1gDVwJI5YB3jjVmtdlEcg";
+  "$argon2id$v=19$m=65536,p=4,t=3$hrbfm9yn1tVUY+qszH/P/Q$7skqixSH7yh77hit+VZ+xkvcEHb8AezXS8iCL1agX0k";
 
 export async function seedDatabase(uri?: string): Promise<SeedResult> {
   await connectDb(uri);
@@ -113,24 +113,36 @@ export async function seedDatabase(uri?: string): Promise<SeedResult> {
   let userCount = 0;
 
   for (const u of demoUsers) {
+    const existing = await UserModel.findOne({
+      institution_id: institutionId,
+      email: u.email.toLowerCase(),
+    }).select("+passwordHash");
+
+    const updateSet: Record<string, unknown> = {
+      name: u.name,
+      email: u.email.toLowerCase(),
+      roles: u.roles,
+      institution_id: institutionId,
+      hostelAssignments: u.hostelAssignments ?? [],
+      status: "active",
+      mfa: {
+        enabled: u.mfaEnabled,
+        method: "totp",
+        backupCodes: u.mfaEnabled ? ["DEMO1234", "DEMO5678"] : [],
+      },
+    };
+
+    // If passwordHash is missing, initialize it to PASSWORD_HASH
+    if (!existing?.passwordHash) {
+      updateSet["passwordHash"] = PASSWORD_HASH;
+    }
+
     const doc = await UserModel.findOneAndUpdate(
       { institution_id: institutionId, email: u.email.toLowerCase() },
       {
-        $set: {
-          name: u.name,
-          email: u.email.toLowerCase(),
-          passwordHash: PASSWORD_HASH,
-          roles: u.roles,
-          institution_id: institutionId,
-          hostelAssignments: u.hostelAssignments ?? [],
-          status: "active",
-          mfa: {
-            enabled: u.mfaEnabled,
-            method: "totp",
-            backupCodes: u.mfaEnabled ? ["DEMO1234", "DEMO5678"] : [],
-          },
-        },
+        $set: updateSet,
         $setOnInsert: {
+          passwordHash: PASSWORD_HASH,
           version: 1,
         },
       },

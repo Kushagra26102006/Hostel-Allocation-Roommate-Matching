@@ -3,7 +3,7 @@ import type { DefaultSession, User, Account, Session } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { AuditService, connectDb, InstitutionRepository, UserRepository } from "@hostelhub/db";
-import { getWebEnv, type UserRole } from "@hostelhub/shared";
+import { getWebEnv, type UserRole, logger } from "@hostelhub/shared";
 import { checkPasswordBreached, validatePasswordLength, verifyPassword } from "@/lib/auth/password";
 import { isLockedOut, recordFailedAttempt, resetFailedAttempts } from "@/lib/auth/rate-limiter";
 import { verifyTurnstileToken } from "@/lib/auth/turnstile";
@@ -59,25 +59,57 @@ const providers = [
           : (headers as Record<string, string>)?.["x-forwarded-for"];
       const clientIp = xForwardedFor?.split(",")[0]?.trim() ?? undefined;
 
+      const correlationId = `auth-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+      logger.info({
+        event: "AUTH_LOGIN_START",
+        correlationId,
+        email: email ?? "[MISSING]",
+        hasClientIp: Boolean(clientIp),
+      });
+
       if (!email || !password) {
+        logger.warn({
+          event: "AUTH_LOGIN_START",
+          correlationId,
+          reason: "Missing email or password in request payload",
+        });
         return null;
       }
 
       // 1. Validate Cloudflare Turnstile token
       const turnstileResult = await verifyTurnstileToken(turnstileToken, clientIp);
       if (!turnstileResult.success) {
+        logger.warn({
+          event: "AUTH_TURNSTILE_FAILED",
+          correlationId,
+          email,
+          errorCodes: turnstileResult.errorCodes,
+        });
         return null;
       }
 
       // 2. Check brute force lockout (passing client IP)
       const lockout = await isLockedOut(email, clientIp);
       if (lockout.locked) {
+        logger.warn({
+          event: "AUTH_RATE_LIMITED",
+          correlationId,
+          email,
+          failedCount: lockout.failedCount,
+          lockoutRemainingSeconds: lockout.lockoutRemainingSeconds,
+        });
         return null;
       }
 
       // 3. Validate password minimum length
       const lengthCheck = validatePasswordLength(password);
       if (!lengthCheck.valid) {
+        logger.warn({
+          event: "AUTH_PASSWORD_MISMATCH",
+          correlationId,
+          email,
+          reason: "Password length less than 12 characters",
+        });
         return null;
       }
 
@@ -85,15 +117,38 @@ const providers = [
       if (process.env.NODE_ENV === "production") {
         const breachCheck = await checkPasswordBreached(password);
         if (breachCheck.breached) {
+          logger.warn({
+            event: "AUTH_PASSWORD_MISMATCH",
+            correlationId,
+            email,
+            reason: "Password found in known breach database (HIBP)",
+          });
           return null;
         }
       }
 
       // 5. Connect and lookup user
-      await connectDb();
-      const user = await UserRepository.findByEmailGlobal(email);
+      let user;
+      try {
+        await connectDb();
+        user = await UserRepository.findByEmailGlobal(email);
+      } catch (dbError) {
+        logger.error({
+          event: "AUTH_DATABASE_ERROR",
+          correlationId,
+          email,
+          error: (dbError as Error).message,
+        });
+        return null;
+      }
 
       if (!user || !user.passwordHash) {
+        logger.warn({
+          event: "AUTH_USER_NOT_FOUND",
+          correlationId,
+          email,
+          reason: !user ? "User does not exist in database" : "User has no password set",
+        });
         const rec = await recordFailedAttempt(email, clientIp);
         if (user?.institution_id) {
           try {
@@ -123,20 +178,49 @@ const providers = [
 
       // Reject inactive or suspended users
       if (user.status !== "active") {
+        logger.warn({
+          event: "AUTH_ACCOUNT_DISABLED",
+          correlationId,
+          email,
+          status: user.status,
+        });
         await recordFailedAttempt(email, clientIp);
         return null;
       }
 
       // Verify institution is active
-      const instRepo = new InstitutionRepository();
-      const inst = await instRepo.findById(user.institution_id);
+      let inst;
+      try {
+        const instRepo = new InstitutionRepository();
+        inst = await instRepo.findById(user.institution_id);
+      } catch (dbError) {
+        logger.error({
+          event: "AUTH_DATABASE_ERROR",
+          correlationId,
+          email,
+          error: (dbError as Error).message,
+        });
+        return null;
+      }
+
       if (!inst || inst.status !== "active") {
+        logger.warn({
+          event: "AUTH_ACCOUNT_DISABLED",
+          correlationId,
+          email,
+          reason: "Institution not found or inactive",
+        });
         return null;
       }
 
       // 6. Verify Argon2 password hash
       const isValidPassword = await verifyPassword(user.passwordHash, password);
       if (!isValidPassword) {
+        logger.warn({
+          event: "AUTH_PASSWORD_MISMATCH",
+          correlationId,
+          email,
+        });
         const rec = await recordFailedAttempt(email, clientIp);
         if (user.institution_id) {
           try {
@@ -182,6 +266,15 @@ const providers = [
       } catch {
         // Non-fatal audit log failure
       }
+
+      logger.info({
+        event: "AUTH_SUCCESS",
+        correlationId,
+        email,
+        userId: user._id.toString(),
+        roles: Array.from(user.roles),
+        mfaRequired: mfaEnabled,
+      });
 
       return {
         id: user._id.toString(),

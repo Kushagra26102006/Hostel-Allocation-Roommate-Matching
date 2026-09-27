@@ -6,6 +6,7 @@ export interface DatabaseConfig {
 }
 
 const DEFAULT_OPTIONS: ConnectOptions = {
+  dbName: "hostelhub",
   maxPoolSize: 10,
   minPoolSize: 2,
   serverSelectionTimeoutMS: 5000,

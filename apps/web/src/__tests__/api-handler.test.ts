@@ -170,7 +170,7 @@ describe("Shared API Infrastructure (apiHandler)", () => {
 
     it("replays cached response on duplicate request with same key and body", async () => {
       callCount = 0;
-      const key = "key-test-uuid-12345";
+      const key = `key-test-uuid-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
       const payload = JSON.stringify({ item: "room_booking" });
 
       // First Request
