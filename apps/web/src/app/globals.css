@@ -119,6 +119,21 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+
+  /* Laser scanning keyframe for digital gate pass */
+  @keyframes scan {
+    0%,
+    100% {
+      top: 6%;
+    }
+    50% {
+      top: 90%;
+    }
+  }
+
+  .animate-scan {
+    animation: scan 2.4s ease-in-out infinite;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════

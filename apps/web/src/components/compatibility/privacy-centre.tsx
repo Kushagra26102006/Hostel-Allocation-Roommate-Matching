@@ -1,15 +1,23 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Download, Trash2, Lock, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import {
+  Trash2,
+  Lock,
+  CheckCircle2,
+  AlertTriangle,
+  Loader2,
+  ShieldCheck,
+  Key,
+  FileJson,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import type { QuestionnaireAnswers } from "@hostelhub/domain";
 
@@ -87,119 +95,144 @@ export function PrivacyCentre() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-text">Privacy & Consent Centre</h1>
-        <p className="text-xs text-muted">
-          Manage your encrypted compatibility data, export JSON backups, or hard-delete your records
-          anytime.
+        <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-950/40 px-3 py-1 text-xs font-semibold text-cyan-300 mb-2 font-mono">
+          <ShieldCheck className="h-3.5 w-3.5 text-cyan-400" />
+          <span>Security &amp; Encryption Dashboard</span>
+        </div>
+        <h2 className="font-heading text-2xl font-bold text-white">Privacy &amp; Consent Centre</h2>
+        <p className="text-xs text-slate-400 mt-1">
+          Manage your encrypted compatibility data, export verifiable JSON backups, or hard-delete
+          your records anytime.
         </p>
       </div>
 
       {deleteSuccess && (
-        <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4" /> Your questionnaire answers have been hard-deleted and
-          consent withdrawn.
+        <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2.5">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>Your questionnaire answers have been hard-deleted and consent withdrawn.</span>
         </div>
       )}
 
       {/* Main Privacy Controls Card */}
-      <Card className="border-border/60 bg-surface/80 backdrop-blur-md shadow-2xl">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold flex items-center gap-2">
-            <Lock className="w-5 h-5 text-brand-400" />
-            My Compatibility Questionnaire Answers
-          </CardTitle>
-          <CardDescription>
-            Stored in database using AES-256-GCM encryption with per-institution keys. Decrypted
-            only for your view.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {loading ? (
-            <div className="py-8 text-center text-xs text-muted flex items-center justify-center">
-              <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading my privacy record...
+      <div className="rounded-3xl border border-[rgba(80,120,170,0.25)] bg-[rgba(8,17,36,0.9)] p-6 sm:p-7 backdrop-blur-xl shadow-2xl shadow-black/40 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-sm">
+              <Lock className="w-5 h-5" />
             </div>
-          ) : !hasSubmitted || !answers ? (
-            <div className="py-8 text-center text-xs text-muted space-y-2">
-              <p>
-                You have not submitted a compatibility questionnaire yet or consent has been
-                withdrawn.
+            <div>
+              <h3 className="font-heading text-base font-bold text-white">
+                My Compatibility Questionnaire Answers
+              </h3>
+              <p className="text-xs text-slate-400">
+                Stored in database using AES-256-GCM encryption with per-institution keys.
               </p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {Object.entries(answers).map(([key, item]) => (
-                  <div
-                    key={key}
-                    className="p-3 rounded-xl border border-border/40 bg-surface/40 flex justify-between items-center text-xs"
-                  >
-                    <div>
-                      <p className="font-semibold uppercase tracking-wider text-[11px] text-muted">
-                        {key}
-                      </p>
-                      <p className="font-bold text-text mt-0.5">Value: {String(item.value)}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] text-muted">
-                        Importance: {item.importance}/3
-                      </span>
-                      {item.dealBreaker && (
-                        <p className="text-[10px] font-bold text-amber-400">Deal-breaker</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+          </div>
 
-              {/* Data Export & Hard Deletion Controls */}
-              <div className="pt-4 border-t border-border/40 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <Button variant="outline" size="sm" onClick={exportMyDataJson}>
-                  <Download className="w-4 h-4 mr-2" /> Export My Data (JSON)
-                </Button>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 px-3 py-1 text-xs font-bold text-cyan-300 font-mono self-start sm:self-auto">
+            <Key className="h-3 w-3 text-cyan-400" />
+            AES-256-GCM
+          </span>
+        </div>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-rose-500/40 text-rose-400 hover:bg-rose-950/40"
-                  onClick={() => setShowDeleteModal(true)}
+        {loading ? (
+          <div className="py-10 text-center text-xs text-slate-400 flex items-center justify-center">
+            <Loader2 className="w-5 h-5 animate-spin mr-2 text-cyan-400" /> Loading your encrypted
+            privacy record...
+          </div>
+        ) : !hasSubmitted || !answers ? (
+          <div className="py-10 text-center text-xs text-slate-400 space-y-2">
+            <p>
+              You have not submitted a compatibility questionnaire yet or consent has been
+              withdrawn.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {Object.entries(answers).map(([key, item]) => (
+                <div
+                  key={key}
+                  className="p-3.5 rounded-2xl border border-slate-800/80 bg-[#050b1d]/80 flex justify-between items-center text-xs"
                 >
-                  <Trash2 className="w-4 h-4 mr-2" /> Delete My Answers & Withdraw Consent
-                </Button>
-              </div>
+                  <div>
+                    <p className="font-bold uppercase tracking-wider text-[10px] text-cyan-400 font-mono">
+                      {key}
+                    </p>
+                    <p className="font-bold text-white mt-0.5">Value: {String(item.value)}</p>
+                  </div>
+                  <div className="text-right space-y-0.5">
+                    <span className="text-[10px] text-slate-400 font-mono block">
+                      Importance: {item.importance}/3
+                    </span>
+                    {item.dealBreaker && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 font-mono bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                        Deal-breaker
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
+
+            {/* Data Export & Hard Deletion Controls */}
+            <div className="pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row justify-between items-center gap-3">
+              <button
+                type="button"
+                onClick={exportMyDataJson}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-cyan-500/30 bg-[#071026] hover:bg-slate-800 text-xs font-semibold text-cyan-300 transition-colors cursor-pointer w-full sm:w-auto justify-center"
+              >
+                <FileJson className="w-4 h-4 text-cyan-400" /> Export My Data (JSON)
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-rose-500/40 bg-rose-950/20 hover:bg-rose-950/40 text-xs font-semibold text-rose-300 transition-colors cursor-pointer w-full sm:w-auto justify-center"
+              >
+                <Trash2 className="w-4 h-4 text-rose-400" /> Delete My Answers &amp; Withdraw
+                Consent
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Delete Confirmation Modal */}
       <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-        <DialogContent>
+        <DialogContent className="bg-[#071026] border border-rose-500/40 text-slate-100 max-w-md rounded-3xl p-6 shadow-2xl backdrop-blur-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-rose-400">
+            <DialogTitle className="flex items-center gap-2 text-rose-400 text-lg font-bold">
               <AlertTriangle className="w-5 h-5" /> Confirm Hard-Deletion
             </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-2 text-xs text-muted">
-            <p>Are you sure you want to hard-delete your compatibility questionnaire answers?</p>
-            <p>
+            <DialogDescription className="text-slate-400 text-xs">
               This action will immediately purge ciphertext from the database and record your
               consent withdrawal. This cannot be undone.
-            </p>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2 text-xs text-slate-300">
+            Are you sure you want to permanently delete your compatibility questionnaire responses?
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <button
+              type="button"
+              onClick={() => setShowDeleteModal(false)}
+              className="rounded-xl border border-slate-800 px-4 py-2 text-xs font-semibold text-slate-400 hover:bg-slate-800/50 transition-colors"
+            >
               Cancel
-            </Button>
-            <Button
-              className="bg-rose-600 hover:bg-rose-700 text-white"
+            </button>
+            <button
+              type="button"
               disabled={deleting}
               onClick={confirmDeleteAndWithdraw}
+              className="rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 px-4 py-2 text-xs font-bold text-white shadow-md transition-all cursor-pointer disabled:opacity-50"
             >
               {deleting ? "Deleting..." : "Confirm & Delete Now"}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
