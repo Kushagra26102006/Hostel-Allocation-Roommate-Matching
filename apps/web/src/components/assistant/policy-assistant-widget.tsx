@@ -21,9 +21,9 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
-  citations?: string[];
-  feedbackGiven?: "up" | "down" | null;
-  isStreaming?: boolean;
+  citations?: string[] | undefined;
+  feedbackGiven?: "up" | "down" | null | undefined;
+  isStreaming?: boolean | undefined;
 }
 
 const SUGGESTED_QUESTIONS = [
@@ -109,7 +109,6 @@ export function PolicyAssistantWidget() {
       setInput("");
       setIsLoading(true);
 
-      // Try streaming endpoint first
       const controller = new AbortController();
       abortRef.current = controller;
 
@@ -129,7 +128,6 @@ export function PolicyAssistantWidget() {
         });
 
         if (res.headers.get("content-type")?.includes("text/event-stream") && res.body) {
-          // Stream SSE response
           const reader = res.body.getReader();
           const decoder = new TextDecoder();
           let buffer = "";
@@ -172,7 +170,6 @@ export function PolicyAssistantWidget() {
             }
           }
 
-          // Finalize: mark streaming done, attach citations
           setMessages((prev) =>
             prev.map((m) =>
               m.id === assistantMessageId
@@ -186,8 +183,7 @@ export function PolicyAssistantWidget() {
             ),
           );
         } else {
-          // Non-streaming JSON response (fallback / disabled adapter)
-          const data = await res.json();
+          const data = (await res.json()) as { answer?: string; citations?: string[] };
           setMessages((prev) =>
             prev.map((m) =>
               m.id === assistantMessageId
@@ -211,7 +207,7 @@ export function PolicyAssistantWidget() {
                 ? {
                     ...m,
                     content:
-                      "I'm temporarily having trouble reaching the policy service. Please refer to the FAQ section or submit an appeal on /room if you need immediate assistance.",
+                      "I'm temporarily having trouble reaching the policy service. Please refer to the policy guidelines or submit an appeal if needed.",
                     isStreaming: false,
                   }
                 : m,
@@ -248,7 +244,6 @@ export function PolicyAssistantWidget() {
   };
 
   const handleReset = () => {
-    // Cancel any in-flight request
     abortRef.current?.abort();
     setMessages([
       {
@@ -264,16 +259,26 @@ export function PolicyAssistantWidget() {
 
   return (
     <div className="fixed bottom-6 right-6 z-50" id="policy-assistant-widget">
-      {/* Floating Action Button */}
+      {/* Floating Action Button with Tooltip */}
       {!isOpen && (
-        <Button
-          onClick={() => setIsOpen(true)}
-          aria-label="Open AI Policy Assistant (Ctrl+Shift+H)"
-          id="assistant-fab"
-          className="h-14 w-14 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white shadow-xl shadow-sky-500/25 flex items-center justify-center transition-all hover:scale-105 focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2"
-        >
-          <Sparkles className="h-6 w-6 animate-pulse" />
-        </Button>
+        <div className="relative group">
+          <Button
+            onClick={() => setIsOpen(true)}
+            aria-label="Open AI Policy Assistant (Ctrl+Shift+H)"
+            id="assistant-fab"
+            className="h-13 w-13 rounded-full bg-brand-500 hover:bg-brand-600 text-white shadow-xl shadow-brand-500/25 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+          >
+            <Sparkles className="h-5 w-5" />
+          </Button>
+
+          {/* Hover Tooltip */}
+          <div className="absolute bottom-full right-0 mb-2 hidden group-hover:flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground shadow-lg whitespace-nowrap pointer-events-none animate-in fade-in duration-150">
+            <span>Ask Housing Policy Assistant</span>
+            <span className="text-[10px] text-muted-foreground font-mono bg-surface-muted px-1.5 py-0.5 rounded">
+              Ctrl+Shift+H
+            </span>
+          </div>
+        </div>
       )}
 
       {/* Chat Window Dialog */}
@@ -283,23 +288,23 @@ export function PolicyAssistantWidget() {
           aria-label="Campus Housing Policy Assistant"
           aria-modal="true"
           id="assistant-dialog"
-          className="w-[92vw] sm:w-[420px] h-[580px] max-h-[85vh] rounded-2xl border border-slate-700/80 bg-slate-900/95 backdrop-blur-xl text-slate-100 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+          className="w-[92vw] sm:w-[420px] h-[580px] max-h-[85vh] rounded-2xl border border-border/80 bg-surface/95 backdrop-blur-xl text-foreground shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-800 bg-slate-950/60">
+          <div className="flex items-center justify-between px-4 py-3.5 border-b border-border/60 bg-surface-muted/40">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-500 flex items-center justify-center text-white shadow-sm">
+              <div className="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center text-white shadow-sm shadow-brand-500/20">
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
+                <h2 className="text-sm font-bold text-foreground flex items-center gap-1.5">
                   Housing Policy Assistant
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold border border-brand-500/20">
                     AI
                   </span>
                 </h2>
-                <p className="text-[11px] text-slate-400">
-                  Instant answers to housing rules &amp; results
+                <p className="text-[11px] text-muted-foreground">
+                  Instant answers to university housing rules &amp; results
                 </p>
               </div>
             </div>
@@ -311,7 +316,7 @@ export function PolicyAssistantWidget() {
                 onClick={handleReset}
                 aria-label="Reset conversation"
                 title="New conversation"
-                className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg"
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground rounded-lg"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
               </Button>
@@ -320,7 +325,7 @@ export function PolicyAssistantWidget() {
                 size="sm"
                 onClick={() => setIsOpen(false)}
                 aria-label="Close Assistant (Escape)"
-                className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg"
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground rounded-lg"
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -329,12 +334,14 @@ export function PolicyAssistantWidget() {
 
           {/* Persistent Disclaimer Banner */}
           <div
-            className="bg-amber-950/30 border-b border-amber-500/20 px-3.5 py-1.5 flex items-center gap-2 text-[11px] text-amber-300"
+            className="bg-amber-500/10 border-b border-amber-500/20 px-3.5 py-1.5 flex items-center gap-2 text-[11px] text-amber-700 dark:text-amber-300"
             role="status"
             aria-live="polite"
           >
-            <Info className="w-3.5 h-3.5 shrink-0 text-amber-400" />
-            <span>AI assistant — may be wrong; check official policy.</span>
+            <Info className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <span>
+              AI responses are informational. Official decisions follow university ordinances.
+            </span>
           </div>
 
           {/* Message List */}
@@ -356,26 +363,26 @@ export function PolicyAssistantWidget() {
               >
                 <div
                   className={cn(
-                    "p-3 rounded-2xl leading-relaxed shadow-sm",
+                    "p-3.5 rounded-2xl leading-relaxed shadow-sm text-xs",
                     m.role === "user"
-                      ? "bg-sky-600 text-white rounded-br-sm"
-                      : "bg-slate-800 border border-slate-700 text-slate-100 rounded-bl-sm",
+                      ? "bg-brand-500 text-white rounded-br-sm"
+                      : "bg-surface-muted/60 border border-border/80 text-foreground rounded-bl-sm",
                   )}
                 >
                   <p className="whitespace-pre-wrap">
                     {m.content}
                     {m.isStreaming && (
-                      <span className="inline-block w-1.5 h-4 bg-sky-400 ml-0.5 animate-pulse rounded-sm" />
+                      <span className="inline-block w-1.5 h-4 bg-brand-400 ml-0.5 animate-pulse rounded-sm" />
                     )}
                   </p>
 
                   {/* Citations if available */}
                   {m.citations && m.citations.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-slate-700/60 flex flex-wrap gap-1">
+                    <div className="mt-2.5 pt-2 border-t border-border/60 flex flex-wrap gap-1">
                       {m.citations.map((c, i) => (
                         <span
                           key={i}
-                          className="text-[10px] text-sky-300 bg-sky-950/40 px-1.5 py-0.5 rounded border border-sky-500/30"
+                          className="text-[10px] text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-900/40 px-2 py-0.5 rounded-md border border-brand-200/50"
                         >
                           📄 {c}
                         </span>
@@ -384,11 +391,11 @@ export function PolicyAssistantWidget() {
                   )}
                 </div>
 
-                {/* "Was this helpful?" Feedback on assistant responses */}
+                {/* Feedback */}
                 {m.role === "assistant" && m.id !== "welcome-1" && !m.isStreaming && (
-                  <div className="flex items-center gap-2 mt-1 px-1 text-[11px] text-slate-400">
+                  <div className="flex items-center gap-2 mt-1 px-1 text-[11px] text-muted-foreground">
                     {m.feedbackGiven ? (
-                      <span className="text-emerald-400 flex items-center gap-1">
+                      <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-semibold">
                         <ShieldCheck className="w-3 h-3" /> Feedback recorded
                       </span>
                     ) : (
@@ -398,7 +405,7 @@ export function PolicyAssistantWidget() {
                           type="button"
                           onClick={() => handleFeedback(m.id, true)}
                           aria-label="Mark response as helpful"
-                          className="hover:text-emerald-400 transition-colors p-0.5"
+                          className="hover:text-emerald-600 transition-colors p-0.5"
                         >
                           <ThumbsUp className="w-3 h-3" />
                         </button>
@@ -406,7 +413,7 @@ export function PolicyAssistantWidget() {
                           type="button"
                           onClick={() => handleFeedback(m.id, false)}
                           aria-label="Mark response as unhelpful"
-                          className="hover:text-rose-400 transition-colors p-0.5"
+                          className="hover:text-red-500 transition-colors p-0.5"
                         >
                           <ThumbsDown className="w-3 h-3" />
                         </button>
@@ -418,7 +425,7 @@ export function PolicyAssistantWidget() {
             ))}
 
             {feedbackSuccess && (
-              <div className="text-center text-[11px] text-emerald-400 font-medium animate-in fade-in duration-300">
+              <div className="text-center text-[11px] text-emerald-600 dark:text-emerald-400 font-medium animate-in fade-in duration-300">
                 {feedbackSuccess}
               </div>
             )}
@@ -429,8 +436,8 @@ export function PolicyAssistantWidget() {
           {/* Suggested Questions Chips */}
           {messages.length <= 2 && (
             <div className="px-3 pb-2 flex flex-col gap-1">
-              <span className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">
-                Suggested Questions
+              <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
+                Common Inquiries
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {SUGGESTED_QUESTIONS.map((q, idx) => (
@@ -439,7 +446,7 @@ export function PolicyAssistantWidget() {
                     type="button"
                     onClick={() => handleSend(q)}
                     aria-label={`Ask: ${q}`}
-                    className="text-[11px] text-left px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700/80 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                    className="text-[11px] text-left px-2.5 py-1 rounded-full bg-surface-muted/60 border border-border/80 hover:bg-brand-500/10 hover:text-brand-600 text-muted-foreground transition-colors"
                   >
                     {q}
                   </button>
@@ -454,7 +461,7 @@ export function PolicyAssistantWidget() {
               e.preventDefault();
               void handleSend();
             }}
-            className="p-3 border-t border-slate-800 bg-slate-950/60 flex items-center gap-2"
+            className="p-3 border-t border-border/60 bg-surface-muted/30 flex items-center gap-2"
           >
             <Input
               ref={inputRef}
@@ -464,7 +471,7 @@ export function PolicyAssistantWidget() {
               disabled={isLoading}
               aria-label="Type your policy question"
               id="assistant-input"
-              className="h-10 bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-500 text-xs focus-visible:ring-1 focus-visible:ring-sky-500 rounded-xl"
+              className="h-10 bg-background border-border text-foreground placeholder:text-muted-foreground text-xs focus-visible:ring-1 focus-visible:ring-brand-500 rounded-xl"
             />
             <Button
               type="submit"
@@ -472,7 +479,7 @@ export function PolicyAssistantWidget() {
               disabled={!input.trim() || isLoading}
               aria-label="Send message"
               id="assistant-send-btn"
-              className="h-10 px-3.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl shrink-0"
+              className="h-10 px-3.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl shrink-0"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -483,7 +490,7 @@ export function PolicyAssistantWidget() {
           </form>
 
           {/* Keyboard shortcut hint */}
-          <div className="px-3 pb-1.5 flex items-center justify-center gap-1 text-[9px] text-slate-500">
+          <div className="px-3 pb-1.5 flex items-center justify-center gap-1 text-[9px] text-muted-foreground">
             <Keyboard className="w-2.5 h-2.5" />
             <span>Ctrl+Shift+H to toggle · Esc to close</span>
           </div>

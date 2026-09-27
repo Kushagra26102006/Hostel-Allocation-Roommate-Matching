@@ -91,9 +91,9 @@ export function NotificationBell() {
         <Bell className="h-4 w-4" aria-hidden="true" />
         {unreadCount > 0 && (
           <span
-            className={`absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger text-[10px] font-bold text-white shadow-sm transition-transform duration-300 ${
+            className={`absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white shadow-sm transition-transform duration-300 ${
               isBadgePopping && !prefersReducedMotion
-                ? "scale-125 ring-2 ring-danger/50"
+                ? "scale-125 ring-2 ring-brand-500/50"
                 : "scale-100"
             }`}
           >
