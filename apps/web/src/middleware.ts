@@ -7,6 +7,12 @@ const MANDATORY_MFA_ROLES = ["hostel_admin", "chief_warden", "sys_admin"];
 const STAFF_ROLES = ["warden", "chief_warden", "hostel_admin", "dean", "sys_admin"];
 
 const PROTECTED_PREFIXES = [
+  "/student",
+  "/warden",
+  "/chief-warden",
+  "/admin",
+  "/dean",
+  "/sys-admin",
   "/dashboard",
   "/applications",
   "/room",
@@ -187,17 +193,18 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
   function getPortalForRole(role?: string): string {
     switch (role) {
       case "warden":
+        return "/warden/dashboard";
       case "chief_warden":
-        return "/staff/warden/review";
+        return "/chief-warden/dashboard";
       case "hostel_admin":
-        return "/staff/admin/inventory";
+        return "/admin/dashboard";
       case "dean":
-        return "/staff/dean/overview";
+        return "/dean/analytics";
       case "sys_admin":
-        return "/staff/system/health";
+        return "/sys-admin/users";
       case "student":
       default:
-        return "/dashboard";
+        return "/student/dashboard";
     }
   }
 
@@ -233,20 +240,74 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
       return applySecurityHeaders(NextResponse.redirect(new URL("/mfa/enrol", req.url)), nonce);
     }
 
-    // C. Route access control: Only staff roles on STAFF_ROLES allowlist can access /staff/*
+    // C. Route access control: Role-based portal guards
+    const userRole = (token["activeRole"] as string) || roles[0] || "student";
+
+    if (pathname.startsWith("/warden")) {
+      const canAccess = roles.some((r) => ["warden", "chief_warden", "sys_admin"].includes(r));
+      if (!canAccess) {
+        return applySecurityHeaders(
+          NextResponse.redirect(new URL(getPortalForRole(userRole), req.url)),
+          nonce,
+        );
+      }
+    }
+
+    if (pathname.startsWith("/chief-warden")) {
+      const canAccess = roles.some((r) => ["chief_warden", "sys_admin"].includes(r));
+      if (!canAccess) {
+        return applySecurityHeaders(
+          NextResponse.redirect(new URL(getPortalForRole(userRole), req.url)),
+          nonce,
+        );
+      }
+    }
+
+    if (pathname.startsWith("/admin")) {
+      const canAccess = roles.some((r) => ["hostel_admin", "sys_admin"].includes(r));
+      if (!canAccess) {
+        return applySecurityHeaders(
+          NextResponse.redirect(new URL(getPortalForRole(userRole), req.url)),
+          nonce,
+        );
+      }
+    }
+
+    if (pathname.startsWith("/dean")) {
+      const canAccess = roles.some((r) => ["dean", "sys_admin"].includes(r));
+      if (!canAccess) {
+        return applySecurityHeaders(
+          NextResponse.redirect(new URL(getPortalForRole(userRole), req.url)),
+          nonce,
+        );
+      }
+    }
+
+    if (pathname.startsWith("/sys-admin")) {
+      const canAccess = roles.includes("sys_admin");
+      if (!canAccess) {
+        return applySecurityHeaders(
+          NextResponse.redirect(new URL(getPortalForRole(userRole), req.url)),
+          nonce,
+        );
+      }
+    }
+
     if (pathname.startsWith("/staff")) {
       const isStaff = roles.some((r) => STAFF_ROLES.includes(r));
       if (!isStaff) {
-        return applySecurityHeaders(NextResponse.redirect(new URL("/dashboard", req.url)), nonce);
+        return applySecurityHeaders(
+          NextResponse.redirect(new URL(getPortalForRole(userRole), req.url)),
+          nonce,
+        );
       }
     }
 
     // D. Auto-route staff users landing on /dashboard to their respective portal
     if (pathname === "/dashboard") {
-      const primaryRole = (token["activeRole"] as string) || roles[0];
-      if (primaryRole && primaryRole !== "student") {
+      if (userRole && userRole !== "student") {
         return applySecurityHeaders(
-          NextResponse.redirect(new URL(getPortalForRole(primaryRole), req.url)),
+          NextResponse.redirect(new URL(getPortalForRole(userRole), req.url)),
           nonce,
         );
       }

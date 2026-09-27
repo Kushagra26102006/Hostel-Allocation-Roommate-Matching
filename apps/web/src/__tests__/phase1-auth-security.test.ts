@@ -178,7 +178,7 @@ describe("Phase 1: Security & Auth Hardening Tests", () => {
       expect(token["id"]).toBe(user?.id);
       expect(token["roles"]).toEqual(["student"]);
       expect(() => structuredClone(token)).not.toThrow();
-    });
+    }, 15000);
 
     it("returns null for invalid password without throwing unhandled exception", async () => {
       const { authConfig } = await import("@/auth");

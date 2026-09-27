@@ -19,42 +19,42 @@ export const ROLES_METADATA: Record<Role, RoleInfo> = {
     name: "Student",
     badge: "Student Portal",
     description: "Submit room preferences, view matches, and report issues",
-    portalPrefix: "/dashboard",
+    portalPrefix: "/student/dashboard",
   },
   warden: {
     id: "warden",
     name: "Hostel Warden",
     badge: "Warden Console",
     description: "Review provisional allocations, verify medical requests, and sign off rosters",
-    portalPrefix: "/staff/warden/review",
+    portalPrefix: "/warden/dashboard",
   },
   chief_warden: {
     id: "chief_warden",
     name: "Chief Warden",
     badge: "Chief Executive",
     description: "Manage university-wide algorithm runs, inventory quotas, and student appeals",
-    portalPrefix: "/staff/warden/review",
+    portalPrefix: "/chief-warden/dashboard",
   },
   hostel_admin: {
     id: "hostel_admin",
     name: "Hostel Administrator",
     badge: "Operations & Facilities",
     description: "Manage room inventory, physical keys, maintenance logs, and check-ins",
-    portalPrefix: "/staff/admin/inventory",
+    portalPrefix: "/admin/dashboard",
   },
   dean: {
     id: "dean",
     name: "Dean of Student Welfare",
     badge: "Dean Welfare",
     description: "Oversee campus housing policies, demographic balance, and audit compliance",
-    portalPrefix: "/staff/dean/overview",
+    portalPrefix: "/dean/analytics",
   },
   sys_admin: {
     id: "sys_admin",
     name: "System Administrator",
     badge: "Root Governance",
     description: "Configure Gale-Shapley parameters, audit trail ledger, and RBAC",
-    portalPrefix: "/staff/system/health",
+    portalPrefix: "/sys-admin/users",
   },
 };
 
@@ -90,16 +90,17 @@ export const useRoleStore = create<RoleStore>()(
 export function getPortalForRole(role?: string): string {
   switch (role) {
     case "warden":
+      return "/warden/dashboard";
     case "chief_warden":
-      return "/staff/warden/review";
+      return "/chief-warden/dashboard";
     case "hostel_admin":
-      return "/staff/admin/inventory";
+      return "/admin/dashboard";
     case "dean":
-      return "/staff/dean/overview";
+      return "/dean/analytics";
     case "sys_admin":
-      return "/staff/system/health";
+      return "/sys-admin/users";
     case "student":
     default:
-      return "/dashboard";
+      return "/student/dashboard";
   }
 }
