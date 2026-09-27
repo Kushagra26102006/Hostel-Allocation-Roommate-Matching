@@ -58,7 +58,7 @@
     "ioredis": "^5.4.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.47.0",
-    "mongoose": "^8.6.3",
+    "mongoose": "^9.10.2",
     "next": "15.5.25",
     "next-auth": "5.0.0-beta.32",
     "next-intl": "^4.14.5",

@@ -17,7 +17,7 @@
     "@sentry/node": "^10.75.1",
     "bullmq": "^5.41.0",
     "ioredis": "^5.4.1",
-    "mongoose": "^8.6.3",
+    "mongoose": "^9.10.2",
     "qrcode": "^1.5.4",
     "web-push": "^3.6.7"
   },
