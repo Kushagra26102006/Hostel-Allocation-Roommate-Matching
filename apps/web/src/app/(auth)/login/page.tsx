@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
@@ -17,6 +17,10 @@ export default function LoginPage() {
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,7 +147,7 @@ export default function LoginPage() {
         </div>
 
         {/* Turnstile Captcha */}
-        <Turnstile onVerify={(token) => setTurnstileToken(token)} className="py-1" />
+        <Turnstile onVerify={handleTurnstileVerify} className="py-1" />
 
         <button
           type="submit"
