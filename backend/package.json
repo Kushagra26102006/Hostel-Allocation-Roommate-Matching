@@ -17,7 +17,7 @@
     "create-student": "tsx scripts/create-student.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.651.1",
+    "@aws-sdk/client-s3": "^3.1139.0",
     "@aws-sdk/s3-request-presigner": "^3.1136.0",
     "@hostelhub/db": "workspace:*",
     "@hostelhub/domain": "workspace:*",

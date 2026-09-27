@@ -10,7 +10,7 @@
     "build": "tsc --project tsconfig.json --outDir dist"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.651.1",
+    "@aws-sdk/client-s3": "^3.1139.0",
     "@hostelhub/db": "workspace:*",
     "@hostelhub/domain": "workspace:*",
     "@hostelhub/shared": "workspace:*",
