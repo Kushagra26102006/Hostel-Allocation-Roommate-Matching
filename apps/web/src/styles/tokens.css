@@ -1,0 +1,114 @@
+/**
+ * HostelHub Centralized Design Tokens
+ * Conforming to WCAG 2.2 AA and Industry-Grade University SaaS Visual System
+ * Primary Brand: Deep Electric Indigo (#3155FF / hsl(230, 100%, 60%))
+ * Neutral Supporting Scale: White, Charcoal, Grays
+ * Semantic Only: Success (Green), Warning (Amber), Danger (Red)
+ */
+
+:root {
+  /* Primary Brand — Electric Indigo (#3155FF) */
+  --brand-50: 230 100% 98%;
+  --brand-100: 230 100% 95%;
+  --brand-200: 230 95% 88%;
+  --brand-300: 230 92% 78%;
+  --brand-400: 230 96% 68%;
+  --brand-500: 230 100% 60%; /* #3155FF Primary brand */
+  --brand-600: 230 90% 54%; /* #2845E6 Interaction primary */
+  --brand-700: 230 84% 44%; /* #1E37BF */
+  --brand-800: 230 80% 34%;
+  --brand-900: 230 75% 24%;
+  --brand-950: 230 70% 14%;
+
+  /* Supporting / Accent (strictly aligned with primary brand hue) */
+  --accent: 230 90% 54%;
+  --accent-cyan: 230 90% 54%;
+  --info: 230 85% 55%;
+
+  /* Semantic Status Colors ONLY */
+  --success: 152 76% 40%; /* #16A34A */
+  --warning: 38 92% 50%; /* #F59E0B */
+  --danger: 350 89% 60%; /* #EF4444 */
+
+  /* Neutral Surfaces (Light Theme) */
+  --surface: 0 0% 100%; /* #FFFFFF */
+  --surface-muted: 216 28% 97%; /* #F8FAFC */
+  --background: 210 20% 98%; /* #F8FAFC */
+  --foreground: 222 47% 11%; /* #0F172A */
+  --text: 222 47% 11%;
+  --muted: 215 16% 47%; /* #64748B */
+  --border: 215 16% 90%; /* #E2E8F0 */
+  --input: 215 16% 90%;
+  --ring: 230 100% 60%; /* #3155FF */
+
+  /* Controlled Glass & Translucency */
+  --glass-fill: rgba(255, 255, 255, 0.85);
+  --glass-fill-subtle: rgba(255, 255, 255, 0.5);
+  --glass-border: rgba(226, 232, 240, 0.8);
+  --glass-border-subtle: rgba(226, 232, 240, 0.4);
+  --glass-blur: 12px;
+
+  /* Typography */
+  --font-heading: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Radii (Crisp, modern, medium rounded) */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  --radius-ctrl: 10px;
+  --radius-card: 16px;
+  --radius-hero: 24px;
+
+  /* Restrained, soft elevation shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.03);
+  --shadow-xl: 0 20px 32px -8px rgba(15, 23, 42, 0.1), 0 8px 16px -4px rgba(15, 23, 42, 0.04);
+  --shadow-aurora: 0 8px 24px -4px rgba(49, 85, 255, 0.15);
+
+  /* Animation Timings */
+  --duration-fast: 150ms;
+  --duration-normal: 220ms;
+  --duration-slow: 350ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark {
+  /* Electric Indigo calibrated for dark contrast */
+  --brand-600: 230 95% 65%; /* High contrast #5875FF */
+  --brand-500: 230 95% 65%;
+  --accent: 230 95% 65%;
+  --accent-cyan: 230 95% 65%;
+  --info: 230 90% 68%;
+  --success: 152 65% 52%;
+  --warning: 38 90% 55%;
+  --danger: 350 85% 65%;
+
+  /* Deep Charcoal Surfaces (Never pure pitch black) */
+  --surface: 222 47% 10%; /* #0E1528 */
+  --surface-muted: 222 40% 14%; /* #131C35 */
+  --background: 224 45% 7%; /* #090E1A */
+  --foreground: 210 40% 98%; /* #F8FAFC */
+  --text: 210 40% 98%;
+  --muted: 215 20% 65%; /* #94A3B8 */
+  --border: 222 25% 20%; /* #212D45 */
+  --input: 222 25% 20%;
+  --ring: 230 95% 65%;
+
+  --glass-fill: rgba(14, 21, 40, 0.8);
+  --glass-fill-subtle: rgba(14, 21, 40, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-subtle: rgba(255, 255, 255, 0.05);
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 32px -8px rgba(0, 0, 0, 0.6);
+  --shadow-aurora: 0 8px 24px -4px rgba(49, 85, 255, 0.25);
+}

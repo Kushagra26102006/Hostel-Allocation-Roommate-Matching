@@ -4,19 +4,29 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-const cardVariants = cva("rounded-card text-text transition-shadow duration-180 ease-standard", {
+const cardVariants = cva("rounded-card text-foreground transition-all duration-200 ease-standard", {
   variants: {
     variant: {
-      default: "bg-surface border border-border shadow-sm",
-      elevated: "bg-surface border border-border shadow-md hover:shadow-lg",
+      default: [
+        "bg-surface border border-border/70 shadow-xs",
+        "hover:border-border hover:shadow-sm",
+      ],
+      interactive: [
+        "bg-surface border border-border/70 shadow-xs cursor-pointer",
+        "hover:-translate-y-[2px] hover:border-brand-500/40 hover:shadow-md",
+        "active:translate-y-0 active:scale-[0.99]",
+      ],
+      elevated: [
+        "bg-surface border border-border/60 shadow-sm",
+        "hover:-translate-y-[2px] hover:shadow-md hover:border-border",
+      ],
+      subtle: [
+        "bg-surface-muted/60 border border-border/50 shadow-none",
+        "hover:bg-surface-muted/90",
+      ],
       glass: [
-        "glass",
-        "shadow-md",
-        "[--spotlight-x:50%] [--spotlight-y:50%]",
-        "before:absolute before:inset-0 before:rounded-card before:opacity-0",
-        "before:bg-[radial-gradient(400px_circle_at_var(--spotlight-x)_var(--spotlight-y),hsl(var(--brand-600)/0.12),transparent_70%)]",
-        "before:transition-opacity before:duration-280 hover:before:opacity-100",
-        "relative overflow-hidden",
+        "bg-surface/85 backdrop-blur-md border border-border/70 shadow-sm",
+        "hover:border-brand-500/30 hover:shadow-md",
       ],
       ghost: "bg-transparent border-none shadow-none",
     },
@@ -30,31 +40,8 @@ export interface CardProps
   extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof cardVariants> {}
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant, onMouseMove, ...props }, ref) => {
-    const cardRef = React.useRef<HTMLDivElement>(null);
-
-    const handleMouseMove = React.useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (variant === "glass" && cardRef.current) {
-          const rect = cardRef.current.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          cardRef.current.style.setProperty("--spotlight-x", `${x}px`);
-          cardRef.current.style.setProperty("--spotlight-y", `${y}px`);
-        }
-        onMouseMove?.(e);
-      },
-      [variant, onMouseMove],
-    );
-
-    return (
-      <div
-        ref={cardRef ?? ref}
-        className={cn(cardVariants({ variant, className }))}
-        onMouseMove={handleMouseMove}
-        {...props}
-      />
-    );
+  ({ className, variant, ...props }, ref) => {
+    return <div ref={ref} className={cn(cardVariants({ variant, className }))} {...props} />;
   },
 );
 Card.displayName = "Card";
@@ -70,7 +57,10 @@ const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HT
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn("font-heading font-semibold leading-none tracking-tight text-text", className)}
+      className={cn(
+        "font-heading font-semibold text-base sm:text-lg leading-snug tracking-tight text-foreground",
+        className,
+      )}
       {...props}
     />
   ),
@@ -81,7 +71,11 @@ const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn("text-sm text-muted", className)} {...props} />
+  <p
+    ref={ref}
+    className={cn("text-xs sm:text-sm text-muted leading-relaxed", className)}
+    {...props}
+  />
 ));
 CardDescription.displayName = "CardDescription";
 
@@ -94,9 +88,13 @@ CardContent.displayName = "CardContent";
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex items-center p-6 pt-0", className)} {...props} />
+    <div
+      ref={ref}
+      className={cn("flex items-center p-6 pt-0 border-t border-border/40 mt-auto", className)}
+      {...props}
+    />
   ),
 );
 CardFooter.displayName = "CardFooter";
 
-export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter };
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, cardVariants };
