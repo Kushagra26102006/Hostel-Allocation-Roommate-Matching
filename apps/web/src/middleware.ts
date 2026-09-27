@@ -36,23 +36,32 @@ function isOriginAllowed(origin: string, host: string | null): boolean {
   }
 }
 
-function applySecurityHeaders(res: NextResponse, nonce: string): NextResponse {
+function getCspHeader(nonce: string): string {
   const isDev = process.env.NODE_ENV === "development";
-  const cspHeader = `
+  return `
     default-src 'self';
-    script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${isDev ? "'unsafe-eval'" : ""};
+    script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com ${isDev ? "'unsafe-eval'" : ""};
+    script-src-elem 'self' 'nonce-${nonce}' https://challenges.cloudflare.com ${isDev ? "'unsafe-eval'" : ""};
     style-src 'self' 'unsafe-inline';
-    img-src 'self' blob: data: https:;
+    img-src 'self' blob: data: https://*.tile.openstreetmap.org https://images.unsplash.com https://avatars.githubusercontent.com https://lh3.googleusercontent.com https:;
     font-src 'self' data:;
     object-src 'none';
     base-uri 'self';
-    form-action 'self';
+    form-action 'self' https://accounts.google.com;
     frame-ancestors 'none';
-    connect-src 'self' https: ws: wss:;
+    frame-src 'self' https://challenges.cloudflare.com;
+    connect-src 'self' https://hostel-allocation-roommate-matching.onrender.com wss://hostel-allocation-roommate-matching.onrender.com https://challenges.cloudflare.com https://api.postalpincode.in https://api.openrouteservice.org https://generativelanguage.googleapis.com https://api.pwnedpasswords.com https://*.sentry.io ${isDev ? "http://localhost:* ws://localhost:* ws: wss:" : ""};
+    worker-src 'self' blob:;
+    child-src 'self' blob: https://challenges.cloudflare.com;
+    media-src 'self' blob: data:;
     upgrade-insecure-requests;
   `
     .replace(/\s{2,}/g, " ")
     .trim();
+}
+
+function applySecurityHeaders(res: NextResponse, nonce: string): NextResponse {
+  const cspHeader = getCspHeader(nonce);
 
   res.headers.set("Content-Security-Policy", cspHeader);
   res.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
@@ -73,6 +82,11 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
   const origin = req.headers.get("origin");
   const host = req.headers.get("host");
 
+  const cspHeader = getCspHeader(nonce);
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("Content-Security-Policy", cspHeader);
+
   // Explicit static file and internal Next.js paths allow-list: bypass
   if (
     pathname.startsWith("/_next") ||
@@ -80,7 +94,14 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
     pathname === "/favicon.ico" ||
     STATIC_ASSET_REGEX.test(pathname)
   ) {
-    return applySecurityHeaders(NextResponse.next(), nonce);
+    return applySecurityHeaders(
+      NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      }),
+      nonce,
+    );
   }
 
   // ── Strict CORS Handling for API ─────────────────────────────────────────────
@@ -314,8 +335,8 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
     }
   }
 
-  const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("Content-Security-Policy", cspHeader);
 
   const res = NextResponse.next({
     request: {

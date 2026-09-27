@@ -14,6 +14,46 @@ export interface RequestOptions extends Omit<RequestInit, "body"> {
 }
 
 /**
+ * Returns the base API URL for client-side fetches.
+ * In production, it ensures it does not resolve to localhost or undefined,
+ * defaulting to the Render deployment if not explicitly overridden.
+ */
+export function getApiBaseUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (
+    envUrl &&
+    envUrl.trim() !== "" &&
+    !envUrl.includes("localhost:3000") &&
+    !envUrl.includes("localhost:5000")
+  ) {
+    return envUrl.replace(/\/+$/, "");
+  }
+  if (process.env.NODE_ENV === "production") {
+    return "https://hostel-allocation-roommate-matching.onrender.com";
+  }
+  return "";
+}
+
+/**
+ * Resolves an API endpoint to a fully qualified URL when appropriate.
+ */
+export function resolveApiUrl(endpoint: string): string {
+  if (!endpoint || endpoint.startsWith("http://") || endpoint.startsWith("https://")) {
+    return endpoint;
+  }
+  // NextAuth routes are handled on the Next.js frontend origin
+  if (endpoint.startsWith("/api/auth")) {
+    return endpoint;
+  }
+  const base = getApiBaseUrl();
+  if (base) {
+    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    return `${base}${cleanEndpoint}`;
+  }
+  return endpoint;
+}
+
+/**
  * Robust typed HTTP client that unwraps JSON responses, sends required headers,
  * and intercepts RFC 9457 Problem Details errors with automatic toast notifications.
  */
@@ -28,7 +68,7 @@ export async function apiClient<T>(endpoint: string, options: RequestOptions = {
     ...customConfig
   } = options;
 
-  let url = endpoint;
+  let url = resolveApiUrl(endpoint);
   if (params) {
     const searchParams = new URLSearchParams();
     for (const [key, value] of Object.entries(params)) {
@@ -56,6 +96,7 @@ export async function apiClient<T>(endpoint: string, options: RequestOptions = {
   }
 
   const config: RequestInit = {
+    credentials: "include",
     ...customConfig,
     headers,
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),

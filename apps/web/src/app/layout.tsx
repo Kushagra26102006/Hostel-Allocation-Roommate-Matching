@@ -108,12 +108,17 @@ import { SkipLink } from "@/components/a11y/skip-link";
 import { RouteAnnouncer } from "@/components/a11y/route-announcer";
 import { WebVitalsReporter } from "@/components/a11y/web-vitals-reporter";
 
+import { headers } from "next/headers";
+
 // ── Root layout ───────────────────────────────────────────────────────────────
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const nonce = headersList.get("x-nonce") ?? undefined;
+
   return (
     <html
       lang="en"
@@ -126,6 +131,7 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange={false}
+          {...(nonce ? { nonce } : {})}
         >
           <SkipLink />
           <RouteAnnouncer />

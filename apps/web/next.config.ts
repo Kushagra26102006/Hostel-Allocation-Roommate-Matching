@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   // Allow importing workspace packages as source (no pre-build needed in dev)
   transpilePackages: ["@hostelhub/domain", "@hostelhub/shared"],
+  serverExternalPackages: ["bullmq", "ioredis", "@valkey/valkey-glide", "argon2", "mongoose"],
   images: {
     formats: ["image/avif", "image/webp"],
   },
