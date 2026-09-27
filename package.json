@@ -57,5 +57,8 @@
         "GHSA-5p2g-fcmc-qvqq"
       ]
     }
+  },
+  "dependencies": {
+    "@valkey/valkey-glide": "^2.5.3"
   }
 }

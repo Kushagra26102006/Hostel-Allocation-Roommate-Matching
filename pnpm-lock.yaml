@@ -12,6 +12,10 @@ overrides:
 
 importers:
   .:
+    dependencies:
+      "@valkey/valkey-glide":
+        specifier: ^2.5.3
+        version: 2.5.3
     devDependencies:
       "@commitlint/cli":
         specifier: ^19.3.0
@@ -78,7 +82,7 @@ importers:
         version: 3.2.2(react@19.3.0)
       "@hookform/resolvers":
         specifier: ^5.9.1
-        version: 5.9.1(@standard-schema/spec@1.1.0)(ajv@8.20.0)(react-hook-form@7.88.0(react@19.3.0))(zod@3.25.76)
+        version: 5.9.1(@standard-schema/spec@1.1.0)(ajv@6.15.0)(react-hook-form@7.88.0(react@19.3.0))(zod@3.25.76)
       "@hostelhub/db":
         specifier: workspace:*
         version: link:../../packages/db
@@ -3399,6 +3403,60 @@ packages:
       webpack-plugin-serve:
         optional: true
 
+  "@protobufjs/aspromise@1.1.2":
+    resolution:
+      {
+        integrity: sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ==,
+      }
+
+  "@protobufjs/base64@1.1.2":
+    resolution:
+      {
+        integrity: sha512-AZkcAA5vnN/v4PDqKyMR5lx7hZttPDgClv83E//FMNhR2TMcLUhfRUBHCmSl0oi9zMgDDqRUJkSxO3wm85+XLg==,
+      }
+
+  "@protobufjs/codegen@2.0.5":
+    resolution:
+      {
+        integrity: sha512-zgXFLzW3Ap33e6d0Wlj4MGIm6Ce8O89n/apUaGNB/jx+hw+ruWEp7EwGUshdLKVRCxZW12fp9r40E1mQrf/34g==,
+      }
+
+  "@protobufjs/eventemitter@1.1.1":
+    resolution:
+      {
+        integrity: sha512-vW1GmwMZNnL+gMRaovlh9yZX74kc+TTU3FObkkurpMaRtBfLP3ldjS9KQWlwZgraRE0+dheEEoAxdzcJQ8eXZg==,
+      }
+
+  "@protobufjs/fetch@1.1.1":
+    resolution:
+      {
+        integrity: sha512-GpptLrs57adMSuHi3VNj0mAF8dwh36LMaYF6XyJ6JMWlVsc+t42tm1HSEDmOs3A8fC9yyeisgLhsTVQokOZ0zw==,
+      }
+
+  "@protobufjs/float@1.0.2":
+    resolution:
+      {
+        integrity: sha512-Ddb+kVXlXst9d+R9PfTIxh1EdNkgoRe5tOX6t01f1lYWOvJnSPDBlG241QLzcyPdoNTsblLUdujGSE4RzrTZGQ==,
+      }
+
+  "@protobufjs/path@1.1.2":
+    resolution:
+      {
+        integrity: sha512-6JOcJ5Tm08dOHAbdR3GrvP+yUUfkjG5ePsHYczMFLq3ZmMkAD98cDgcT2iA1lJ9NVwFd4tH/iSSoe44YWkltEA==,
+      }
+
+  "@protobufjs/pool@1.1.0":
+    resolution:
+      {
+        integrity: sha512-0kELaGSIDBKvcgS4zkjz1PeddatrjYcmMWOlAuAPwAeccUrPHdUqo/J6LiymHHEiJT5NrF1UVwxY14f+fy4WQw==,
+      }
+
+  "@protobufjs/utf8@1.1.2":
+    resolution:
+      {
+        integrity: sha512-b1UQwcEZ4yCnMCD8DAL1VlbvBJE9/IX4FTIp7BG1xYpf29SLazLSrqUkj4w7Y5y7cCVP6E5tcqqcI0xemPkHug==,
+      }
+
   "@radix-ui/number@1.1.3":
     resolution:
       {
@@ -5684,6 +5742,61 @@ packages:
       }
     peerDependencies:
       react: ">= 16.8.0"
+
+  "@valkey/valkey-glide-darwin-arm64@2.5.3":
+    resolution:
+      {
+        integrity: sha512-DB2dooH/OLhN6v2/rHbg5L+cynkYx/HhXSG/Iqs18+xaKvWlQZwdbfj5x2AXK0XObQVQaJKLMnc6+EYbv5+Img==,
+      }
+    cpu: [arm64]
+    os: [darwin]
+
+  "@valkey/valkey-glide-darwin-x64@2.5.3":
+    resolution:
+      {
+        integrity: sha512-Sxw+2uA2K445FCdIr78T7XirwKHMDP1rdliqRzRWgx87PYQOfkp8Qz/LXyri3la+YZ6/rnGezwkyuNlDT75kBw==,
+      }
+    cpu: [x64]
+    os: [darwin]
+
+  "@valkey/valkey-glide-linux-arm64-gnu@2.5.3":
+    resolution:
+      {
+        integrity: sha512-/hpjvDQGarJe1KJFSYcUfPB1KrnhqUBkiFbK3Yq9wyv8CA/Jh5QiADDXYjDjVwpY+Ocy+znm6E7Od8tNTrmdiw==,
+      }
+    cpu: [arm64]
+    os: [linux]
+
+  "@valkey/valkey-glide-linux-arm64-musl@2.5.3":
+    resolution:
+      {
+        integrity: sha512-aKqkDMEewlQvEjdCa+rSWKwL41nLxEshqJ8otMtvpgtRyU2fjRH5yDuJ4JXsCz+4Y/Zi5xQVspUawU37XgIf0A==,
+      }
+    cpu: [arm64]
+    os: [linux]
+
+  "@valkey/valkey-glide-linux-x64-gnu@2.5.3":
+    resolution:
+      {
+        integrity: sha512-65JCnAj0IlQqiIzVCNzWo8v1N5c58Hoi2jP+fmtf78+1Uw4JInPAgicGI6GronlaLrfXZRTLqNNnjVez0QeMUg==,
+      }
+    cpu: [x64]
+    os: [linux]
+
+  "@valkey/valkey-glide-linux-x64-musl@2.5.3":
+    resolution:
+      {
+        integrity: sha512-kBsS6nLjhcIcecM+iEUdVdTl/WzkJH8YNSKeKeUPZJUfK3zQqiyw6dbC/w6aYmOB/UrtJOQkuSbRZqfNWyf+Dw==,
+      }
+    cpu: [x64]
+    os: [linux]
+
+  "@valkey/valkey-glide@2.5.3":
+    resolution:
+      {
+        integrity: sha512-VvT7oOr1ZyvPDFUEEovYqVKNaCicUHJPmrfDyflCEi8hzH+YEdxEikYDheHGeclgFW0MlLkJ2rky6pa7tT6iqg==,
+      }
+    engines: { node: ">=16" }
 
   "@vitejs/plugin-react@4.7.0":
     resolution:
@@ -9680,6 +9793,12 @@ packages:
       }
     engines: { node: ">=18" }
 
+  long@5.3.2:
+    resolution:
+      {
+        integrity: sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA==,
+      }
+
   loupe@3.2.1:
     resolution:
       {
@@ -11030,6 +11149,13 @@ packages:
       {
         integrity: sha512-bN+0ehEnrXfxV2ZQvU2PetO0n4gqBD4ulq3MI1WOPLgr7/Mg9yRQkX5+0v1vagr74ZTsl7XtzlaYDo2EuCeYJw==,
       }
+
+  protobufjs@7.6.6:
+    resolution:
+      {
+        integrity: sha512-dYDWdjSl5RNb7SgPxGQcRU+GtvP7s2fpkrY0r432PcOIaZ0/rBcxEZnQN67iJhFuQiVw754JDoPruPCNdGsbjg==,
+      }
+    engines: { node: ">=12.0.0" }
 
   proxy-addr@2.0.8:
     resolution:
@@ -14694,13 +14820,13 @@ snapshots:
     dependencies:
       "@formatjs/fast-memoize": 3.1.7
 
-  "@hookform/resolvers@5.9.1(@standard-schema/spec@1.1.0)(ajv@8.20.0)(react-hook-form@7.88.0(react@19.3.0))(zod@3.25.76)":
+  "@hookform/resolvers@5.9.1(@standard-schema/spec@1.1.0)(ajv@6.15.0)(react-hook-form@7.88.0(react@19.3.0))(zod@3.25.76)":
     dependencies:
       "@standard-schema/utils": 0.3.0
       react-hook-form: 7.88.0(react@19.3.0)
     optionalDependencies:
       "@standard-schema/spec": 1.1.0
-      ajv: 8.20.0
+      ajv: 6.15.0
       zod: 3.25.76
 
   "@humanfs/core@0.19.2":
@@ -15100,6 +15226,26 @@ snapshots:
     optionalDependencies:
       type-fest: 4.41.0
       webpack-hot-middleware: 2.26.1
+
+  "@protobufjs/aspromise@1.1.2": {}
+
+  "@protobufjs/base64@1.1.2": {}
+
+  "@protobufjs/codegen@2.0.5": {}
+
+  "@protobufjs/eventemitter@1.1.1": {}
+
+  "@protobufjs/fetch@1.1.1":
+    dependencies:
+      "@protobufjs/aspromise": 1.1.2
+
+  "@protobufjs/float@1.0.2": {}
+
+  "@protobufjs/path@1.1.2": {}
+
+  "@protobufjs/pool@1.1.0": {}
+
+  "@protobufjs/utf8@1.1.2": {}
 
   "@radix-ui/number@1.1.3": {}
 
@@ -16860,6 +17006,36 @@ snapshots:
     dependencies:
       "@use-gesture/core": 10.3.1
       react: 19.3.0
+
+  "@valkey/valkey-glide-darwin-arm64@2.5.3":
+    optional: true
+
+  "@valkey/valkey-glide-darwin-x64@2.5.3":
+    optional: true
+
+  "@valkey/valkey-glide-linux-arm64-gnu@2.5.3":
+    optional: true
+
+  "@valkey/valkey-glide-linux-arm64-musl@2.5.3":
+    optional: true
+
+  "@valkey/valkey-glide-linux-x64-gnu@2.5.3":
+    optional: true
+
+  "@valkey/valkey-glide-linux-x64-musl@2.5.3":
+    optional: true
+
+  "@valkey/valkey-glide@2.5.3":
+    dependencies:
+      long: 5.3.2
+      protobufjs: 7.6.6
+    optionalDependencies:
+      "@valkey/valkey-glide-darwin-arm64": 2.5.3
+      "@valkey/valkey-glide-darwin-x64": 2.5.3
+      "@valkey/valkey-glide-linux-arm64-gnu": 2.5.3
+      "@valkey/valkey-glide-linux-arm64-musl": 2.5.3
+      "@valkey/valkey-glide-linux-x64-gnu": 2.5.3
+      "@valkey/valkey-glide-linux-x64-musl": 2.5.3
 
   "@vitejs/plugin-react@4.7.0(vite@5.4.21(@types/node@20.19.43)(terser@5.51.2))":
     dependencies:
@@ -19337,6 +19513,8 @@ snapshots:
       strip-ansi: 7.2.0
       wrap-ansi: 9.0.2
 
+  long@5.3.2: {}
+
   loupe@3.2.1: {}
 
   lower-case@2.0.2:
@@ -20144,6 +20322,20 @@ snapshots:
     dependencies:
       is-promise: 2.2.2
       lie: 3.3.0
+
+  protobufjs@7.6.6:
+    dependencies:
+      "@protobufjs/aspromise": 1.1.2
+      "@protobufjs/base64": 1.1.2
+      "@protobufjs/codegen": 2.0.5
+      "@protobufjs/eventemitter": 1.1.1
+      "@protobufjs/fetch": 1.1.1
+      "@protobufjs/float": 1.0.2
+      "@protobufjs/path": 1.1.2
+      "@protobufjs/pool": 1.1.0
+      "@protobufjs/utf8": 1.1.2
+      "@types/node": 20.19.43
+      long: 5.3.2
 
   proxy-addr@2.0.8:
     dependencies:
