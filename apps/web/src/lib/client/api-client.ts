@@ -6,11 +6,11 @@ export type SchemaComponents = components["schemas"];
 export type ApiPaths = paths;
 
 export interface RequestOptions extends Omit<RequestInit, "body"> {
-  params?: Record<string, string | number | boolean | undefined>;
+  params?: Record<string, string | number | boolean | undefined> | undefined;
   body?: unknown;
-  idempotencyKey?: string;
-  ifMatch?: number | string;
-  suppressToast?: boolean;
+  idempotencyKey?: string | undefined;
+  ifMatch?: number | string | undefined;
+  suppressToast?: boolean | undefined;
 }
 
 /**
