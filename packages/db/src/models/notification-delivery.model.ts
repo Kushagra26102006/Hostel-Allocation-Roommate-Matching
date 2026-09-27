@@ -1,4 +1,4 @@
-import { Schema, model, models, type Document, type Types, type Model } from "mongoose";
+import mongoose, { Schema, model, type Document, type Types, type Model } from "mongoose";
 import {
   NOTIFICATION_EVENT_TYPES,
   type NotificationEventType,
@@ -98,5 +98,5 @@ NotificationDeliverySchema.index({ event_id: 1, channel: 1 });
 NotificationDeliverySchema.index({ institution_id: 1, status: 1 });
 
 export const NotificationDeliveryModel: Model<NotificationDeliveryDocument> =
-  (models?.["NotificationDelivery"] as Model<NotificationDeliveryDocument>) ||
+  (mongoose.models?.["NotificationDelivery"] as Model<NotificationDeliveryDocument>) ||
   model<NotificationDeliveryDocument>("NotificationDelivery", NotificationDeliverySchema);

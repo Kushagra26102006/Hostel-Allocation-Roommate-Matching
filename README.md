@@ -1,88 +1,181 @@
-# HostelHub (P03) — Autonomous Campus Housing & Allocation Platform
+# HostelHub (P03) — Policy-Driven Hostel Allocation & Roommate Compatibility Matching Platform
 
-[![CI/CD Pipeline](https://github.com/hostelhub/hostelhub/actions/workflows/ci.yml/badge.svg)](https://github.com/hostelhub/hostelhub/actions)
+[![CI/CD Pipeline](https://github.com/Kushagra26102006/Hostel-Allocation-Roommate-Matching/actions/workflows/ci.yml/badge.svg)](https://github.com/Kushagra26102006/Hostel-Allocation-Roommate-Matching/actions)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5%20Strict-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15%20App%20Router-black.svg)](https://nextjs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-7.0%20ReplicaSet-green.svg)](https://www.mongodb.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **HostelHub** is a production-grade, explainable, and cryptographically tamper-evident residential allocation platform designed for large universities (5,000–10,000+ residents). Built with a mathematical Gale-Shapley matching engine, Multi-Criteria Decision Analysis (MCDA), AES-256-GCM encrypted roommate surveys, and a SHA-256 forward-linked audit hash chain, HostelHub eliminates human favouritism while delivering an installable, accessible PWA experience.
+> **HostelHub** is an enterprise-grade, explainable, and cryptographically tamper-evident residential allocation platform engineered for higher-education campuses (5,000–10,000+ residents). Built with a mathematical Gale-Shapley matching engine, Multi-Criteria Decision Analysis (MCDA), AES-256-GCM encrypted roommate surveys, and a SHA-256 forward-linked audit hash chain, HostelHub eliminates human favouritism while delivering an accessible, mobile-first PWA experience with a unified brand design system.
 
 ---
 
-## 📸 Key Features & Visual Overview
+## 📸 Visual Showcase & Architectural Gallery
 
-- **Installable Progressive Web App (PWA):** Offline application drafting with IndexedDB persistence, background synchronization, and Web Push notifications.
-- **Multilingual Support:** Complete localization in English (`en`), Hindi (`hi`), and Punjabi (`pa`).
-- **Interactive Bed Map & Review Console:** Visual room occupancy heat maps, accessible bed indicators, and optimistic concurrency version conflict resolution (`If-Match`).
-- **Maker-Checker Four-Layer Publishing Gate:** Prevents unauthorized publication at the UI, service, API, and database schema levels.
-- **Public Ed25519 QR Verification:** Gatekeepers can verify digitally signed student allotment letters without database credentials.
-- **Dynamic Waitlist & Bed Vacating:** Automatic candidate selection and real-time room occupancy reconciliation.
+The platform features high-fidelity, real architectural assets and a single dominant brand palette (**Deep Electric Indigo `#3155FF`**) with slate neutrals and WCAG 2.2 AA compliant contrast:
+
+|                 Campus Grounds & Hero                  |                    Modern Residence Hall                     |
+| :----------------------------------------------------: | :----------------------------------------------------------: |
+| ![Campus Hero](apps/web/public/images/campus-hero.jpg) | ![Residence Hall](apps/web/public/images/residence-hall.jpg) |
+|      _High-speed campus-wide residential portal_       |     _Multi-block capacity with floor & bed hierarchies_      |
+
+|                  Optimized Room Interior                   |                Collaborative Study Lounge                |
+| :--------------------------------------------------------: | :------------------------------------------------------: |
+| ![Room Interior](apps/web/public/images/room-interior.jpg) | ![Study Lounge](apps/web/public/images/study-lounge.jpg) |
+|    _Visual room cards & interactive bed occupancy maps_    |    _Harmonious roommate matching & community living_     |
 
 ---
 
-## ⚡ One-Command Local Setup
+## 🌟 Key Functional Pillars
 
-### Prerequisites
+### 1. Mathematical Allocation & Roommate Matching Engine
+
+- **Deterministic Gale-Shapley Algorithm:** Modified stable-matching engine supporting quota capacities, category reservation rules, and preference rankings.
+- **Explainable Allocation Scores:** Transparent scoring breakdown (e.g. `87.4 / 100` — First-choice hostel `+40`, Room type match `+25`, Roommate compatibility `+18`, Distance factor `+4.4`).
+- **Privacy-Consenting Roommate Compatibility:** Multi-factor lifestyle matching (sleep schedule, study habits, cleanliness, noise tolerance, smoking, food preferences) calculating mutual compatibility percentages with explanation chips (`✓ Similar sleep schedule`, `⚠ Different social preference`).
+- **Cryptographic Seeding:** Fully deterministic tie-breaking utilizing SHA-256 seeds (`--seed 42`) ensuring zero algorithmic drift and 100% reproducibility.
+
+### 2. Multi-Step Student Journey
+
+- **Progressive Application Stepper:** 6-step form with real-time field validation, draft autosaving, and category eligibility verification.
+- **Ranked Preferences UI:** Intuitive drag-and-drop & keyboard-accessible priority ordering (`01`, `02`, `03`, `04`) across hostels, blocks, room types, and floors.
+- **Roommate Group Builder:** Mutual-consent invite codes (`HH-XXXXXX`) guaranteeing that students are only paired when both parties approve.
+- **Digital Allotment Letter:** Print-ready official allocation letter with institution seal, authorized signature block, allocation reference, and public Ed25519-signed QR code.
+- **Self-Service Actions:** In-portal room change requests, administrative appeals with SLA countdown timers, and live vacancy notifications.
+
+### 3. Staff & Administrative Consoles
+
+- **Interactive Bed Map (`/warden/bed-map`):** Real-time hierarchy drilldown (`Hostel → Block → Floor → Room → Bed`) showing live occupancy states (`Occupied`, `Available`, `Reserved`, `Maintenance`).
+- **High-Density Review Ledger (`/warden/assignments`):** Rapid filtering, bulk search, dossier inspection drawer, and optimistic concurrency version conflict handling (`If-Match`).
+- **Audited Warden Override Workflow (`/warden/review`):** Pre-validation of capacity and eligibility constraints before any manual room change, recording SHA-256 audit logs with mandatory warden justification.
+- **Dynamic Waitlist Manager (`/warden/waitlist`):** Transparent queue positioning (`Current Position: #12`), vacancy-triggered promotions, and quota category filters.
+- **Maker-Checker Publication Gate (`/chief-warden/publish`):** 4-stage governance pipeline (`DRAFT → UNDER REVIEW → APPROVED → PUBLISHED`) preventing unapproved allocations from reaching student portals.
+- **Live Allocation Console (`/admin/allocation`):** Real-time Server-Sent Events (SSE) log terminal streaming the 7-stage Gale-Shapley pipeline progress.
+- **Visual Policy Rule Builder (`/admin/policies`):** No-code `IF-THEN` conditional rule compiler for semester quotas, distance priority, and category restrictions.
+- **Executive Analytics (`/dean/analytics`):** Real-time Dean dashboard featuring monochromatic indigo charts, occupancy heatmaps, and algorithm convergence metrics.
+- **Tamper-Evident Audit Chain (`/sys-admin/audit`):** Cryptographic verification of SHA-256 hash chains across all administrative and allocation actions.
+
+---
+
+## 👥 Default Personas & Credentials (Seed 42)
+
+The system seeds deterministic demo accounts for testing all six role perspectives:
+
+| Role             | Email                  | Password               | Scope & Primary Actions                                                                               |
+| :--------------- | :--------------------- | :--------------------- | :---------------------------------------------------------------------------------------------------- |
+| **Student**      | `student.demo@nit.edu` | `Password123!`         | Application submission, preference ranking, roommate invites, digital allotment letter, appeals       |
+| **Warden**       | `warden.demo@nit.edu`  | `Password123!` _(MFA)_ | Kaveri Hostel bed map, manual overrides with justification, waitlist promotions, assignments ledger   |
+| **Chief Warden** | `chief.warden@nit.edu` | `Password123!` _(MFA)_ | Campus-wide hostel oversight, 4-stage Maker-Checker approval and cryptographic allocation publication |
+| **Hostel Admin** | `admin.hostel@nit.edu` | `Password123!` _(MFA)_ | CSV inventory import wizard, policy rule builder, Gale-Shapley allocation run console                 |
+| **Dean (DSW)**   | `dean.welfare@nit.edu` | `Password123!` _(MFA)_ | Read-only executive analytics, capacity heatmaps, demographic distribution, audit oversight           |
+| **System Admin** | `sysadmin@nit.edu`     | `Password123!` _(MFA)_ | SHA-256 audit chain verification, cryptographic key rotation, system parameters, rate limit flags     |
+
+---
+
+## ⚡ Quickstart & Local Setup
+
+### System Prerequisites
 
 - **Node.js:** `>= 20.0.0`
 - **pnpm:** `>= 9.0.0`
-- **Docker & Docker Compose:** Running locally
+- **Docker & Docker Compose:** Running locally (for MongoDB, Redis, MinIO)
 
-### Quick Start
+### 1. Clone & Install Dependencies
 
 ```bash
-# 1. Clone repository & install dependencies
-git clone https://github.com/hostelhub/hostelhub.git
-cd hostelhub
+git clone https://github.com/Kushagra26102006/Hostel-Allocation-Roommate-Matching.git
+cd Hostel-Allocation-Roommate-Matching
 pnpm install
+```
 
-# 2. Start backing services (MongoDB, Redis, MinIO, ClamAV)
+### 2. Launch Background Infrastructure
+
+```bash
+# Starts MongoDB 7 (Replica Set), Redis 7, MinIO S3, and ClamAV
 pnpm run infra:up
+```
 
-# 3. Seed deterministic test data (Seed 42)
+### 3. Initialize Environment Variables
+
+```bash
+# Copy root environment template
+cp .env.example .env
+
+# Web client environment
+cp .env.example apps/web/.env.local
+
+# Backend environment
+cp backend/.env.example backend/.env
+```
+
+### 4. Seed Deterministic Test Data
+
+```bash
+# Seeds 100 applicants, 100 beds, policy rules, and test cycles under Seed 42
 pnpm run seed:synthetic --seed 42 --applicants 100 --beds 100 --reset
-
-# 4. Start Next.js development server
-pnpm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+### 5. Start Development Servers
+
+```bash
+# Start frontend (port 3000)
+pnpm dev
+
+# In a separate terminal, start backend API (port 4000)
+pnpm --filter @hostelhub/backend dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000) in your browser. Use the top-right Quick Role Switcher or login with any persona credentials above.
 
 ---
 
-## 📜 All Monorepo Scripts Reference
+## 📜 Complete Monorepo Command Reference
 
-| Script                      | Command                                           | Purpose                                                       |
-| :-------------------------- | :------------------------------------------------ | :------------------------------------------------------------ |
-| `pnpm dev`                  | `pnpm --filter @hostelhub/web dev`                | Starts Next.js development server on port 3000                |
-| `pnpm build`                | `pnpm -r build`                                   | Compiles all packages and applications                        |
-| `pnpm lint`                 | `eslint .`                                        | Runs ESLint flat config across the entire monorepo            |
-| `pnpm typecheck`            | `pnpm -r typecheck`                               | Runs `tsc --noEmit` across all 5 workspace projects           |
-| `pnpm test`                 | `pnpm -r test`                                    | Runs unit and integration test suites via Vitest              |
-| `pnpm test:e2e`             | `pnpm --filter @hostelhub/web test:e2e`           | Runs Playwright critical journeys J1 to J10                   |
-| `pnpm bench:allocation`     | `tsx scripts/bench-allocation.ts`                 | Executes 8,000 × 8,000 allocation performance benchmark       |
-| `pnpm seed:synthetic`       | `tsx packages/db/src/seed/synthetic.ts`           | Deterministic synthetic generator with fixed seed             |
-| `pnpm permissions:generate` | `tsx scripts/generate-permissions-doc.ts`         | Generates `docs/roles-permissions.md` from code               |
-| `pnpm permissions:check`    | `tsx scripts/generate-permissions-doc.ts --check` | CI check verifying permission docs match `permissions.ts`     |
-| `pnpm openapi:check`        | `tsx scripts/check-openapi-diff.ts`               | Verifies OpenAPI contract specification parity                |
-| `pnpm i18n:check`           | `pnpm --filter @hostelhub/web i18n:check`         | Verifies translation key completeness across `en`, `hi`, `pa` |
-| `pnpm infra:up`             | `docker compose up -d`                            | Launches MongoDB, Redis, MinIO, and ClamAV containers         |
-| `pnpm infra:down`           | `docker compose down`                             | Stops background infrastructure containers                    |
+| Script                | Command                                  | Purpose                                                      |
+| :-------------------- | :--------------------------------------- | :----------------------------------------------------------- |
+| **Start Web App**     | `pnpm dev`                               | Starts Next.js 15 dev server on `http://localhost:3000`      |
+| **Start Backend**     | `pnpm --filter @hostelhub/backend dev`   | Starts Express API with tsx file watcher on port `4000`      |
+| **Typecheck All**     | `pnpm -r run typecheck`                  | Runs `tsc --noEmit` across all 6 workspace packages (Strict) |
+| **Run All Tests**     | `pnpm -r test`                           | Executes Vitest suites across domain, db, backend, and web   |
+| **Run Web Tests**     | `pnpm --filter @hostelhub/web test`      | Runs 36 test files (334 test cases) for web client           |
+| **Run Backend Tests** | `pnpm --filter @hostelhub/backend test`  | Runs unit, integration, and property-based backend tests     |
+| **Run Linter**        | `pnpm run lint`                          | Runs ESLint 9 across all packages (0 errors/warnings)        |
+| **Build Web**         | `pnpm --filter @hostelhub/web build`     | Compiles Next.js production bundle (133 routes)              |
+| **Build Backend**     | `pnpm --filter @hostelhub/backend build` | Compiles TypeScript backend to `dist/`                       |
+| **Build Worker**      | `pnpm --filter @hostelhub/worker build`  | Compiles BullMQ background worker to `dist/`                 |
+| **Benchmark Engine**  | `pnpm run bench:allocation`              | Executes 8,000 × 8,000 allocation stress test                |
+| **Start Docker**      | `pnpm run infra:up`                      | Starts MongoDB, Redis, MinIO, ClamAV via Docker Compose      |
+| **Stop Docker**       | `pnpm run infra:down`                    | Gracefully stops all infrastructure containers               |
+| **Reset Docker**      | `pnpm run infra:reset`                   | Tears down containers and wipes local docker volumes         |
 
 ---
 
-## 🏛️ Monorepo Architecture
+## 🏛️ Monorepo Architecture & Directory Structure
 
 ```
-hostelhub/
+Hostel-Allocation-Roommate-Matching/
 ├── apps/
-│   ├── web/                     # Next.js 15 App Router frontend & API routes
-│   │   ├── e2e/                 # Playwright E2E test suites (Journeys J1–J10)
-│   │   └── src/                 # React Server/Client Components, hooks, API handlers
-│   └── worker/                  # BullMQ background job worker runtime
+│   ├── web/                     # Next.js 15 App Router frontend (PWA, SSR & Client Components)
+│   │   ├── public/              # Static assets, Web App Manifest, architectural imagery
+│   │   ├── src/
+│   │   │   ├── app/             # App Router pages (student, warden, chief-warden, admin, dean, sys-admin)
+│   │   │   ├── components/      # UI primitives (Button, Card, Badge, DataTable, StatCard, etc.)
+│   │   │   ├── hooks/           # Custom React hooks (useMockApi, useAuth, useDebounce)
+│   │   │   ├── lib/             # API client, motion tokens, crypto utilities, validators
+│   │   │   ├── styles/          # Design tokens (tokens.css) & global styles (globals.css)
+│   │   │   └── types/           # Strict TypeScript contracts & API models
+│   └── worker/                  # BullMQ background worker for async matching & notifications
+├── backend/                     # Node.js + Express + Mongoose REST API service
+│   ├── src/
+│   │   ├── controllers/         # REST API route handlers
+│   │   ├── middleware/          # JWT auth, RBAC permissions, rate limiters, validation
+│   │   ├── routes/              # Express API router definitions
+│   │   └── services/            # Business logic, audit logging, allocation dispatchers
+│   └── tests/                   # Backend unit, integration, and fast-check property tests
 ├── packages/
-│   ├── domain/                  # Pure mathematical matching solver & domain entities
+│   ├── domain/                  # Pure mathematical matching solver & domain entities (Zero dependencies)
+│   │   ├── src/algorithms/      # Gale-Shapley matching implementation, MCDA scoring
+│   │   └── src/entities/        # Student, Room, Bed, Policy domain interfaces
 │   ├── db/                      # Mongoose models, tenant repository, and audit service
 │   └── shared/                  # RBAC permissions matrix, constants, cipher utilities
 ├── docs/                        # Complete technical documentation set
@@ -91,79 +184,64 @@ hostelhub/
 │   ├── engine/                  # Algorithm specification and 8,000 benchmark report
 │   ├── runbooks/                # Deployment, backup/restore, on-call runbooks
 │   └── user-guides/             # Student quickstart and warden/admin operational guides
-└── scripts/                     # CI gates, benchmark runners, doc generators
+└── docker-compose.yml           # Local infrastructure orchestration definition
 ```
-
-### Dependency Flow
-
-```
-[apps/web]    ──depends on──► [packages/domain] ◄──depends on── [packages/db]
-      │                               ▲                                ▲
-      ▼                               │                                │
-[packages/shared] ◄───────────────────┴────────────────────────────────┘
-```
-
-- **`packages/domain`** has zero database or external runtime dependencies.
-- All database operations are strictly multi-tenant isolated via `institution_id`.
 
 ---
 
-## 📚 Complete Documentation Set
+## 🎨 UI/UX Design System Specification
 
-- **Architecture Decision Records (ADRs):**
-  - [ADR 0001: Technology Stack Choice](docs/adr/0001-stack-choice.md)
-  - [ADR 0002: Allocation Engine Design & Determinism](docs/adr/0002-engine-design-determinism.md)
-  - [ADR 0003: Cryptographic Storage & Key Rotation](docs/adr/0003-encryption-key-rotation.md)
-  - [ADR 0004: Cryptographic Audit Hash Chain](docs/adr/0004-audit-hash-chain.md)
-  - [ADR 0005: Notification Architecture & Delivery](docs/adr/0005-notification-design.md)
-  - [ADR 0006: Deployment Architecture & Container Strategy](docs/adr/0006-deployment-choices.md)
-  - [ADR 0007: Free-Service Integrations & Data Transmission Register](docs/adr/0007-free-service-integrations.md)
-- **API & Contracts:**
-  - [API Integration Guide](docs/api/README.md)
-  - [OpenAPI 3.1 Specification JSON](docs/openapi.json)
-- **Data Model & Schema:**
-  - [Entity Relationship Diagram & Database Constraints](docs/data-model.md)
-- **Matching Engine:**
-  - [Algorithm Specification & Constraint Formulation](docs/engine/specification.md)
-  - [8,000 × 8,000 Allocation Benchmark Report](docs/engine/benchmark-report.md)
-- **Security & Authorization:**
-  - [Role-Based Access Control (RBAC) Matrix](docs/roles-permissions.md)
-  - [Security Hardening & Evidence Report](docs/security-report.md)
-  - [Privacy Policy & Third-Party Disclosure Register](docs/privacy.md)
-- **User Guides:**
-  - [Student Quick-Start Guide](docs/user-guides/student-quickstart.md)
-  - [Warden & Administrator Operations Guide](docs/user-guides/warden-admin-guide.md)
-- **Operations & Runbooks:**
-  - [Deployment & Rollback Runbook](docs/runbooks/deployment.md)
-  - [Backup & Restore Runbook](docs/runbooks/backup-restore.md)
-  - [Incident Response & Security Runbook](docs/runbooks/incident-response.md)
-  - [On-Call Engineering Reference](docs/runbooks/on-call.md)
-- **Handover & Operational Continuity:**
-  - [Known Issues & Technical Debt Register](docs/known-issues.md)
-  - [60–90 Minute Live Handover Demonstration Script](docs/handover-walkthrough.md)
-  - [Accessibility (WCAG 2.2 AA) & Performance Audit](docs/a11y-perf-report.md)
+HostelHub adheres to a disciplined, enterprise-grade design system:
+
+- **Dominant Brand Color:** Deep Electric Indigo (`hsl(228 100% 60%)` / `#3155FF`) used intentionally for primary calls-to-action, active indicators, and focus states.
+- **Neutral Palette:** High-contrast slate neutrals (`hsl(222 47% 11%)` foreground, `hsl(210 40% 98%)` background, subtle `hsl(214 32% 91%)` borders).
+- **Semantic Accents:**
+  - `Success`: Emerald Green (`#10B981`)
+  - `Warning`: Amber (`#F59E0B`)
+  - `Destructive`: Crimson Red (`#EF4444`)
+  - `Info`: Electric Blue (`#3B82F6`)
+- **Motion Principles:** Micro-interactions (150–250ms ease-out) powered by Framer Motion and CSS primitives, fully honoring `prefers-reduced-motion`.
+- **Accessibility:** Full WCAG 2.2 AA compliance, visible `:focus-visible` rings, semantic ARIA roles, and keyboard navigation across all interactive widgets.
 
 ---
 
-## 👥 Default Demo Credentials (Seed 42)
+## 🔐 Security, Cryptography & Privacy
 
-| Persona / Role              | Email                  | Password               | Scope                                                |
-| :-------------------------- | :--------------------- | :--------------------- | :--------------------------------------------------- |
-| **Student**                 | `student.demo@nit.edu` | `Password123!`         | Own application, results, questionnaire, appeals     |
-| **Warden**                  | `warden.demo@nit.edu`  | `Password123!` _(MFA)_ | Kaveri Hostel bed review, overrides, waitlist        |
-| **Chief Warden**            | `chief.warden@nit.edu` | `Password123!` _(MFA)_ | All campus hostels, Maker-Checker approvals, publish |
-| **Hostel Admin**            | `admin.hostel@nit.edu` | `Password123!` _(MFA)_ | Inventory CSV imports, cycle setup, matching trigger |
-| **Dean of Student Welfare** | `dean.welfare@nit.edu` | `Password123!` _(MFA)_ | Macro analytics, audit hash chain verification       |
-| **System Administrator**    | `sysadmin@nit.edu`     | `Password123!` _(MFA)_ | Optimization weights, system flags, API keys         |
+1. **AES-256-GCM Sensitive Field Encryption:**
+   - Lifestyle questionnaire responses and medical accommodations are encrypted at rest with tenant-isolated key IDs.
+2. **Ed25519 Public QR Verification:**
+   - Digital allotment letters embed an Ed25519 signature in a QR code. Security personnel can verify authenticity offline at campus gates using public keys.
+3. **Immutable HMAC-SHA256 Forward-Linked Audit Chain:**
+   - Every administrative override, room swap, and status transition is cryptographically linked to the previous log entry. Any tampering invalidates the hash chain immediately.
+4. **Role-Based Access Control (RBAC):**
+   - Explicit permissions enforced at both the API middleware and database query layers, preventing horizontal privilege escalation.
 
 ---
 
-## 🔒 Security & Vulnerability Reporting
+## 🚀 Production Deployment & Containerization
 
-Please report security issues directly to `security@hostelhub.edu`. See [`docs/runbooks/incident-response.md`](docs/runbooks/incident-response.md) for vulnerability handling runbooks.
+### Docker Compose Production Stack
+
+A production multi-container setup includes:
+
+```bash
+# 1. Build and launch all services in detached mode
+docker compose -f docker-compose.prod.yml up -d --build
+
+# 2. Verify container health status
+docker compose ps
+```
+
+### Environment Checklist for Production
+
+- Set `NODE_ENV=production`.
+- Generate 32-byte hex keys for `AUTH_SECRET`, `MASTER_ENCRYPTION_KEY`, and `JWT_SECRET`.
+- Provide genuine SMTP credentials for transactional emails.
+- Configure S3/MinIO bucket access for allotment letter PDF archiving.
+- Enforce SSL termination at the reverse proxy (Nginx or Cloudflare).
 
 ---
 
 ## 📄 License
 
-This repository is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE).

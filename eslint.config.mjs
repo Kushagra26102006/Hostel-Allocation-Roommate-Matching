@@ -33,6 +33,7 @@ const config = [
       ...tseslint.configs["recommended"].rules,
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/consistent-type-imports": "error",
+      "@typescript-eslint/no-namespace": ["error", { allowDeclarations: true }],
     },
   },
   // Config / tooling files — no type-checking (they're not in any tsconfig project)
